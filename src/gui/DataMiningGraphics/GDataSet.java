@@ -46,12 +46,13 @@ import gui.templates.GeomTemplate;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
 
-import org.apache.batik.ext.awt.geom.Polygon2D;
+//import org.apache.batik.ext.awt.geom.Polygon2D;
 
 import data.set.IndexedDataObject;
 import etc.DataManipulator;
@@ -107,7 +108,7 @@ public class GDataSet extends DrawableObject implements Serializable
 	public void draw(Graphics2D g2, Translation translator)
 	{
 		Color internalAreaColor;
-		Polygon2D surroundingPoly;
+		Polygon surroundingPoly;
 		double[] tmp;
 		double[] point;
 		
@@ -120,12 +121,12 @@ public class GDataSet extends DrawableObject implements Serializable
 			
 			if(this.convexHull.size() > 1)
 			{
-				surroundingPoly = new Polygon2D();
+				surroundingPoly = new Polygon();
 				
 				for(double[] p:this.convexHull)
 				{
 					point = translator.translate(this.projection.project(p, tmp));
-					surroundingPoly.addPoint((float)point[0], (float)point[1]);
+					surroundingPoly.addPoint((int)point[0], (int)point[1]);
 		//					System.out.println(Arrays.toString(point));
 				}
 				

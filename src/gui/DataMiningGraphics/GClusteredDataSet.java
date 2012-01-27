@@ -47,13 +47,13 @@ import gui.templates.GeomTemplate;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.geom.Point2D;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-
-import org.apache.batik.ext.awt.geom.Polygon2D;
 
 import data.set.IndexedDataObject;
 import datamining.clustering.ClusteringAlgorithm;
@@ -226,7 +226,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 		double yS, uS, vS;
 		double[] colorSum = new double[6];
 		Color color, internalAreaColor;
-		Polygon2D surroundingPoly;
+		Polygon surroundingPoly;
 		double[] point;
 		
 		double maxMSV;
@@ -363,12 +363,12 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 					for(k=0; k<this.convexHulls.get(i).size(); k++)
 					{
 //						if(this.convexHulls.get(i).get(k).size() < 2) continue;
-						surroundingPoly = new Polygon2D();
+						surroundingPoly = new Polygon();
 						
 						for(double[] p:this.convexHulls.get(i).get(k))
 						{
 							point = translator.translate(this.projection.project(p, tmp));
-							surroundingPoly.addPoint((float)point[0], (float)point[1]);
+							surroundingPoly.addPoint((int)point[0], (int)point[1]);
 						}
 						
 						g2.setStroke(this.clusterSchemes.get(i).getStroke(0));			
