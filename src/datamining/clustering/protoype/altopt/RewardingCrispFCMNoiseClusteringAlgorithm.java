@@ -40,7 +40,7 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -67,7 +67,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	 * @param data
 	 * @param evs
 	 */
-	public RewardingCrispFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public RewardingCrispFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
 		

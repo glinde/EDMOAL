@@ -41,7 +41,7 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import data.set.structures.CenteredBallTree;
@@ -80,7 +80,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	/**
 	 * 
 	 */
-	public BallTreeFuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> dataSet, VectorSpace<T> vs, Distance<T> dist)
+	public BallTreeFuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> dataSet, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(dataSet, vs, dist);
 				

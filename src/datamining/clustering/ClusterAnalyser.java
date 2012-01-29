@@ -41,7 +41,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import datamining.clustering.protoype.Centroid;
@@ -83,7 +83,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 	
 	
-	public double[][] pariwise_dataObject_clusterDistance(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, Distance<T> dist)
+	public double[][] pariwise_dataObject_clusterDistance(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, Metric<T> dist)
 	{
 		int i, j, k, l;
 
@@ -141,7 +141,7 @@ public class ClusterAnalyser<T>  implements Serializable
 		return pairwiseClusterDistances;
 	}
 
-	public double[][] pariwise_prototype_clusterDistance(List<Prototype<T>> prototypes, Distance<T> dist)
+	public double[][] pariwise_prototype_clusterDistance(List<Prototype<T>> prototypes, Metric<T> dist)
 	{
 		int i, k;
 
@@ -163,7 +163,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 	
 	
-	public double[] clusterDiameters(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, List<Prototype<T>> prototypes, Distance<T> dist)
+	public double[] clusterDiameters(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, List<Prototype<T>> prototypes, Metric<T> dist)
 	{
 		int i, j;
 		T dataObject;
@@ -272,7 +272,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param dist
 	 * @return
 	 */
-	public double xieBeniIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Distance<T> dist)
+	public double xieBeniIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
 		if(fuzzyAlgorithm instanceof CrispNoiseClusteringAlgorithm || fuzzyAlgorithm instanceof FuzzyNoiseClusteringAlgorithm)
 		{
@@ -338,7 +338,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param dist
 	 * @return
 	 */
-	public double daviesBouldinIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Distance<T> dist)
+	public double daviesBouldinIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
 		if(fuzzyAlgorithm instanceof CrispNoiseClusteringAlgorithm || fuzzyAlgorithm instanceof FuzzyNoiseClusteringAlgorithm)
 		{
@@ -397,7 +397,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param exampleSet
 	 * @return
 	 */
-	public double bezdecSeperationIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Distance<T> dist)
+	public double bezdecSeperationIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
 		if(fuzzyAlgorithm instanceof CrispNoiseClusteringAlgorithm || fuzzyAlgorithm instanceof FuzzyNoiseClusteringAlgorithm)
 		{
@@ -506,7 +506,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 	
 
-	public String clusterResultProperties(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Distance<T> dist)
+	public String clusterResultProperties(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
 		StringBuffer sb = new StringBuffer();
 		StringBuffer nameB = new StringBuffer();

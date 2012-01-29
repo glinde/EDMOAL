@@ -40,7 +40,7 @@ package datamining.clustering.density;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import data.set.structures.BallTree;
@@ -75,7 +75,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	protected int clusterCount;
 	
 	/**  */
-	protected Distance<T> distanceFunction;
+	protected Metric<T> distanceFunction;
 		
 	/**  */
 	protected SphereQueryProvider<T> sphereQueryProvider;
@@ -84,7 +84,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	protected int[] clusterIDs;
 		
 	/** */
-	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Distance<T> dist)
+	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Metric<T> dist)
 	{
 		super(dataSet);
 		
@@ -104,7 +104,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	/**
 	 *	The initial constructor for clustering.
 	 */
-	public DBScan(IndexedDataSet<T> dataSet, Distance<T> dist)
+	public DBScan(IndexedDataSet<T> dataSet, Metric<T> dist)
 	{
 		this(dataSet, 1.0d, 4, dist);
 	}

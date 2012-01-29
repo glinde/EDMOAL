@@ -40,7 +40,7 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -69,7 +69,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 	 * @param vs
 	 * @param dist
 	 */
-	public DistAdaptedFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public DistAdaptedFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
 	}

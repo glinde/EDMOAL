@@ -39,7 +39,7 @@ package data.objects.sequence;
 
 import java.io.Serializable;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import etc.MyMath;
 
 /**
@@ -47,7 +47,7 @@ import etc.MyMath;
  *
  * @author Roland Winkler
  */
-public class PointSamplingDistance implements Distance<DoubleArraySequence>, Serializable
+public class PointSamplingDistance implements Metric<DoubleArraySequence>, Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= -3808294293183147878L;

@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PriorityQueue;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataObject;
@@ -68,14 +68,14 @@ public class CenteredBallTree<T> extends AbstractTree<T, CenteredBallTreeNode<T>
 	protected final VectorSpace<T> vectorSpace;
 	
 	/**  */
-	protected final Distance<T> distanceFunction;
+	protected final Metric<T> distanceFunction;
 	
 	/**
 	 * 
 	 * @param dataSet
 	 * @param distance
 	 */
-	public CenteredBallTree(IndexedDataSet<T> dataSet, VectorSpace<T> vectorSpace, Distance<T> distance)
+	public CenteredBallTree(IndexedDataSet<T> dataSet, VectorSpace<T> vectorSpace, Metric<T> distance)
 	{
 		super(dataSet);
 		
@@ -158,7 +158,7 @@ public class CenteredBallTree<T> extends AbstractTree<T, CenteredBallTreeNode<T>
 	/**
 	 * @return the distanceFunction
 	 */
-	public Distance<T> getDistanceFunction()
+	public Metric<T> getDistanceFunction()
 	{
 		return this.distanceFunction;
 	}

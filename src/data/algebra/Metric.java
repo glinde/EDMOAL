@@ -54,7 +54,7 @@ package data.algebra;
  *  
  * @author Roland Winkler
  */
-public interface Distance<T> extends AlgebraicStructure<T>
+public interface Metric<T> extends AlgebraicStructure<T>
 {
 	/**
 	 * The distance from object <code>x</code> to object <code>y</code>

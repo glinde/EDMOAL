@@ -41,7 +41,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import datamining.clustering.protoype.Centroid;
@@ -208,7 +208,7 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	 * @param number
 	 * @return
 	 */
-	public ArrayList<Centroid<double[]>> randomSphericalNormalLikeDataSet(Collection<IndexedDataObject<double[]>> data, Distance<double[]> dist, int number)
+	public ArrayList<Centroid<double[]>> randomSphericalNormalLikeDataSet(Collection<IndexedDataObject<double[]>> data, Metric<double[]> dist, int number)
 	{
 		double[] exp = new double[this.vs.getDimension()];
 		double variance = 0;

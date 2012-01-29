@@ -37,7 +37,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining.clustering.protoype;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import etc.MyMath;
 
@@ -51,14 +51,14 @@ public class SphericalNormalDistributionPrototype extends Centroid<double[]>
 	/**  */
 	private static final long	serialVersionUID	= -508521471124914355L;
 
-	protected Distance<double[]> dist;
+	protected Metric<double[]> dist;
 	
 	protected double variance;
 	
 	protected double initialVariance;
 	
 	/** creates a new prototype */
-	public SphericalNormalDistributionPrototype(VectorSpace<double[]> vs, Distance<double[]> dist)
+	public SphericalNormalDistributionPrototype(VectorSpace<double[]> vs, Metric<double[]> dist)
 	{
 		super(vs);
 		
@@ -68,7 +68,7 @@ public class SphericalNormalDistributionPrototype extends Centroid<double[]>
 	}
 	
 	/** creates a new prototype */
-	public SphericalNormalDistributionPrototype(VectorSpace<double[]> vs, Distance<double[]> dist, double[] initialPos)
+	public SphericalNormalDistributionPrototype(VectorSpace<double[]> vs, Metric<double[]> dist, double[] initialPos)
 	{
 		super(vs, initialPos);
 

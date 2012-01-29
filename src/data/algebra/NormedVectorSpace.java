@@ -46,5 +46,5 @@ package data.algebra;
  *
  * @author Roland Winkler
  */
-public interface NormedVectorSpace<T> extends VectorSpace<T>, Distance<T>, Norm<T>, AlgebraicStructure<T>
+public interface NormedVectorSpace<T> extends VectorSpace<T>, Metric<T>, Norm<T>, AlgebraicStructure<T>
 {}

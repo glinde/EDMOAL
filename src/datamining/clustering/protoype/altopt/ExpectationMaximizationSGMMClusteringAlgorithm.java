@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -76,7 +76,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	private static final long	serialVersionUID	= -8858858125481849303L;
 
 	/**  */
-	protected final Distance<double[]> dist;
+	protected final Metric<double[]> dist;
 	
 	protected double[] clusterProbability;
 	
@@ -108,7 +108,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	 * @param data
 	 * @param vs
 	 */
-	public ExpectationMaximizationSGMMClusteringAlgorithm(IndexedDataSet<double[]> data, VectorSpace<double[]> vs, Distance<double[]> dist)
+	public ExpectationMaximizationSGMMClusteringAlgorithm(IndexedDataSet<double[]> data, VectorSpace<double[]> vs, Metric<double[]> dist)
 	{
 		super(data, vs);
 		
@@ -475,7 +475,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	/**
 	 * @return the dist
 	 */
-	public Distance<double[]> getDist()
+	public Metric<double[]> getDist()
 	{
 		return this.dist;
 	}

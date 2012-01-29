@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -68,14 +68,14 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 	/**  */
 	private static final long	serialVersionUID	= 7686113033242605201L;
 	/**  */
-	protected final Distance<T> distanceFunction;
+	protected final Metric<T> distanceFunction;
 	
 	/**
 	 * 
 	 * @param dataSet
 	 * @param distance
 	 */
-	public BallTree(IndexedDataSet<T> dataSet, Distance<T> distance)
+	public BallTree(IndexedDataSet<T> dataSet, Metric<T> distance)
 	{
 		super(dataSet);
 		
@@ -169,7 +169,7 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 	/**
 	 * @return the distanceFunction
 	 */
-	public Distance<T> getDistanceFunction()
+	public Metric<T> getDistanceFunction()
 	{
 		return this.distanceFunction;
 	}

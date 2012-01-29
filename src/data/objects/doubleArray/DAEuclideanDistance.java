@@ -39,7 +39,7 @@ package data.objects.doubleArray;
 
 import java.io.Serializable;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 
 
 /**
@@ -47,7 +47,7 @@ import data.algebra.Distance;
  *
  * @author Roland Winkler
  */
-public class DAEuclideanDistance implements Distance<double[]>, Serializable
+public class DAEuclideanDistance implements Metric<double[]>, Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 8929609989993670728L;

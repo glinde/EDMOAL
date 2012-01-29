@@ -40,7 +40,7 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.EuclideanVectorSpace;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
@@ -72,7 +72,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	protected double fuzzifier;
 	
 	/**  */
-	protected final Distance<T> dist;
+	protected final Metric<T> dist;
 		
 	/**
 	 * @param data the data set
@@ -80,7 +80,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	 * @param dist The distance must be differenciable w.r.t. y in dist(x, y)^2, and the directed differencial in direction of
 	 * 				y must yield d/dy dist(x, y)^2 = 2(y - x) 
 	 */
-	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs);
 		
@@ -519,7 +519,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	/**
 	 * @return the dist
 	 */
-	public Distance<T> getDist()
+	public Metric<T> getDist()
 	{
 		return this.dist;
 	}

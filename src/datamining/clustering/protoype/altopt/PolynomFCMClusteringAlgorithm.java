@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -87,7 +87,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		}
 	}
 	
-	protected final Distance<T> dist;
+	protected final Metric<T> dist;
 	
 	/** the distance ratio at which data objects are clustered in hard clustering */
 	protected double beta;
@@ -97,7 +97,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	 * @param data
 	 * @param vs
 	 */
-	public PolynomFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public PolynomFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs);
 		
@@ -690,7 +690,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	/**
 	 * @return the dist
 	 */
-	public Distance<T> getDist()
+	public Metric<T> getDist()
 	{
 		return this.dist;
 	}

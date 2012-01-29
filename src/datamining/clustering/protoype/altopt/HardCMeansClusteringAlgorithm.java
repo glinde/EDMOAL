@@ -40,7 +40,7 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -62,7 +62,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	private static final long	serialVersionUID	= -2518725991257149820L;
 
 	/**  */
-	protected Distance<T> dist;
+	protected Metric<T> dist;
 	
 	protected int[] clusteringResult;
 	
@@ -70,7 +70,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	 * @param data
 	 * @param numberOfClusters
 	 */
-	public HardCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public HardCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs);
 

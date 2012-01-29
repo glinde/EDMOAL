@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -79,7 +79,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	 * @param vs
 	 * @param dist
 	 */
-	public DistAdaptedFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public DistAdaptedFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
 		
