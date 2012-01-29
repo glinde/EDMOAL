@@ -42,7 +42,7 @@ package data.algebra;
  *
  * @author Roland Winkler
  */
-public abstract class AbstractScalarProduct<T> implements ScalarProduct<T>, AlgebraicStructure<T>
+public abstract class AbstractScalarProduct<T> implements ScalarProduct<T>, Norm<T>, AlgebraicStructure<T>
 {
 
 	/**  */

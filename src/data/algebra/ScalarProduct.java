@@ -52,7 +52,7 @@ package data.algebra;
  *
  * @author Roland Winkler
  */
-public interface ScalarProduct<T> extends Norm<T>, AlgebraicStructure<T>
+public interface ScalarProduct<T> extends AlgebraicStructure<T>
 {
 	/**
 	 * Applies the scalar product on two objects
