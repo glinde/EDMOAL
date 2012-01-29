@@ -218,4 +218,13 @@ public class DAStandardVectorSpace implements VectorSpace<double[]>, Serializabl
 		return Arrays.copyOf(x, this.dim);
 	}
 
+	/* (non-Javadoc)
+	 * @see data.algebra.VectorSpace#infiniteDimensionality()
+	 */
+	@Override
+	public boolean infiniteDimensionality()
+	{
+		return false;
+	}
+
 }

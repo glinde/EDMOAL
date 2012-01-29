@@ -38,13 +38,39 @@ package data.algebra;
 
 
 /**
- * TODO Class Description
+ * The metric is an algebraic structure that provides distance information for objects of the types <code>T</code>.<br>
+ * 
+ * The interface contains two functions, <code>distance</code> and <code>distanceSq</code>.
+ * Often, it is computationally cheaper to calculate the square distance between objects (e.g. Euclidean distance),
+ * therefore the interface requires the squared distance as well as the normal distance to be implemented.<br>
+ *  
  *
+ * <ul> It is necessary for the function <code>distance(x, y)</code> to hold the typical metric conditions:
+ * <li> distance(x, y) >= 0  </li>
+ * <li> distance(x, y) == 0 if and only if x.equals(y) == true </li>
+ * <li> distance(x, y) == distance(y, x) and </li>
+ * <li> distance(x, y) + distance(y, z) >= distance(x, z) </li>
+ * </ul>
+ *  
  * @author Roland Winkler
  */
 public interface Distance<T> extends AlgebraicStructure<T>
 {
+	/**
+	 * The distance from object <code>x</code> to object <code>y</code>
+	 * 
+	 * @param x an object of type <code>T</code> 
+	 * @param y an object of type <code>T</code>
+	 * @return the distance between <code>x</code> and <code>y</code>
+	 */
 	public double distance(T x, T y);
-	
+
+	/**
+	 * The squared distance from object <code>x</code> to object <code>y</code>
+	 * 
+	 * @param x an object of type <code>T</code> 
+	 * @param y an object of type <code>T</code>
+	 * @return the squared distance between <code>x</code> and <code>y</code>
+	 */
 	public double distanceSq(T x, T y);
 }

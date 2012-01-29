@@ -38,8 +38,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.algebra;
 
 
-/**
- * TODO Class Description
+/** 
+ * An normed Vector Space is simply a vector space that provides also the functionality of a norm and metric for the type <code>T</code>.
+ * A metric is available if a norm can be defined for a vector space with distance(x, y) = length(x - y).
+ * Therefore, a normed vector space also must provide the functionality of a metric.  
+ * 
  *
  * @author Roland Winkler
  */

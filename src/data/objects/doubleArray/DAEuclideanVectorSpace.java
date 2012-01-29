@@ -46,8 +46,6 @@ import data.algebra.EuclideanVectorSpace;
  * To avoid too much method-ping-pong, all functions are called directly rather than calling
  * the methods of the abstract superclass.
  * 
- * TODO Class Description
- *
  * @author Roland Winkler
  *
  */
@@ -131,7 +129,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public void add(double[] x, double[] y)
 	{
-		vectorSpace.add(x, y);
+		this.vectorSpace.add(x, y);
 	}
 
 	/**
@@ -142,7 +140,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public double[] addNew(double[] x, double[] y)
 	{
-		return vectorSpace.addNew(x, y);
+		return this.vectorSpace.addNew(x, y);
 	}
 
 	/**
@@ -151,7 +149,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public double[] getNewAddNeutralElement()
 	{
-		return vectorSpace.getNewAddNeutralElement();
+		return this.vectorSpace.getNewAddNeutralElement();
 	}	
 
 	/**
@@ -160,7 +158,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public void resetToAddNeutralElement(double[] x)
 	{
-		vectorSpace.resetToAddNeutralElement(x);
+		this.vectorSpace.resetToAddNeutralElement(x);
 	}
 
 	/**
@@ -169,7 +167,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public int getDimension()
 	{
-		return vectorSpace.getDimension();
+		return this.vectorSpace.getDimension();
 	}
 
 	/**
@@ -178,7 +176,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public void inv(double[] x)
 	{
-		vectorSpace.inv(x);
+		this.vectorSpace.inv(x);
 	}
 
 	/**
@@ -188,7 +186,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public double[] invNew(double[] x)
 	{
-		return vectorSpace.invNew(x);
+		return this.vectorSpace.invNew(x);
 	}
 
 	
@@ -200,7 +198,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public void mul(double[] x, double a)
 	{
-		vectorSpace.mul(x, a);
+		this.vectorSpace.mul(x, a);
 	}
 
 	/**
@@ -211,7 +209,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public double[] mulNew(double[] x, double a)
 	{
-		return vectorSpace.mulNew(x, a);
+		return this.vectorSpace.mulNew(x, a);
 	}
 
 	/**
@@ -221,7 +219,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public void sub(double[] x, double[] y)
 	{
-		vectorSpace.sub(x, y);
+		this.vectorSpace.sub(x, y);
 	}
 
 	/**
@@ -232,7 +230,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public double[] subNew(double[] x, double[] y)
 	{
-		return vectorSpace.subNew(x, y);
+		return this.vectorSpace.subNew(x, y);
 	}
 
 	/**
@@ -242,7 +240,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public void copy(double[] x, double[] y)
 	{
-		vectorSpace.copy(x, y);
+		this.vectorSpace.copy(x, y);
 	}
 
 	/**
@@ -252,7 +250,16 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 */
 	public double[] copyNew(double[] x)
 	{
-		return vectorSpace.copyNew(x);
+		return this.vectorSpace.copyNew(x);
+	}
+
+	/* (non-Javadoc)
+	 * @see data.algebra.VectorSpace#infiniteDimensionality()
+	 */
+	@Override
+	public boolean infiniteDimensionality()
+	{
+		return this.vectorSpace.infiniteDimensionality();
 	}
 	
 }

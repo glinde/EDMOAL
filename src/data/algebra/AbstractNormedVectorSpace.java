@@ -36,12 +36,13 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package data.algebra;
 
-/**
- * TODO Class Description
+/** 
+ * The distance for the normed vector space is implemented using the standard approach of using
+ * distance(x, y) = length(x - y). 
  *
  * @author Roland Winkler
  */
-public abstract class AbstractNormedVectorSpace<T> implements NormedVectorSpace<T>
+public abstract class AbstractNormedVectorSpace<T> implements NormedVectorSpace<T>, AlgebraicStructure<T>
 {
 
 	/**  */

@@ -39,13 +39,30 @@ package data.algebra;
 
 
 /**
- * TODO Class Description
+ * The norm of an object is an algebraic structure to prowide the functionality of measuring the length of an object of type <code>T</code>.
+ * As the length does not require a vector space structure, it is not generally linked to a metric. But similar to the metric,
+ * it is often easier to determine the squared length, both functions (length and squared length) are required to
+ * be implemented for this interface. <br>
+ *  
+ * The length must not be negative. 
  *
  * @author Roland Winkler
  */
 public interface Norm<T> extends AlgebraicStructure<T>
 {
+	/**
+	 * Calculates the length of the object <code>x</code>.
+	 * 
+	 * @param x The object that should be measured.
+	 * @return The length of the object <code>x</code>.
+	 */
 	public double length(T x);
-	
+
+	/**
+	 * Calculates the squared length of the object <code>x</code>.
+	 * 
+	 * @param x The object that should be measured.
+	 * @return The squared length of the object <code>x</code>.
+	 */
 	public double lengthSq(T x);
 }

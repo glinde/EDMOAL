@@ -36,12 +36,13 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package data.algebra;
 
-/**
- * TODO Class Description
+/** 
+ * An euclidean vector space is defined as a vector space with a scalar product. The abstract class masks the implementation of the
+ * length by applying the scalar product. 
  *
  * @author Roland Winkler
  */
-public abstract class AbstractEuclideanVectorSpace<T> extends AbstractNormedVectorSpace<T> implements EuclideanVectorSpace<T>
+public abstract class AbstractEuclideanVectorSpace<T> extends AbstractNormedVectorSpace<T> implements EuclideanVectorSpace<T>, AlgebraicStructure<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= 1641072496994861058L;

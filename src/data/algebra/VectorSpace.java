@@ -39,8 +39,24 @@ package data.algebra;
 
 
 /**
- * TODO Class Description
- *
+ * The vector space is maybe one of the most frequently used algebraic structure for data mining.
+ * Technically, there should be an other parameter specifying the algebraic body for which the vector space is specified.
+ * But unless that is really required by any function, it is implicitly assumed that the body are the real numbers, represented
+ * by double values. Therefore, the multiplication with a scalar is implemented for a double value.<br>
+ * 
+ * This interface provides the framework for all necessary operations, including copying a data object.
+ * This is a very important feature because it provides the functionality the general <code>clone()</code> function
+ * fails to provide.
+ * Also technically the function <code>getNewAddNeutralElement()</code> is a factory function for type <code>T</code>
+ * but as it is very useful (for example for calculating the sum of vectors), it is not separated into an other class.
+ * This is additionally motivated by the fact that the add neutral element is uniquely defined for each vector space.
+ * Similar the getting the add neutral element is getting the dimension of the vector space with <code>getDimension()</code>.
+ * The dimension of a vector space is also always specified and therefore, the function must provide a useful answer.<br>
+ * 
+ * All other operations come in two variations, as inplace operation and as operation that returns a new object of type <code>T</code>.
+ * The inplace operations should be implemented without any dynamic memory allocation in order to provide fast code. If that is
+ * not possible, please state so in the javadoc of the specific vector space class.
+ * 
  * @author Roland Winkler
  */
 public interface VectorSpace<T> extends AlgebraicStructure<T>
@@ -57,87 +73,100 @@ public interface VectorSpace<T> extends AlgebraicStructure<T>
 	
 	/** copies the content of y into x (x := y)
 	 * 
-	 * @param x
-	 * @param y
+	 * @param x the object that is overwritten
+	 * @param y the object that is copied
 	 */
 	public void copy(T x, T y);
 	
 	/**
-	 * inverts x (x := -x)
+	 * Inplace inversion (x := -x)
 	 * 
-	 * @param x
+	 * @param x the object is overwritten with its own negative
 	 */
 	public void inv(T x);
 	
 	/**
-	 * Adds y to x (x := x + y)
+	 * Inplace addition: adds y to x (x := x + y)
 	 * 
-	 * @param x
-	 * @param y
+	 * @param x the object that is overwritten
+	 * @param y the object that is added to x
 	 */
 	public void add(T x, T y);
 
 	/**
-	 * Subtracts y from x (x := x - y)
+	 * Inplace subtraction: Subtracts y from x (x := x - y)
 	 * 
-	 * @param x
-	 * @param y
+	 * @param x the object that is overwritten
+	 * @param y the object that is subtracted from x
 	 */
 	public void sub(T x, T y);
 	
-	/** multiplies x with a (x := a * x)
+	/** Inplace multiplication: multiplies x with a (x := a * x)
 	 * 
-	 * @param x
-	 * @param a
+	 * @param x the object that is overwritten
+	 * @param a the value that is multiplied to x
 	 */
 	public void mul(T x, double a);
 
 	/**
 	 * copies x (z := x) 
 	 * 
-	 * @param x
-	 * @return z
+	 * @param x The object to be copied
+	 * @return z The new copy of x
 	 */
 	public T copyNew(T x);
 	
 	/**
 	 * inverts x (z := -x)
 	 * 
-	 * @param x
-	 * @return z
+	 * @param x the object to be inverted
+	 * @return z the new, inverted object
 	 */
 	public T invNew(T x);
 	
 	/**
 	 * Adds y and x (z := x + y)
 	 * 
-	 * @param x
-	 * @param y
-	 * @return z
+	 * @param x the first parameter
+	 * @param y the second parameter
+	 * @return z  a new object that holds the result of x + y
 	 */
 	public T addNew(T x, T y);
 
 	/** Subtracts y from x (z := x - y)
 	 * 
-	 * @param x
-	 * @param y
-	 * @return z
+	 * @param x the minuend object
+	 * @param y the subtrahend object
+	 * @return z a new object that holds the result of x - y
 	 */
 	public T subNew(T x, T y);
 	
 	/** multiplies x with a (z := a * x)
 	 * 
-	 * @param a
-	 * @param x
-	 * @return z
+	 * @param x the object that is multiplied
+	 * @param a the factor by which x is multiplied
+	 * @return z a new object that holds the result of a*x
 	 */
 	public T mulNew(T x, double a);
 	
 	/**
 	 * Gets the dimension of the vector space (i.e. number of degrees of freedom, number of linear independent basis vectors)
-	 * Note that the dimension can be positive infinite.
+	 * Note that the dimension can be infinite, in this case the value of this function does not hold any useful information.
 	 * 
 	 * @return the dimension 
+	 * 
+	 * @see VectorSpace#infiniteDimensionality()
 	 */
 	public int getDimension();
+	
+	/**
+	 * In some cases, the dimensionality of the vector space is infinite. In this case, this function has to return true.
+	 * Otherwise, it has to return false. The value of this function determines if the value of the function <code>getDimension()</code>
+	 * is useful or not.
+	 * 
+	 * @return true if the dimensionality of the vector space is infinite, false otherwise.
+	 * 
+	 * @see VectorSpace#getDimension()
+	 */
+	public boolean infiniteDimensionality();
 }
