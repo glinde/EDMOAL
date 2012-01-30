@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import data.objects.doubleArray.DAEuclideanDistance;
+import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -129,7 +129,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		System.out.println("===== Ball Tree =====");
 		System.out.print("Build ball tree structure .. ");
 		milliseconds = -System.currentTimeMillis();
-		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanDistance());
+		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanMetric());
 		ballTree.buildNaive();
 		milliseconds += System.currentTimeMillis();
 		System.out.println("done: "+ milliseconds + "ms");
@@ -204,7 +204,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		System.out.println("===== Centered Ball Tree =====");
 		System.out.print("Build tree structure .. ");
 		milliseconds = -System.currentTimeMillis();
-		CenteredBallTree<double[]> ballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(dim), new DAEuclideanDistance());
+		CenteredBallTree<double[]> ballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(dim), new DAEuclideanMetric());
 		ballTree.buildNaive();
 		milliseconds += System.currentTimeMillis();
 		System.out.println("done: "+ milliseconds + "ms");

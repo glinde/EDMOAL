@@ -47,7 +47,7 @@ import data.algebra.ScalarProduct;
  *
  * @author Roland Winkler
  */
-public class DAEuclideanScalarProduct extends DAEuclideanNorm implements ScalarProduct<double[]>, Serializable
+public class DAStandardScalarProduct extends DAEuclideanNorm implements ScalarProduct<double[]>, Serializable
 {
 
 	/**  */

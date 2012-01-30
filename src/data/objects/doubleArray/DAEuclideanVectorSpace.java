@@ -53,9 +53,9 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	/**  */
 	private static final long	serialVersionUID	= 3177664211525072147L;
 	private DAStandardVectorSpace vectorSpace;
-	private DAEuclideanDistance distance;
+	private DAEuclideanMetric distance;
 	private DAEuclideanNorm norm;
-	private DAEuclideanScalarProduct scalarProduct;
+	private DAStandardScalarProduct scalarProduct;
 	
 	/**
 	 * @param dim
@@ -63,16 +63,16 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	public DAEuclideanVectorSpace(int dim)
 	{
 		this.vectorSpace = new DAStandardVectorSpace(dim);
-		this.distance = new DAEuclideanDistance();
+		this.distance = new DAEuclideanMetric();
 		this.norm = new DAEuclideanNorm();
-		this.scalarProduct = new DAEuclideanScalarProduct();
+		this.scalarProduct = new DAStandardScalarProduct();
 	}
 
 	/**
 	 * @param x
 	 * @param y
 	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanDistance#distance(double[], double[])
+	 * @see data.objects.doubleArray.DAEuclideanMetric#distance(double[], double[])
 	 */
 	public double distance(double[] x, double[] y)
 	{
@@ -83,7 +83,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 * @param x
 	 * @param y
 	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanDistance#distanceSq(double[], double[])
+	 * @see data.objects.doubleArray.DAEuclideanMetric#distanceSq(double[], double[])
 	 */
 	public double distanceSq(double[] x, double[] y)
 	{
@@ -114,7 +114,7 @@ public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[
 	 * @param x
 	 * @param y
 	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanScalarProduct#scalarProduct(double[], double[])
+	 * @see data.objects.doubleArray.DAStandardScalarProduct#scalarProduct(double[], double[])
 	 */
 	public double scalarProduct(double[] x, double[] y)
 	{

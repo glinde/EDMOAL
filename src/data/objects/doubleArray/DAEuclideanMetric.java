@@ -48,7 +48,7 @@ import data.algebra.Metric;
  *
  * @author Roland Winkler
  */
-public class DAEuclideanDistance implements Metric<double[]>, Serializable
+public class DAEuclideanMetric implements Metric<double[]>, Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 8929609989993670728L;

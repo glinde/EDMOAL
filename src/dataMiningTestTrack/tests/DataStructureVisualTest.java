@@ -48,7 +48,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import data.objects.doubleArray.DAEuclideanDistance;
+import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -103,7 +103,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelSets;
 		ArrayList<BallTreeNode<double[]>> nodesOfLevel;
 
-		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanDistance());
+		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanMetric());
 		ballTree.buildNaive();
 		
 
@@ -183,7 +183,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelSets;
 		ArrayList<CenteredBallTreeNode<double[]>> nodesOfLevel;
 
-		CenteredBallTree<double[]> cballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(2), new DAEuclideanDistance());
+		CenteredBallTree<double[]> cballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(2), new DAEuclideanMetric());
 		cballTree.buildNaive();
 		
 
