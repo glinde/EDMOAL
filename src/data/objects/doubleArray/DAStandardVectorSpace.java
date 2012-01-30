@@ -44,7 +44,8 @@ import data.algebra.VectorSpace;
 
 
 /**
- * TODO Class Description
+ * This class implements the VectorSpace interface for double arrays. It is the canonical() straight forwards) implementation as it is
+ * best known as the vector space of finite dimensional real vectors with orthonormal basis. 
  *
  * @author Roland Winkler
  */
@@ -55,8 +56,8 @@ public class DAStandardVectorSpace implements VectorSpace<double[]>, Serializabl
 	/** the dimension of the vector space */
 	protected final int dim;
 	
-	/**
-	 * @param dim
+	/** 
+	 * @param dim The dimension of the vector space. 
 	 */
 	public DAStandardVectorSpace(int dim)
 	{

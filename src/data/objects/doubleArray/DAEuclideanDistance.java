@@ -43,7 +43,8 @@ import data.algebra.Metric;
 
 
 /**
- * TODO Class Description
+ * The standard Euclidean distance for double arrays. This class implements the standard distance calculations for double arrays as they
+ * occur for n-dimensional real vector spaces with orthogonal dimensions.   
  *
  * @author Roland Winkler
  */
@@ -80,10 +81,12 @@ public class DAEuclideanDistance implements Metric<double[]>, Serializable
 	
 	
 	/**
-	 * @param x
-	 * @param y
-	 * @param dim
-	 * @return
+	 * Calculates the Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The distance between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
 	 */
 	public double distance(double[] x, double[] y, int dim)
 	{
@@ -92,10 +95,12 @@ public class DAEuclideanDistance implements Metric<double[]>, Serializable
 
 
 	/**
-	 * @param x
-	 * @param y
-	 * @param dim
-	 * @return
+	 * Calculates the squared Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The distance between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
 	 */
 	public double distanceSq(double[] x, double[] y, int dim)
 	{

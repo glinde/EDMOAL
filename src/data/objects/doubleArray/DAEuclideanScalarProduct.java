@@ -42,7 +42,8 @@ import java.io.Serializable;
 import data.algebra.ScalarProduct;
 
 /**
- * TODO Class Description
+ * The standard scalar product (or dot product, or inner product) for double arrays. This class implements the standard scalar product for double arrays as they
+ * occur for n-dimensional real vector spaces with orthogonal dimensions. 
  *
  * @author Roland Winkler
  */
@@ -69,10 +70,12 @@ public class DAEuclideanScalarProduct extends DAEuclideanNorm implements ScalarP
 	}
 
 	/**
-	 * @param x
-	 * @param y
-	 * @param dim
-	 * @return
+	 * Calculates the scalar product between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The scalar product between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
 	 */
 	public double scalarProduct(double[] x, double[] y, int dim)
 	{

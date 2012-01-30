@@ -43,9 +43,8 @@ import data.algebra.AbstractEuclideanVectorSpace;
 import data.algebra.EuclideanVectorSpace;
 
 /**
- * To avoid too much method-ping-pong, all functions are called directly rather than calling
- * the methods of the abstract superclass.
- * 
+ * The standard Euclidean vector space for double arrays. That is the finite dimensional vector space of real values with orthonormal basis.
+ *  
  * @author Roland Winkler
  *
  */

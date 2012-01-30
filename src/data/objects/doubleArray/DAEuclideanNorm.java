@@ -43,7 +43,8 @@ import data.algebra.Norm;
 
 
 /**
- * TODO Class Description
+ * The standard Euclidean norm for double arrays. This class implements the standard norm for double arrays as they
+ * occur for n-dimensional real vector spaces with orthogonal dimensions.   
  *
  * @author Roland Winkler
  */
@@ -80,20 +81,24 @@ public class DAEuclideanNorm implements Norm<double[]>, Serializable
 
 
 	/**
-	 * @param x
-	 * @param dim
-	 * @return
+	 * Calculates the Euclidean length for double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The length for <code>x</code>, calculated in the first <code>dim</code> dimensions.
 	 */
 	public double length(double[] x, int dim)
 	{
 		return Math.sqrt(this.lengthSq(x));
 	}
 
-	
+
 	/**
-	 * @param x
-	 * @param dim
-	 * @return
+	 * Calculates the squared Euclidean length for double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The length for <code>x</code>, calculated in the first <code>dim</code> dimensions.
 	 */
 	public double lengthSq(double[] x, int dim)
 	{
