@@ -43,7 +43,28 @@ import data.algebra.Metric;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * The point sampling metric provides a distance function for double array sequences. The two involved sequences A and B
+ * do not need to have the same number of segments and they do not need to have the same length.
+ * However, they are required to be valid (all arrays need to have the same number of elements) and both need to have the same
+ * dimensionality.<br>
+ * 
+ * To ensure the independence of length and number of sequence elements, the calculation process is rather costly. First,
+ * both sequences are interpolated at each, n locations which are equally distributed in each sequence individually.
+ * For example, take the two sequences:<br>
+ * 
+ * A: (0, 0) - (1, 1) - (2, 0) and <br>
+ * B: (1, 3) - (0, 1) <br>
+ * 
+ * and the number of interpolation points is 4. Then the interpolation points define two new sequences:<br>
+ * 
+ * A': (0, 0) - (0.667, 0.667) - (1.333, 0.667) - (2, 0) and<br>
+ * B': (1, 3) - (0.667, 2.333) - (0.333, 1.667) - (0, 1) <br>
+ * 
+ * Than the distances between each pair of interpolationpoints is calculated and summed up and finally, divided by the number of
+ * interpolation points: result = 1/n sum_{i=0}^{n-1} dist(A'_i, B'_i).<br>
+ * 
+ * To save memory and reduce dynamic allocation of memory, the interpolated sequences are not calculated all at once, but are rather
+ * calculated piecewise. Distance calculation is in O(2n + A.elem + B.elem).
  *
  * @author Roland Winkler
  */
@@ -51,11 +72,15 @@ public class PointSamplingDistance implements Metric<DoubleArraySequence>, Seria
 {
 	/**  */
 	private static final long	serialVersionUID	= -3808294293183147878L;
+	/** The number of sample points for the interpolated sequences */
 	protected int		numberOfSamplePoints;
 	protected boolean	relativeVectorLength;
 	protected double	relativeLinearFactor;
 	
 	
+	/**
+	 * @param numberOfSamplePoints
+	 */
 	public PointSamplingDistance(int numberOfSamplePoints)
 	{
 		this(numberOfSamplePoints, false, 0.0d);
@@ -70,8 +95,16 @@ public class PointSamplingDistance implements Metric<DoubleArraySequence>, Seria
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see data.DistanceMeasure#distance(java.lang.Object, java.lang.Object)
+	/**
+	 * Calculates the distance between two double array sequences based on two interpolations with the same number of
+	 * interpolation points. The two involved sequences A and B
+	 * do not need to have the same number of segments and they do not need to have the same length.
+	 * However, they are required to be valid (all arrays need to have the same number of elements) and both need to have the same
+	 * dimensionality.
+	 * 
+	 * @param a Sequence a
+	 * @param b Sequence b
+	 * @result The distance between both sequences.
 	 */
 	@Override
 	public double distance(DoubleArraySequence a, DoubleArraySequence b)
@@ -149,8 +182,14 @@ public class PointSamplingDistance implements Metric<DoubleArraySequence>, Seria
 		return distance/((this.relativeVectorLength)?accLength:((double)this.numberOfSamplePoints));
 	}
 
-	/* (non-Javadoc)
-	 * @see data.DistanceMeasure#distanceSq(java.lang.Object, java.lang.Object)
+	/**
+	 * Calculates the squared value of the distance defined by the function <code>distance(DoubleArraySequence, DoubleArraySequence)</code>.
+	 * 
+	 * @param a Sequence a
+	 * @param b Sequence b
+	 * @result The squared distance between both sequences.
+	 * 
+	 * @see PointSamplingDistance#distance(DoubleArraySequence, DoubleArraySequence)
 	 */
 	@Override
 	public double distanceSq(DoubleArraySequence a, DoubleArraySequence b)

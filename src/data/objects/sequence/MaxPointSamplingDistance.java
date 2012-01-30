@@ -43,7 +43,14 @@ import data.algebra.Metric;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * This class provides an implementation of a metric between two double array sequences, similar to the <code>PointSamplingDistance</code>.
+ * The difference is, that not the mean of the distances between two interpolated sequences is calculated, but rather the
+ * maximum.<br>
+ * 
+ * Using a similar calculation process as for <code>PointSamplingDistance</code>, the 
+ * equation changes slightly to: result = max( sum_{i=0}^{n-1} dist(A'_i, B'_i) )
+ * 
+ * @see PointSamplingDistance
  *
  * @author Roland Winkler
  */
@@ -58,8 +65,16 @@ public class MaxPointSamplingDistance implements Metric<DoubleArraySequence>, Se
 		this.numberOfSamplePoints = numberOfSamplePoints;
 	}
 
-	/* (non-Javadoc)
-	 * @see data.DistanceMeasure#distance(java.lang.Object, java.lang.Object)
+	/**
+	 * Calculates the maximal distance between two double array sequences based on two interpolations with the same number of
+	 * interpolation points. The two involved sequences A and B
+	 * do not need to have the same number of segments and they do not need to have the same length.
+	 * However, they are required to be valid (all arrays need to have the same number of elements) and both need to have the same
+	 * dimensionality.
+	 * 
+	 * @param a Sequence a
+	 * @param b Sequence b
+	 * @result The maximal distance between both sequences.
 	 */
 	@Override
 	public double distance(DoubleArraySequence a, DoubleArraySequence b)
@@ -126,8 +141,14 @@ public class MaxPointSamplingDistance implements Metric<DoubleArraySequence>, Se
 		return Math.sqrt(distance);
 	}
 
-	/* (non-Javadoc)
-	 * @see data.DistanceMeasure#distanceSq(java.lang.Object, java.lang.Object)
+	/**
+	 * Calculates the squared value of the distance defined by the function <code>distance(DoubleArraySequence, DoubleArraySequence)</code>.
+	 * 
+	 * @param a Sequence a
+	 * @param b Sequence b
+	 * @result The squared maximal distance between both sequences.
+	 * 
+	 * @see MaxPointSamplingDistance#distance(DoubleArraySequence, DoubleArraySequence)
 	 */
 	@Override
 	public double distanceSq(DoubleArraySequence a, DoubleArraySequence b)
