@@ -55,7 +55,7 @@ public class DAEuclideanMetric implements Metric<double[]>, Serializable
 
 
 	/* (non-Javadoc)
-	 * @see data.distance.Distance#distance(data.objects.DataObject, data.objects.DataObject)
+	 * @see data.algebra.Metric#distance(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public double distance(double[] x, double[] y)
@@ -64,7 +64,7 @@ public class DAEuclideanMetric implements Metric<double[]>, Serializable
 	}
 
 	/* (non-Javadoc)
-	 * @see data.distance.Distance#distanceSq(data.objects.DataObject, data.objects.DataObject)
+	 * @see data.algebra.Metric#distanceSq(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public double distanceSq(double[] x, double[] y)

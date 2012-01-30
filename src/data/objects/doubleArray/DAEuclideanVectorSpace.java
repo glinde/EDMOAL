@@ -39,7 +39,6 @@ package data.objects.doubleArray;
 
 import java.io.Serializable;
 
-import data.algebra.AbstractEuclideanVectorSpace;
 import data.algebra.EuclideanVectorSpace;
 
 /**
@@ -48,217 +47,177 @@ import data.algebra.EuclideanVectorSpace;
  * @author Roland Winkler
  *
  */
-public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[]> implements EuclideanVectorSpace<double[]>, Serializable
+public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements EuclideanVectorSpace<double[]>, Serializable
 {
 	/**  */
-	private static final long	serialVersionUID	= 3177664211525072147L;
-	private DAStandardVectorSpace vectorSpace;
-	private DAEuclideanMetric distance;
-	private DAEuclideanNorm norm;
-	private DAStandardScalarProduct scalarProduct;
-	
+	private static final long	serialVersionUID	= 8043684576211061723L;
+
 	/**
 	 * @param dim
 	 */
 	public DAEuclideanVectorSpace(int dim)
 	{
-		this.vectorSpace = new DAStandardVectorSpace(dim);
-		this.distance = new DAEuclideanMetric();
-		this.norm = new DAEuclideanNorm();
-		this.scalarProduct = new DAStandardScalarProduct();
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanMetric#distance(double[], double[])
-	 */
-	public double distance(double[] x, double[] y)
-	{
-		return distance.distance(x, y, this.vectorSpace.dim);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanMetric#distanceSq(double[], double[])
-	 */
-	public double distanceSq(double[] x, double[] y)
-	{
-		return distance.distanceSq(x, y, this.vectorSpace.dim);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanNorm#length(double[])
-	 */
-	public double length(double[] x)
-	{
-		return norm.length(x, this.vectorSpace.dim);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanNorm#lengthSq(double[])
-	 */
-	public double lengthSq(double[] x)
-	{
-		return norm.lengthSq(x, this.vectorSpace.dim);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardScalarProduct#scalarProduct(double[], double[])
-	 */
-	public double scalarProduct(double[] x, double[] y)
-	{
-		return scalarProduct.scalarProduct(x, y, this.vectorSpace.dim);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#add(double[], double[])
-	 */
-	public void add(double[] x, double[] y)
-	{
-		this.vectorSpace.add(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#addNew(double[], double[])
-	 */
-	public double[] addNew(double[] x, double[] y)
-	{
-		return this.vectorSpace.addNew(x, y);
-	}
-
-	/**
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#newAddNeutralElement()
-	 */
-	public double[] getNewAddNeutralElement()
-	{
-		return this.vectorSpace.getNewAddNeutralElement();
-	}	
-
-	/**
-	 * @param x
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#resetToAddNeutralElement(double[])
-	 */
-	public void resetToAddNeutralElement(double[] x)
-	{
-		this.vectorSpace.resetToAddNeutralElement(x);
-	}
-
-	/**
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#getDimension()
-	 */
-	public int getDimension()
-	{
-		return this.vectorSpace.getDimension();
-	}
-
-	/**
-	 * @param x
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#inv(double[])
-	 */
-	public void inv(double[] x)
-	{
-		this.vectorSpace.inv(x);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#invNew(double[])
-	 */
-	public double[] invNew(double[] x)
-	{
-		return this.vectorSpace.invNew(x);
-	}
-
-	
-
-	/**
-	 * @param x
-	 * @param a
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#mul(double[], double)
-	 */
-	public void mul(double[] x, double a)
-	{
-		this.vectorSpace.mul(x, a);
-	}
-
-	/**
-	 * @param x
-	 * @param a
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#mulNew(double[], double)
-	 */
-	public double[] mulNew(double[] x, double a)
-	{
-		return this.vectorSpace.mulNew(x, a);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#sub(double[], double[])
-	 */
-	public void sub(double[] x, double[] y)
-	{
-		this.vectorSpace.sub(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#subNew(double[], double[])
-	 */
-	public double[] subNew(double[] x, double[] y)
-	{
-		return this.vectorSpace.subNew(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#copy(double[], double[])
-	 */
-	public void copy(double[] x, double[] y)
-	{
-		this.vectorSpace.copy(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#copyNew(double[])
-	 */
-	public double[] copyNew(double[] x)
-	{
-		return this.vectorSpace.copyNew(x);
+		super(dim);
 	}
 
 	/* (non-Javadoc)
-	 * @see data.algebra.VectorSpace#infiniteDimensionality()
+	 * @see data.algebra.Metric#distance(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public boolean infiniteDimensionality()
+	public double distance(double[] x, double[] y)
 	{
-		return this.vectorSpace.infiniteDimensionality();
+		return Math.sqrt(this.distanceSq(x, y));
+	}
+
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distanceSq(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public double distanceSq(double[] x, double[] y)
+	{
+		double dist = 0.0d;
+		
+		for(int i=0; i<x.length && i<y.length; i++)
+		{
+			dist += (x[i]-y[i])*(x[i]-y[i]);
+		}
+		
+		return dist;
+	}
+	
+	
+	/**
+	 * Calculates the Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The distance between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
+	 */
+	public double distance(double[] x, double[] y, int dim)
+	{
+		return Math.sqrt(this.distanceSq(x, y, dim));
+	}
+
+
+	/**
+	 * Calculates the squared Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The distance between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
+	 */
+	public double distanceSq(double[] x, double[] y, int dim)
+	{
+		double dist = 0.0d;
+		
+		if(x.length < dim || y.length < dim) throw new IllegalArgumentException("The number of elements in x and y must be at least dim.");
+		
+		for(int i=0; i<dim; i++)
+		{
+			dist += (x[i]-y[i])*(x[i]-y[i]);
+		}
+		
+		return dist;
+	}	
+
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#length(data.objects.DataObject)
+	 */
+	@Override
+	public double length(double[] x)
+	{
+		return Math.sqrt(this.lengthSq(x));
+	}
+
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#lengthSq(data.objects.DataObject)
+	 */
+	@Override
+	public double lengthSq(double[] x)
+	{
+		double length = 0.0d;
+		
+		for(int i=0; i<x.length; i++)
+		{
+			length += x[i]*x[i];
+		}
+		
+		return length;
+	}
+
+
+	/**
+	 * Calculates the Euclidean length for double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The length for <code>x</code>, calculated in the first <code>dim</code> dimensions.
+	 */
+	public double length(double[] x, int dim)
+	{
+		return Math.sqrt(this.lengthSq(x));
+	}
+
+
+	/**
+	 * Calculates the squared Euclidean length for double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The length for <code>x</code>, calculated in the first <code>dim</code> dimensions.
+	 */
+	public double lengthSq(double[] x, int dim)
+	{
+		double length = 0.0d;
+		
+		if(x.length < dim) throw new IllegalArgumentException("The number of elements in x must be at least dim.");
+		
+		for(int i=0; i<dim; i++)
+		{
+			length += x[i]*x[i];
+		}
+		
+		return length;
+	}
+
+	/* (non-Javadoc)
+	 * @see data.algebra.ScalarProduct#scalarProduct(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public double scalarProduct(double[] x, double[] y)
+	{
+		double prod = 0.0d;
+		
+		for(int i=0; i<x.length && i<y.length; i++)
+		{
+			prod += x[i]*y[i];
+		}
+		
+		return prod;
+	}
+
+	/**
+	 * Calculates the scalar product between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @param dim The number of dimensions that should be used for calculation
+	 * @return The scalar product between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
+	 */
+	public double scalarProduct(double[] x, double[] y, int dim)
+	{
+		double prod = 0.0d;
+		
+		if(x.length < dim || y.length < dim) throw new IllegalArgumentException("The number of elements in x and y must be at least dim.");
+		
+		for(int i=0; i<dim; i++)
+		{
+			prod += x[i]*y[i];
+		}
+		
+		return prod;
 	}
 	
 }
