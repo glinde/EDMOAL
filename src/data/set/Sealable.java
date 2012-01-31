@@ -38,8 +38,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.set;
 
 /**
- * TODO Class Description
- *
+ * The interface for a static data structure. After the data structure is build, nofurther changes are allowed.
+ * Therefore, it is sealed. Any attempt in changing the data structure should result in a <code>ChangeNotAllowedException</code>.
+ * The change counter counts the current number of registered changes.
+ * 
+ * @see ChangeNotAllowedException
  * @author Roland Winkler
  */
 public interface Sealable
@@ -53,7 +56,11 @@ public interface Sealable
 	public boolean isSealed();
 	
 	/** 
-	 * Registers a change of the instance (increments the change counter)
+	 * Registers a change of the instance (increments the change counter). This function should be called
+	 * BEFORE any change actually takes place. Registering a change without changing anything is not regarded as harmful.
+	 * On the other hand, changing something and not registering it is regarded as harmful. The implementation of this function
+	 * is also supposed to check whether a change is allowed (which is the case if the object is not jut sealed). If it is 
+	 * sealed, this function produces a <code>ChangeNotAllowedException</code>.
 	 * 
 	 * @throws ChangeNotAllowedException if the instance is sealed.
 	 */
