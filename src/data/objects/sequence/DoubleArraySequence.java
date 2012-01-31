@@ -50,7 +50,8 @@ import etc.MyMath;
  * comparing multidimensional time series or similar data.<br>
  * 
  * When using this class, take care that all elements of the sequence hold arrays of the same length as this is not checked by this class
- * due to performance savings.
+ * due to performance savings. This class is just a wrapper class for a list of double arrays, it does not mask any information.
+ * It is only providing additional functionality w.r.t. the data stored as double array sequence.
  *
  * @author Roland Winkler
  */
@@ -59,7 +60,7 @@ public class DoubleArraySequence implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -2873026221012051790L;
 	
-	/** The sequence of double arrays */
+	/** The sequence of double arrays, it is public because there is no need to hide the data. */
 	public ArrayList<double[]> sq;
 	
 	/**
