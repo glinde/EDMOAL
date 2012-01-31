@@ -48,9 +48,6 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
 
-import com.sun.org.apache.bcel.internal.classfile.Code;
-
-
 /**
  * Together with the IndexedDataObject, this class is the backbone of the entire data analysis structure.
  * The indexed data set is designed to give a fast two-way index information about a data object.
