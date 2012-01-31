@@ -42,7 +42,7 @@ package data.set;
  *
  * @author Roland Winkler
  */
-public class ChangeNotAllowedException extends RuntimeException
+public class ChangeNotAllowedException extends UnsupportedOperationException
 {
 	/**  */
 	private static final long	serialVersionUID	= 2649010021902043363L;

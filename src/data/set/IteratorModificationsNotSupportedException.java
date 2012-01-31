@@ -42,7 +42,7 @@ package data.set;
  *
  * @author Roland Winkler
  */
-public class IteratorModificationsNotSupportedException extends RuntimeException
+public class IteratorModificationsNotSupportedException extends UnsupportedOperationException
 {
 
 	/**  */
