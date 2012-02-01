@@ -38,9 +38,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.set;
 
 /**
- * TODO Class Description
+ * This exception is thrown to indicate that an algorithm requires a sealed object, that is not sealed.
+ * Instead of just sealing the object uncontrolled, the exception is thrown. 
  *
  * @author Roland Winkler
+ * 
+ * @see Sealable
  */
 public class DataSetNotSealedException extends RuntimeException
 {
@@ -49,44 +52,66 @@ public class DataSetNotSealedException extends RuntimeException
 	private static final long	serialVersionUID	= 2781795903471002959L;
 
 	/**
-	 * 
-	 */
+	 * Constructor without any details.
+     * 
+     * @see RuntimeException
+     */
 	public DataSetNotSealedException()
 	{
 		super();
 	}
-
-	/**
-	 * @param message
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace
-	 */
+	
+	
+    /**
+     * Constructs a new <code>DataSetNotSealedException</code> with the specified detail
+     * message, cause, suppression enabled or disabled, and writable
+     * stack trace enabled or disabled.
+     *
+     * @param message the detail message
+     * @param cause the cause
+     * @param enableSuppression whether or not suppression is enabled or disabled
+     * @param writableStackTrace whether or not the stack trace should be writable
+     * 
+     * @see RuntimeException
+     */
 	public DataSetNotSealedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
 	{
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
+    /**
+     * Constructs a new runtime exception with the specified detail message and
+     * cause.
+     *
+     * @param message the detail message
+     * @param cause the cause 
+     * 
+     * @see RuntimeException
+     */
 	public DataSetNotSealedException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	/**
-	 * @param message
-	 */
+    /**
+     * Constructs a new runtime exception with the specified detail message.
+     *
+     * @param message the detail message
+     * 
+     * @see RuntimeException
+     */
 	public DataSetNotSealedException(String message)
 	{
 		super(message);
 	}
 
-	/**
-	 * @param cause
-	 */
+
+    /** Constructs a new <code>DataSetNotSealedException</code> with the specified cause.
+     *
+     * @param cause the cause
+     * 
+     * @see RuntimeException
+     */
 	public DataSetNotSealedException(Throwable cause)
 	{
 		super(cause);

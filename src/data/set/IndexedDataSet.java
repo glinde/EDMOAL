@@ -49,20 +49,29 @@ import java.util.RandomAccess;
 import java.util.Set;
 
 /**
- * Together with the IndexedDataObject, this class is the backbone of the entire data analysis structure.
- * The indexed data set is designed to give a fast two-way index information about a data object.
- * Any IndexedDataObject, stored in this IndexedDataSet, is also storing its own index in this list.<br>
+ * Together with the <code>IndexedDataObject</code>, this class is the backbone of the entire data analysis structure.
+ * The class is designed to give a fast two-way index information about a data object.
+ * Data in the EDMOAL project should always be organized in a <code>IndexedDataSet</code> and all
+ * classes and methods concerned with the organization of the data should also store these container classes.<br>
  * 
- * This class ensures an integrity of data object indices.
+ * The reason for this is the index integrity <code>IndexedDataObject</code> and <code>IndexedDataSet</code> provides.
+ * This is a design decision that is done to simplify the handling of data for many different algorithms. If an
+ * algorithm wants to provide additional information for a data set (for example a classification),
+ * it just needs to provide a list, containing this additional data. The raw data is unaffected. This way, many
+ * different algorithms can simultaneously provide different information for the same data set. The
+ * index integrity of the <code>IndexedDataSet</code> guarantees, that the additional information is valid
+ * if the data set is sealed. <br>
+ * 
+ * Index integrity means, this class guarantees a 1:1 relationship between indices and data objects, once it is sealed.
  * It is not possible to have the same data object in more than one data set.
  * It is not possible to have the same data object multiple times in a data set.
- * It is however possible to have multiple data objects with the same content (but different index). <br>
+ * It is however possible to have multiple data objects with the same content (but different index) which essencially
+ * means, that the data object is available multiple times in the data set. <br>
  * 
- * This class is essentially an container for the <code>ArrayList</code> class and implements the <code>List</code> Interface.
- * However, it masks all functionality of <code>ArrayList</code> w.r.t. the integrity of the indeces of its
- * IndexedDataObejcts and it provides the Sealable functionality. Note that also the iterator is affected by
- * that because it can be used to change the contents of a list. 
- * 
+ * This class is essentially an container for the <code>ArrayList</code> class and implements the <code>List</code> and
+ * <code>Set</code> interfaces. However, it masks all functionality of <code>ArrayList</code> w.r.t. the integrity
+ * of the indices of its <code>IndexedDataObejcts</code> and it provides the <code>Sealable</code> functionality.
+ * Note that also the iterator is affected by that because it can be used to change the contents of a list. 
  * 
  * @see IndexedDataObject
  * @author Roland Winkler

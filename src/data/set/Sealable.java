@@ -38,7 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.set;
 
 /**
- * The interface for a static data structure. After the data structure is build, nofurther changes are allowed.
+ * The interface for a static data structure. After the data structure is build, no further changes are allowed.
  * Therefore, it is sealed. Any attempt in changing the data structure should result in a <code>ChangeNotAllowedException</code>.
  * The change counter counts the current number of registered changes.
  * 

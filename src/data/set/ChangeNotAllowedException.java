@@ -38,9 +38,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.set;
 
 /**
- * TODO Class Description
+ * This exception indicates that there was an attempt to modify a sealed object.
  *
  * @author Roland Winkler
+ * 
+ * @see Sealable
  */
 public class ChangeNotAllowedException extends UnsupportedOperationException
 {
@@ -48,33 +50,47 @@ public class ChangeNotAllowedException extends UnsupportedOperationException
 	private static final long	serialVersionUID	= 2649010021902043363L;
 
 	/**
-	 * 
+     * Constructs an IteratorModificationsNotSupportedException with no details.
+     * 
+     * @see UnsupportedOperationException
 	 */
 	public ChangeNotAllowedException()
 	{
 		super();
 	}
 
-	/**
-	 * @param message
-	 * @param cause
+    /**
+     * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param  message the detail message
+     * @param  cause the cause 
+     * 
+     * @see UnsupportedOperationException
 	 */
 	public ChangeNotAllowedException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
-
-	/**
-	 * @param message
-	 */
+	
+	
+    /**
+     * Constructs an IteratorModificationsNotSupportedException with the specified detail message.
+     *
+     * @param message the detail message
+     * 
+     * @see UnsupportedOperationException
+     */
 	public ChangeNotAllowedException(String message)
 	{
 		super(message);
 	}
 
-	/**
-	 * @param cause
-	 */
+
+    /**
+     * Constructs a new exception with the specified cause.
+     *
+     * @param  cause the cause
+     */
 	public ChangeNotAllowedException(Throwable cause)
 	{
 		super(cause);

@@ -40,7 +40,9 @@ package data.set;
 import java.io.Serializable;
 
 /**
- * TODO Class Description
+ * An abstract implementation for <code>Sealable</code> objects. It provides all functionalities
+ * connected to the <code>Sealable</code> interface. All functions, modifying any field of the
+ * subclass just need to call {@link Sealable#registerChange()}.
  *
  * @author Roland Winkler
  */
@@ -50,15 +52,13 @@ public abstract class AbstractSealable implements Sealable, Serializable
 	/**  */
 	private static final long	serialVersionUID	= -4169070675125392714L;
 
-	/**  */
+	/** A counter for the number of changes to this object */
 	private transient long changeCounter;
 	
-	/**  */
+	/** Indicates whether or not this object is sealed. */
 	private boolean sealed; 
 
-	/**
-	 * 
-	 */
+	/** Returns a new AbstractSealable object with 0 modifications. */
 	public AbstractSealable()
 	{
 		this.changeCounter = 0L;
@@ -69,7 +69,7 @@ public abstract class AbstractSealable implements Sealable, Serializable
 	/* (non-Javadoc)
 	 * @see data.set.Sealable#registerChange()
 	 */
-	public void registerChange() throws ChangeNotAllowedException
+	public final void registerChange() throws ChangeNotAllowedException
 	{
 		if(this.sealed) throw new ChangeNotAllowedException("The instance is sealed and can not be changed any more.");
 		
