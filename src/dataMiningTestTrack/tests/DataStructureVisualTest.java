@@ -52,10 +52,10 @@ import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.BallTree;
-import data.set.structures.BallTreeNode;
-import data.set.structures.CenteredBallTree;
-import data.set.structures.CenteredBallTreeNode;
+import data.structures.balltree.BallTree;
+import data.structures.balltree.BallTreeNode;
+import data.structures.balltree.CenteredBallTree;
+import data.structures.balltree.CenteredBallTreeNode;
 import etc.DataGenerator;
 
 

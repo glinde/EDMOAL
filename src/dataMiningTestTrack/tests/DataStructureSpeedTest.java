@@ -46,8 +46,8 @@ import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.BallTree;
-import data.set.structures.CenteredBallTree;
+import data.structures.balltree.BallTree;
+import data.structures.balltree.CenteredBallTree;
 import etc.DataGenerator;
 import etc.DataManipulator;
 

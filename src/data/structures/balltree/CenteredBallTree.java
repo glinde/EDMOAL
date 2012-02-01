@@ -35,7 +35,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-package data.set.structures;
+package data.structures.balltree;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,9 +46,11 @@ import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.order.OrderedDataObject;
-import data.set.structures.queries.KNNQueryProvider;
-import data.set.structures.queries.SphereQueryProvider;
+import data.structures.AbstractTree;
+import data.structures.DataStructureNotBuildException;
+import data.structures.order.OrderedDataObject;
+import data.structures.queries.KNNQueryProvider;
+import data.structures.queries.SphereQueryProvider;
 
 /**
  * TODO Class Description

@@ -35,7 +35,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-package data;
+package data.structures;
 
 import java.io.Serializable;
 

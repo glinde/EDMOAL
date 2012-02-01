@@ -46,7 +46,7 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.BallTree;
+import data.structures.balltree.BallTree;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import etc.MyMath;

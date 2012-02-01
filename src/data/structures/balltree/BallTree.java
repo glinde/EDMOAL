@@ -35,7 +35,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-package data.set.structures;
+package data.structures.balltree;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,9 +46,11 @@ import data.algebra.Metric;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.order.OrderedDataObject;
-import data.set.structures.queries.KNNQueryProvider;
-import data.set.structures.queries.SphereQueryProvider;
+import data.structures.AbstractTree;
+import data.structures.DataStructureNotBuildException;
+import data.structures.order.OrderedDataObject;
+import data.structures.queries.KNNQueryProvider;
+import data.structures.queries.SphereQueryProvider;
 
 /**
  * TODO Class Description
@@ -157,7 +159,7 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 			queue.add(new OrderedDataObject<T>(null, Double.NEGATIVE_INFINITY));
 		}
 		
-		this.root.kNNQuery(queue, centre, k, this.distanceFunction.distance(this.root.obj.element, centre));
+		this.root.kNNQuery(queue, centre, k, this.distanceFunction.distance(this.root.getObj().element, centre));
 		
 		// reverse the order for returning the result so it is in ascending order w.r.t. to the distances.
 		while(!queue.isEmpty()) reversedResult.add(queue.poll().dataObject);
