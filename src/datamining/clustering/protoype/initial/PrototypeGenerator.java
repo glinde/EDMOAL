@@ -133,7 +133,7 @@ public class PrototypeGenerator<T> implements Serializable
 
 		for(i=0; i<number; i++)
 		{
-			prototypes.add(new Centroid<T>(this.vs, possiblePositions.get(this.rand.nextInt(possiblePositions.size())).element));
+			prototypes.add(new Centroid<T>(this.vs, possiblePositions.get(this.rand.nextInt(possiblePositions.size())).x));
 		}
 		
 		return prototypes;

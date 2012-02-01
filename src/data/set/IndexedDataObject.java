@@ -83,7 +83,7 @@ public class IndexedDataObject<T> implements Serializable, Comparable<IndexedDat
 	private static final long	serialVersionUID	= 60723425937211221L;
 
 	/** The data object that is stored in this container */
-	public T element;
+	public final T x;
 	
 	/** The index of the data object */
 	private int id;
@@ -96,7 +96,7 @@ public class IndexedDataObject<T> implements Serializable, Comparable<IndexedDat
 	{
 		this.id = -1;
 		this.dataSet = null;
-		this.element = element;
+		this.x = element;
 	}
 
 	/**

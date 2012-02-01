@@ -187,7 +187,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 			
 			// get all nearby data objects 
 			cluster.clear();
-			this.sphereQueryProvider.sphereQuery(cluster, d.element, this.coreDist);
+			this.sphereQueryProvider.sphereQuery(cluster, d.x, this.coreDist);
 			
 			// if the nearby data objects are not enough to form a cluster, d is noise and the algorithm continues with the next data object
 			if(cluster.size() < this.coreNum)
@@ -207,7 +207,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 			{
 				current = cluster.pollFirst(); 
 				query.clear();
-				this.sphereQueryProvider.sphereQuery(query, current.element, this.coreDist);
+				this.sphereQueryProvider.sphereQuery(query, current.x, this.coreDist);
 				if(query.size() >= this.coreNum)
 				{
 					for(IndexedDataObject<T> q:query)

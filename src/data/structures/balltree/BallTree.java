@@ -119,7 +119,7 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 		while(dataSetIterator.hasNext())
 		{
 			next = dataSetIterator.next();
-			this.root.addNaive(next, this.distanceFunction.distance(this.root.getObj().element, next.element));
+			this.root.addNaive(next, this.distanceFunction.distance(this.root.getObj().x, next.x));
 		}
 
 		this.build = true;
@@ -159,7 +159,7 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 			queue.add(new OrderedDataObject<T>(null, Double.NEGATIVE_INFINITY));
 		}
 		
-		this.root.kNNQuery(queue, centre, k, this.distanceFunction.distance(this.root.getObj().element, centre));
+		this.root.kNNQuery(queue, centre, k, this.distanceFunction.distance(this.root.getObj().x, centre));
 		
 		// reverse the order for returning the result so it is in ascending order w.r.t. to the distances.
 		while(!queue.isEmpty()) reversedResult.add(queue.poll().dataObject);

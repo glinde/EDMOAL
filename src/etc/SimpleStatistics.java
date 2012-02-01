@@ -71,10 +71,10 @@ public class SimpleStatistics implements Serializable
 		
 		for(IndexedDataObject<double[]> d : data)
 		{
-			if(mean==null) mean = d.element.clone();
+			if(mean==null) mean = d.x.clone();
 			else
 			{
-				for(int k=0; k<mean.length; k++) mean[k] += d.element[k];
+				for(int k=0; k<mean.length; k++) mean[k] += d.x[k];
 			}
 		}
 		for(int k=0; k<mean.length; k++) mean[k] /= data.size();
@@ -103,7 +103,7 @@ public class SimpleStatistics implements Serializable
 	{
 		int i, k, m=data.size()/2;
 		double[][] list = new double[data.size()][];		
-		i=0; for(IndexedDataObject<double[]> d: data)	{ list[i] = d.element; i++;	}
+		i=0; for(IndexedDataObject<double[]> d: data)	{ list[i] = d.x; i++;	}
 		double[] median = new double[list[0].length];
 		ArrayIndexComparator aiComp = new ArrayIndexComparator(0);
 				
@@ -210,20 +210,20 @@ public class SimpleStatistics implements Serializable
 		{
 			if(upperLeft == null)
 			{
-				upperLeft = new double[x.element.length];
-				lowerRight = new double[x.element.length];
+				upperLeft = new double[x.x.length];
+				lowerRight = new double[x.x.length];
 				
-				for(int k=0; k<x.element.length; k++)
+				for(int k=0; k<x.x.length; k++)
 				{
 					upperLeft[k] = -Double.MAX_VALUE;
 					lowerRight[k] = Double.MAX_VALUE;
 				}
 			}
 			
-			for(int k=0; k<x.element.length; k++)
+			for(int k=0; k<x.x.length; k++)
 			{
-				if(upperLeft[k] < x.element[k]) upperLeft[k] = x.element[k];
-				if(lowerRight[k] > x.element[k]) lowerRight[k] = x.element[k];
+				if(upperLeft[k] < x.x[k]) upperLeft[k] = x.x[k];
+				if(lowerRight[k] > x.x[k]) lowerRight[k] = x.x[k];
 			}
 		}
 		

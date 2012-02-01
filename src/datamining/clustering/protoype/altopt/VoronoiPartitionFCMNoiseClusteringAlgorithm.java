@@ -145,7 +145,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 				for(i=0; i<this.getClusterCount(); i++)
 				{
 					this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-					this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).element);
+					this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
 					unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 
 					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
@@ -224,7 +224,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
 					membershipSum[i] += doubleTMP;
 
-					this.vs.copy(tmpX, this.data.get(j).element);
+					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}
@@ -307,7 +307,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).element);
+				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
 				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
@@ -424,7 +424,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).element);
+				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
 				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
@@ -543,7 +543,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).element);
+				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
 				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
@@ -655,7 +655,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		for(i=0; i<this.getClusterCount(); i++)
 		{
 			this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.element);
+			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
 			unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
@@ -774,7 +774,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).element);
+				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
 				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 	
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
@@ -860,7 +860,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		for(i=0; i<this.getClusterCount(); i++)
 		{
 			this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.element);
+			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
 			unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
 
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;

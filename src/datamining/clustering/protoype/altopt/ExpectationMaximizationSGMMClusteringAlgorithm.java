@@ -134,7 +134,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				this.conditionalProbabilities.get(j)[i] = this.clusterProbability[i];
-				this.conditionalProbabilities.get(j)[i] *= this.prototypes.get(i).density(this.getDataSet().get(j).element);
+				this.conditionalProbabilities.get(j)[i] *= this.prototypes.get(i).density(this.getDataSet().get(j).x);
 				doubleTMP += this.conditionalProbabilities.get(j)[i];
 			}
 			doubleTMP = 1.0d/doubleTMP;
@@ -245,7 +245,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 				for(i=0; i<this.getClusterCount(); i++)
 				{
 					this.conditionalProbabilities.get(j)[i] = this.clusterProbability[i];
-					this.conditionalProbabilities.get(j)[i] *= this.prototypes.get(i).density(this.getDataSet().get(j).element);
+					this.conditionalProbabilities.get(j)[i] *= this.prototypes.get(i).density(this.getDataSet().get(j).x);
 					doubleTMP += this.conditionalProbabilities.get(j)[i];
 					if(Double.isNaN(this.conditionalProbabilities.get(j)[i]))
 						System.out.println("MOEOEOEP 1");
@@ -279,7 +279,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			{
 				for(i=0; i<this.getClusterCount(); i++) 
 				{				
-					this.vs.copy(tmpX, this.data.get(j).element);
+					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, this.conditionalProbabilities.get(j)[i]);
 					this.vs.add(newExpectationValues.get(i), tmpX);
 				}
@@ -313,7 +313,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 				doubleTMP = 0.0d;				
 				for(j=0; j<this.getDataCount(); j++)
 				{
-					doubleTMP += this.conditionalProbabilities.get(j)[i] *  this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+					doubleTMP += this.conditionalProbabilities.get(j)[i] *  this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				}
 				doubleTMP *= invCondDOProbSum[i] / ((double)this.vs.getDimension());
 
@@ -360,7 +360,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 
 			for(j=0; j<this.getDataCount(); j++)	
 			{
-				objectiveFunctionValue += this.conditionalProbabilities.get(j)[i] * (doubleTMP - 0.5d*this.dist.distanceSq(this.prototypes.get(i).getPosition(), this.data.get(j).element)/this.prototypes.get(i).getVariance());
+				objectiveFunctionValue += this.conditionalProbabilities.get(j)[i] * (doubleTMP - 0.5d*this.dist.distanceSq(this.prototypes.get(i).getPosition(), this.data.get(j).x)/this.prototypes.get(i).getVariance());
 			}
 		}
 		

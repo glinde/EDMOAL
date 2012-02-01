@@ -135,7 +135,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// add circles
 				graphicsCircle = new GCircle(null);
 				graphicsCluster.addChild(graphicsCircle);
-				graphicsCircle.setCenter(nodesOfLevel.get(i).getObj().element);
+				graphicsCircle.setCenter(nodesOfLevel.get(i).getObj().x);
 				graphicsCircle.setRadius(nodesOfLevel.get(i).getRadius());
 				graphicsCircle.getScheme().setColor(graphicsCircle.getBorderColorIndex(), ColorList.RED);
 				graphicsCircle.setDrawInternal(false);
@@ -144,7 +144,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// show center of circle
 				template = new DrawableTemplate(null, new GeomTemplate(GeomTemplate.FILL_CIRCLE));
 				graphicsCluster.addChild(template);
-				template.setPosition(nodesOfLevel.get(i).getObj().element);
+				template.setPosition(nodesOfLevel.get(i).getObj().x);
 				template.getBody().setPixelSize(32.0d);
 				template.getScheme().setColor(template.getBody().getInternalColorIndex(), ColorList.RED);
 				template.getScheme().setColor(template.getBody().getBorderColorIndex(), ColorList.BLACK);
@@ -153,7 +153,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// show node object
 				template = new DrawableTemplate(null, new GeomTemplate(GeomTemplate.FILL_CROSS));
 				graphicsCluster.addChild(template);
-				template.setPosition(nodesOfLevel.get(i).getObj().element);
+				template.setPosition(nodesOfLevel.get(i).getObj().x);
 				template.getBody().setPixelSize(16.0d);
 				template.getScheme().setColor(template.getBody().getInternalColorIndex(), ColorList.RED);
 				template.getScheme().setColor(template.getBody().getBorderColorIndex(), ColorList.BLACK);
@@ -233,7 +233,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// show node object
 				template = new DrawableTemplate(null, new GeomTemplate(GeomTemplate.FILL_CROSS));
 				graphicsCluster.addChild(template);
-				template.setPosition(nodesOfLevel.get(i).getObj().element);
+				template.setPosition(nodesOfLevel.get(i).getObj().x);
 				template.getBody().setPixelSize(16.0d);
 				template.getScheme().setColor(template.getBody().getInternalColorIndex(), ColorList.RED);
 				template.getScheme().setColor(template.getBody().getBorderColorIndex(), ColorList.BLACK);

@@ -146,8 +146,8 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 		{				
 			for(k=0; k<dimension; k++)
 			{
-				if(lowerCorner[k] > d.element[k]) lowerCorner[k] = d.element[k];
-				if(upperCorner[k] < d.element[k]) upperCorner[k] = d.element[k];
+				if(lowerCorner[k] > d.x[k]) lowerCorner[k] = d.x[k];
+				if(upperCorner[k] < d.x[k]) upperCorner[k] = d.x[k];
 			}
 		}
 	
@@ -216,14 +216,14 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 		
 		for(IndexedDataObject<double[]> d:data)
 		{
-			this.vs.add(exp, d.element);
+			this.vs.add(exp, d.x);
 		}
 
 		this.vs.mul(exp, invDataCount);
 		
 		for(IndexedDataObject<double[]> d:data)
 		{
-			variance += dist.distanceSq(exp, d.element);
+			variance += dist.distanceSq(exp, d.x);
 		}
 		
 		variance /= ((double)(data.size()+1));

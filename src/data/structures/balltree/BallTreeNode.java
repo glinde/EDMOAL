@@ -122,8 +122,8 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		}
 		
 		// this node has two childs and the data object needs to be put in the subtree with closest local root.
-		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().element, dataObj.element);
-		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.getObj().element, dataObj.element);
+		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().x, dataObj.x);
+		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.getObj().x, dataObj.x);
 		
 		if(distanceA <= distanceB) this.leftChild.addNaive(dataObj, distanceA);
 		else					   this.rightChild.addNaive(dataObj, distanceB);
@@ -140,7 +140,7 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 	 */
 	public void sphereQuery(Collection<IndexedDataObject<T>> result, T queryCenter, double queryRadius)
 	{
-		double distToCentre = this.tree.getDistanceFunction().distance(this.obj.element, queryCenter);
+		double distToCentre = this.tree.getDistanceFunction().distance(this.obj.x, queryCenter);
 		
 		// if the query ball does not intersects the local subset ball, do nothing
 		if(distToCentre > queryRadius + this.getRadius()) return;
@@ -202,7 +202,7 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		// if rightChild is null and leftChild is not, only test leftChild for recursion
 		if(this.rightChild == null)
 		{
-			distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().element, query);
+			distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().x, query);
 			
 			// if the farthest so far observed data object is further away than the closest potential data object from the child, do recursion.
 			if(distanceA - this.leftChild.radius < -queue.peek().compare) this.leftChild.kNNQuery(queue, query, k, distanceA);
@@ -211,8 +211,8 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		}
 
 		// this node has two childs, recurse with the one closer to the data object first, then with the other.
-		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().element, query);
-		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.getObj().element, query);
+		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().x, query);
+		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.getObj().x, query);
 		
 		// start recursion with the closer child node but check for both if a recursion is really necessary
 		if(distanceA <= distanceB)

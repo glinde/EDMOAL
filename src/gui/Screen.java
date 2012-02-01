@@ -294,11 +294,11 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 		{
 			if(first)
 			{
-				upperRight = p.element.clone();
-				lowerLeft = p.element.clone();
+				upperRight = p.x.clone();
+				lowerLeft = p.x.clone();
 				if(pCol.size()==1)
 				{
-					this.centerScreenTo(p.element);
+					this.centerScreenTo(p.x);
 					return;
 				}
 				
@@ -306,10 +306,10 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 				continue;
 			}
 			
-			if(p.element[0] > upperRight[0]) upperRight[0] = p.element[0];
-			if(p.element[1] > upperRight[1]) upperRight[1] = p.element[1];
-			if(p.element[0] < lowerLeft[0]) lowerLeft[0] = p.element[0];
-			if(p.element[1] < lowerLeft[1]) lowerLeft[1] = p.element[1];
+			if(p.x[0] > upperRight[0]) upperRight[0] = p.x[0];
+			if(p.x[1] > upperRight[1]) upperRight[1] = p.x[1];
+			if(p.x[0] < lowerLeft[0]) lowerLeft[0] = p.x[0];
+			if(p.x[1] < lowerLeft[1]) lowerLeft[1] = p.x[1];
 		}
 		
 		center[0] = 0.5d*(upperRight[0]+lowerLeft[0]);

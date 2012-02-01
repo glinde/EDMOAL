@@ -70,7 +70,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 	{
 		super(tree, parent, obj);
 
-		this.centerOfGravity = this.tree.vectorSpace.copyNew(obj.element); 
+		this.centerOfGravity = this.tree.vectorSpace.copyNew(obj.x); 
 		this.radius = 0.0d;
 	}
 	
@@ -93,7 +93,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		for(IndexedDataObject<T> d:subtreeElements)
 		{
 			// if the new data object is equivalent to this one
-			if(this.tree.distanceFunction.distance(this.obj.element, d.element) == 0.0d)
+			if(this.tree.distanceFunction.distance(this.obj.x, d.x) == 0.0d)
 			{
 				// if this data object is this data object
 				if(this.obj.equals(d)) throw new IllegalArgumentException("Data Object multiple times added! id: " + this.obj.getID());
@@ -112,12 +112,12 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 				// if the data object is not contained in equivalents, add it to equivalents and take t into account for the center calculation.
 				this.size++;
 				this.equivalents.add(d);
-				this.tree.vectorSpace.add(this.centerOfGravity, d.element);
+				this.tree.vectorSpace.add(this.centerOfGravity, d.x);
 			}
 			else
 			{
 				this.size++;
-				this.tree.vectorSpace.add(this.centerOfGravity, d.element);
+				this.tree.vectorSpace.add(this.centerOfGravity, d.x);
 			
 				// no childs so far
 				if(left==null)
@@ -127,7 +127,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 				}
 				else
 				{
-					distToLeft = this.tree.distanceFunction.distance(left.element, d.element);
+					distToLeft = this.tree.distanceFunction.distance(left.x, d.x);
 				}
 				
 				// in case the element is equivalent to the left child, no right child should be generated
@@ -145,7 +145,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 				}
 				else
 				{
-					distToRight = this.tree.distanceFunction.distance(right.element, d.element);
+					distToRight = this.tree.distanceFunction.distance(right.x, d.x);
 				}
 				
 				// the node has two childs and the elements of the list must be put into the subtree according to their distance
@@ -159,10 +159,10 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		
 		// calculate the radius of the node
 		// the radius is the distance from the this.center to the furthest away subtree element
-		this.radius = this.tree.distanceFunction.distanceSq(this.centerOfGravity, this.obj.element);
+		this.radius = this.tree.distanceFunction.distanceSq(this.centerOfGravity, this.obj.x);
 		for(IndexedDataObject<T> d:subtreeElements)
 		{
-			distToCenter = this.tree.distanceFunction.distanceSq(this.centerOfGravity, d.element);
+			distToCenter = this.tree.distanceFunction.distanceSq(this.centerOfGravity, d.x);
 			if(this.radius < distToCenter) this.radius = distToCenter;
 		}
 		this.radius = Math.sqrt(this.radius);
@@ -206,7 +206,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		}
 
 		// if the local element is inside the query sphere
-		if(this.tree.getDistanceFunction().distance(this.obj.element, queryCenter) < queryRadius)
+		if(this.tree.getDistanceFunction().distance(this.obj.x, queryCenter) < queryRadius)
 		{
 			result.add(this.obj);
 			if(this.equivalents != null) result.addAll(this.equivalents);
@@ -225,7 +225,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 	public void kNNQuery(PriorityQueue<OrderedDataObject<T>> queue, T query, int k)
 	{
 		OrderedDataObject<T> tmpOrderedObject;
-		double distanceX = this.tree.distanceFunction.distance(this.obj.element, query);
+		double distanceX = this.tree.distanceFunction.distance(this.obj.x, query);
 		double distanceA, distanceB;
 		
 		// if this.obj is closer to the query than previously found data objects

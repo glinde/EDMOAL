@@ -184,7 +184,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 						{
 							if(this.fuzzyMemberships.get(j)[i] >= this.membershipLevels[k])
 							{
-								points.add(this.dataSet.get(j).element);
+								points.add(this.dataSet.get(j).x);
 							}
 						}
 						
@@ -203,7 +203,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 				
 				for(j=0; j<this.dataSet.size(); j++)
 				{
-					if(this.crispClusterAssignments[j] >= 0) crispClusteredPoints.get(this.crispClusterAssignments[j]).add(this.dataSet.get(j).element);
+					if(this.crispClusterAssignments[j] >= 0) crispClusteredPoints.get(this.crispClusterAssignments[j]).add(this.dataSet.get(j).x);
 				}
 				
 				for(i=0; i<this.clusterCount; i++)
@@ -347,7 +347,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 			}
 			
 			
-			this.dataObjectsTemplate.drawAt(g2, sc, translator.translate(this.projection.project(this.dataSet.get(j).element, null)));
+			this.dataObjectsTemplate.drawAt(g2, sc, translator.translate(this.projection.project(this.dataSet.get(j).x, null)));
 		}
 		
 

@@ -134,7 +134,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 				for(i=0; i<this.getClusterCount(); i++)
 				{
-					doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+					doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					fuzzDistances[i] = doubleTMP;
 					if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 				}
@@ -187,7 +187,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
 					membershipSum[i] += doubleTMP;
 
-					this.vs.copy(tmpX, this.data.get(j).element);
+					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}				
@@ -254,7 +254,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				distancesSq[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
@@ -323,7 +323,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				fuzzDistances[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
@@ -401,7 +401,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				fuzzDistances[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
@@ -479,7 +479,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			fuzzDistances[i] = doubleTMP;
 			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 		}
@@ -578,7 +578,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 				fuzzDistances[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
@@ -638,7 +638,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			fuzzDistances[i] = doubleTMP;
 			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 		}

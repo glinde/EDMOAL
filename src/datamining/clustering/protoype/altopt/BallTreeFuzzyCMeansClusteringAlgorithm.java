@@ -266,7 +266,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 				{
 					this.membershipValueSum[i] += this.membershipValues[i];
 
-					this.vs.copy(tmpX, node.getObj().element);
+					this.vs.copy(tmpX, node.getObj().x);
 					this.vs.mul(tmpX, this.membershipValues[i]);
 					this.vs.add(this.newPrototypePosition.get(i), tmpX);
 				}
@@ -356,7 +356,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			{
 				this.membershipValueSum[i] += this.membershipValues[i];
 
-				this.vs.copy(tmpX, node.getObj().element);
+				this.vs.copy(tmpX, node.getObj().x);
 				this.vs.mul(tmpX, this.membershipValues[i]);
 				this.vs.add(this.newPrototypePosition.get(i), tmpX);
 			}

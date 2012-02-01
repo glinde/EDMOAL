@@ -130,7 +130,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			distMin = Double.MAX_VALUE;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.element); 
+				dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
 				if(dist < distMin)
 				{
 					distMin = dist;
@@ -187,7 +187,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 				distMin = Double.MAX_VALUE;
 				for(i=0; i<this.getClusterCount(); i++)
 				{
-					dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.element); 
+					dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
 					if(dist < distMin)
 					{
 						distMin = dist;
@@ -199,7 +199,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 				
 				this.clusteringResult[x.getID()] = pMin;
 				clusterWeight[pMin]++;
-				this.vs.add(newPrototypePosition.get(pMin), x.element);
+				this.vs.add(newPrototypePosition.get(pMin), x.x);
 			}
 			
 			for(i=0; i<this.getClusterCount();i++)
@@ -243,7 +243,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			distMin = Double.MAX_VALUE;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.element); 
+				dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
 				if(dist < distMin)
 				{
 					distMin = dist;

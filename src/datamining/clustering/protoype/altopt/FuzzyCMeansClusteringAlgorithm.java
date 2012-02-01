@@ -157,7 +157,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				distanceSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
-					doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+					doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -199,7 +199,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
 					membershipSum[i] += doubleTMP;
 
-					this.vs.copy(tmpX, this.data.get(j).element);
+					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}
@@ -264,7 +264,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -317,7 +317,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -383,7 +383,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -450,7 +450,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		distanceSum = 0.0d;
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;

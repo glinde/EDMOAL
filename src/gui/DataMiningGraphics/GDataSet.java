@@ -143,7 +143,7 @@ public class GDataSet extends DrawableObject implements Serializable
 	{	
 		ArrayList<double[]> dataPoints = new ArrayList<double[]>(this.dataObjects.size());
 		for(IndexedDataObject<double[]> d:this.dataObjects)
-			dataPoints.add(d.element);
+			dataPoints.add(d.x);
 		
 		this.convexHull = DataManipulator.convexHull2D(dataPoints);
 	}

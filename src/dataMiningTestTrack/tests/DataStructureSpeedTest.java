@@ -181,7 +181,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		{
 			if((i+1)%(queryNumber/10) == 0) System.out.print(".");
 			queryResults.clear();
-			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).element, knnK);
+			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).x, knnK);
 			queryResultCounter += queryResults.size(); 
 		}
 		milliseconds += System.currentTimeMillis();		
@@ -192,7 +192,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 	public void centeredBallTreeSpeedTest()
 	{
 		long milliseconds = 0;
-		int dim = dataSet.first().element.length;
+		int dim = dataSet.first().x.length;
 		int queryNumber = 100000;
 		int knnK = 20;
 		long queryResultCounter = 0L;
@@ -256,7 +256,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		{
 			if((i+1)%(queryNumber/10) == 0) System.out.print(".");
 			queryResults.clear();
-			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).element, knnK);
+			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).x, knnK);
 			queryResultCounter += queryResults.size(); 
 		}
 		milliseconds += System.currentTimeMillis();		

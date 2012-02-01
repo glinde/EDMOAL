@@ -99,12 +99,12 @@ public class ClusterAnalyser<T>  implements Serializable
 		
 		for(j=0; j<dataSet.size(); j++)
 		{
-			dataObjectJ = dataSet.get(j).element;
+			dataObjectJ = dataSet.get(j).x;
 			membershipValuesJ = fuzzyResult.get(j);
 
 			for(l=j+1; l<dataSet.size(); l++)
 			{
-				dataObjectL = dataSet.get(l).element;
+				dataObjectL = dataSet.get(l).x;
 				membershipValuesL = fuzzyResult.get(l);
 				doubleTMP = dist.distance(dataObjectJ, dataObjectL);
 				
@@ -173,7 +173,7 @@ public class ClusterAnalyser<T>  implements Serializable
 		double[] membershipValues;
 		for(j=0; j<dataSet.size(); j++)
 		{
-			dataObject = dataSet.get(j).element;
+			dataObject = dataSet.get(j).x;
 			membershipValues = fuzzyResult.get(j);
 			
 			for(i=0; i<prototypes.size(); i++)
@@ -229,7 +229,7 @@ public class ClusterAnalyser<T>  implements Serializable
 		{
 			for(i=0; i<clusterCount; i++)
 			{
-				vs.copy(tmpX, dataSet.get(j).element);
+				vs.copy(tmpX, dataSet.get(j).x);
 				vs.mul(tmpX, fuzzyResult.get(j)[i]);
 				vs.add(prototypeLocations.get(i), tmpX);
 				
@@ -293,7 +293,7 @@ public class ClusterAnalyser<T>  implements Serializable
 		// Objective function value... sort of!
 		for(j=0; j<fuzzyAlgorithm.getDataCount(); j++)
 		{			
-			dataObject = fuzzyAlgorithm.getDataSet().get(j).element;
+			dataObject = fuzzyAlgorithm.getDataSet().get(j).x;
 			membershipValues = fuzzyResult.get(j);
 			for(i=0; i<fuzzyAlgorithm.getClusterCount(); i++)
 			{
