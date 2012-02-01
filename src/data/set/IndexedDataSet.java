@@ -71,7 +71,7 @@ import java.util.Set;
  * This class is essentially an container for the <code>ArrayList</code> class and implements the <code>List</code> and
  * <code>Set</code> interfaces. However, it masks all functionality of <code>ArrayList</code> w.r.t. the integrity
  * of the indices of its <code>IndexedDataObejcts</code> and it provides the <code>Sealable</code> functionality.
- * Note that also the iterator is affected by that because it can be used to change the contents of a list. 
+ * Note that also the iterator is affected by that because it can be used to modify the contents of a <code>IndexedDataSet</code>. 
  * 
  * @see IndexedDataObject
  * @author Roland Winkler
@@ -144,11 +144,11 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * 
 	 * @param startIndex The start index for reindexation
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 */
 	private void reindexFrom(int startIndex)
 	{
-		this.registerChange();
+		this.registerModification();
 		
 		for(int i=startIndex; i<this.list.size(); i++)
 		{
@@ -165,14 +165,14 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param e The IndexedDayaObject to add	 * 
 	 * @return always true if no exception is provoked
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#add(java.lang.Object)
 	 */
 	public boolean add(IndexedDataObject<T> e)
 	{
 		if(e.isInSet()) throw new IllegalArgumentException("Data Object " + e + " is member of a data set.");
-		this.registerChange();
+		this.registerModification();
 		
 		e.setDataSetConnection(this.size(), this);
 		this.list.add(e);
@@ -188,7 +188,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param index The index at which position the <code>IndexedDataObject</code> should be added
 	 * @param e The <code>IndexedDataObject</code> to add
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
 	 * 
 	 * @see java.util.List#add(int, java.lang.Object)
@@ -197,7 +197,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public void add(int index, IndexedDataObject<T> e)
 	{
 		if(e.isInSet()) throw new IllegalArgumentException("Data Object " + e + " is member of a data set.");
-		this.registerChange();
+		this.registerModification();
 				
 		if (index > this.size() || index < 0) throw new IndexOutOfBoundsException("Index: "+index+", Size: "+this.size());
 		
@@ -217,7 +217,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * 
 	 * @return always true if no exception is provoked
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * @throws NullPointerException - if the specified collection contains one or more null elements
 	 * 
 	 * @see java.util.List#addAll(java.util.Collection)
@@ -231,7 +231,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 			if(e.isInSet()) throw new IllegalArgumentException("The collection contains a data object (" + e + ") which is member of a data set.");
 		}
 
-		this.registerChange();
+		this.registerModification();
 		
 		int newIndex = this.size();
 		this.list.addAll(c);
@@ -250,7 +250,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * 
 	 * @return always true if no exception is provoked
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * @throws NullPointerException - if the specified collection contains one or more null elements
 	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
 	 * 
@@ -263,7 +263,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		{
 			if(e.isInSet()) throw new IllegalArgumentException("The collection contains a data object (" + e + ") which is member of a data set.");
 		}
-		this.registerChange();
+		this.registerModification();
 		
 		this.list.addAll(index, c);
 		this.reindexFrom(index);
@@ -276,14 +276,14 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * 
 	 * Complexity: O(n) n = this.size()
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#clear()
 	 */
 	@Override
 	public void clear()
 	{
-		this.registerChange();
+		this.registerModification();
 		
 		for(IndexedDataObject<T> d:this.list)
 		{
@@ -469,7 +469,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param o The object to be removed
 	 * @result true if the Object was removed
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#remove(java.lang.Object)
 	 */
@@ -478,7 +478,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public boolean remove(Object o)
 	{
 		if(!this.contains(o)) return false;
-		this.registerChange();
+		this.registerModification();
 		
 		IndexedDataObject<T> d = (IndexedDataObject<T>)o;
 		
@@ -497,7 +497,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param index The index of the object to be removed
 	 * @result the removed Object
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size())
 	 * 
 	 * @see java.util.List#remove(int)
@@ -506,7 +506,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public IndexedDataObject<T> remove(int index)
 	{
 		IndexedDataObject<T> d = this.list.get(index);		
-		this.registerChange();
+		this.registerModification();
 		
 		this.list.remove(index);
 		d.clearDataSetConnection();
@@ -523,7 +523,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param c The collection of object that are to be removed
 	 * @result true if at least one object is removed
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#removeAll(java.util.Collection)
 	 */
@@ -543,7 +543,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 		
 		if(removeCounter == 0) return false;
-		this.registerChange();
+		this.registerModification();
 		
 		for(IndexedDataObject<T> d:this.list)
 		{
@@ -564,7 +564,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param c The collection of object that are NOT to be removed
 	 * @result true if at least one object is removed
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#retainAll(java.util.Collection)
 	 */
@@ -597,7 +597,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * @param e the new <code>IndexedDataObject</code> at position <code>index</code>
 	 * @return The <code>IndexedDataObject</code> that was replaced at position <code>index</code>
 	 * 
-	 * @throws ChangeNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * @throws NullPointerException - if the specified element is null
 	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size())
 	 * 
@@ -608,7 +608,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public IndexedDataObject<T> set(int index, IndexedDataObject<T> e)
 	{
 		if(e.isInSet()) throw new IllegalArgumentException("Data Object " + e + " is member of a data set.");
-		this.registerChange();
+		this.registerModification();
 		
 		IndexedDataObject<T> removed = this.list.set(index, e);
 		removed.clearDataSetConnection();

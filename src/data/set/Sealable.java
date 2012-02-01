@@ -42,8 +42,9 @@ package data.set;
  * Therefore, it is sealed. Any attempt in changing the data structure should result in a <code>ChangeNotAllowedException</code>.
  * The change counter counts the current number of registered changes.
  * 
- * @see ChangeNotAllowedException
  * @author Roland Winkler
+ * 
+ * @see ModificationNotAllowedException
  */
 public interface Sealable
 {
@@ -62,12 +63,12 @@ public interface Sealable
 	 * is also supposed to check whether a change is allowed (which is the case if the object is not jut sealed). If it is 
 	 * sealed, this function produces a <code>ChangeNotAllowedException</code>.
 	 * 
-	 * @throws ChangeNotAllowedException if the instance is sealed.
+	 * @throws ModificationNotAllowedException if the instance is sealed.
 	 */
-	public void registerChange() throws ChangeNotAllowedException;
+	public void registerModification() throws ModificationNotAllowedException;
 	
 	/**
 	 * @return the change counter which is incremented whenever the instance is changed. 
 	 */
-	public long getChangeCounter();
+	public long getModificationCounter();
 }

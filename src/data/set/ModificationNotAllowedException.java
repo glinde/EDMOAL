@@ -44,7 +44,7 @@ package data.set;
  * 
  * @see Sealable
  */
-public class ChangeNotAllowedException extends UnsupportedOperationException
+public class ModificationNotAllowedException extends UnsupportedOperationException
 {
 	/**  */
 	private static final long	serialVersionUID	= 2649010021902043363L;
@@ -54,7 +54,7 @@ public class ChangeNotAllowedException extends UnsupportedOperationException
      * 
      * @see UnsupportedOperationException
 	 */
-	public ChangeNotAllowedException()
+	public ModificationNotAllowedException()
 	{
 		super();
 	}
@@ -67,7 +67,7 @@ public class ChangeNotAllowedException extends UnsupportedOperationException
      * 
      * @see UnsupportedOperationException
 	 */
-	public ChangeNotAllowedException(String message, Throwable cause)
+	public ModificationNotAllowedException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
@@ -80,7 +80,7 @@ public class ChangeNotAllowedException extends UnsupportedOperationException
      * 
      * @see UnsupportedOperationException
      */
-	public ChangeNotAllowedException(String message)
+	public ModificationNotAllowedException(String message)
 	{
 		super(message);
 	}
@@ -91,7 +91,7 @@ public class ChangeNotAllowedException extends UnsupportedOperationException
      *
      * @param  cause the cause
      */
-	public ChangeNotAllowedException(Throwable cause)
+	public ModificationNotAllowedException(Throwable cause)
 	{
 		super(cause);
 	}
