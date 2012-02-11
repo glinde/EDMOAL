@@ -43,19 +43,25 @@ import data.set.IndexedDataObject;
 import data.structures.DataSetFunctionalityProvider;
 
 /**
- * TODO Class Description
- *
+ * Provides the functionality of a k-nearest neighbour query. It return the k data objects, that
+ * are closest to a specified centre.
+ * 
  * @author Roland Winkler
  */
 public interface KNNQueryProvider<T> extends DataSetFunctionalityProvider<T>
 {
 	/**
-	 * Performs a k-NN query on the data objects. The centre object does not need to be contained in the structure.
+	 * Performs a k-nearest neighbour query, i.e. it returns the <code>k</code> closest data objects to <code>centre</code>.
+	 * The <code>centre</code> object does not need to be contained as a member of the underlying data structure.
+	 * The query result is added to the <code>result</code> collection.<br>
 	 * 
-	 * @param result
-	 * @param centre
-	 * @param k
-	 * @return
+	 * If the <code>result</code> is <code>null</code>, a new instance of a <code>Collection</code> is returned, containing the result. 
+	 * 
+	 * @param result A collection to which the query result is added 
+	 * @param centre The centre of the query
+	 * @param k The number of data objects for this query, must not be negative
+	 * @return The <code>result</code> collection, or in case <code>result</code> is <code>null</code>,
+	 * 		   a new Collection containing the result
 	 */
 	public Collection<IndexedDataObject<T>> knnQuery(Collection<IndexedDataObject<T>> result, T centre, int k);
 }

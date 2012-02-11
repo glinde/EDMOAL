@@ -47,7 +47,7 @@ import data.structures.AbstractTreeNode;
 import data.structures.order.OrderedDataObject;
 
 /**
- * TODO Class Description
+ * 
  *
  * @author Roland Winkler
  */
@@ -57,9 +57,14 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 	private static final long	serialVersionUID	= 2221604637270850625L;
 	/** The distance to the farthest child */
 	protected double radius;
-		
+
 	/**
+	 *  Constructs a new ball tree node with the specified tree, parent and data object. If the parent is
+	 *  unspecified (i.e. if it is <code>null</code>), the node is the root of the tree.
 	 * 
+	 * @param tree The tree this node belongs to
+	 * @param parent The parent of the node. If it is <code>null</code>, the node is the root of the tree.
+	 * @param obj The data object, stored in the node
 	 */
 	protected BallTreeNode(BallTree<T> tree, BallTreeNode<T> parent, IndexedDataObject<T> obj)
 	{
@@ -68,9 +73,17 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		this.radius = 0.0d;
 	}
 	
-	/** adds new data objects recursively
-	 * @param dataObj
-	 * @param distToObj
+	/**
+	 * Adds a data object to the tree.
+	 * If this node has no child nodes, the data object of a node is stored in the left child node.
+	 * If this node has only one child node (i.e. the left one) the data object is stored in the right child node.
+	 * If this node has at least 2 child nodes, data objects are stored in the subtree with the closer centre.
+	 * So if a data object is added to the local subtree, it is added to the left child node
+	 * if the distance to the data object, stored in the left child node is smaller or equal than the distance
+	 * of the data object stored in the right child node.<br>
+	 * 
+	 * @param dataObj the data object to be stored.
+	 * @param distToObj the distance of the data object to the data object, stored in this node.
 	 */
 	protected void addNaive(IndexedDataObject<T> dataObj, double distToObj)
 	{
@@ -92,8 +105,7 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 			}
 
 			// if the data object is not contained in equivalents, add it to equivalents and return
-			this.size++;
-			this.equivalents.add(dataObj);
+			this.addEquivalent(dataObj);
 			return;
 		}
 		
@@ -122,8 +134,8 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		}
 		
 		// this node has two childs and the data object needs to be put in the subtree with closest local root.
-		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().x, dataObj.x);
-		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.getObj().x, dataObj.x);
+		distanceA = this.tree.getMetric().distance(this.leftChild.getObj().x, dataObj.x);
+		distanceB = this.tree.getMetric().distance(this.rightChild.getObj().x, dataObj.x);
 		
 		if(distanceA <= distanceB) this.leftChild.addNaive(dataObj, distanceA);
 		else					   this.rightChild.addNaive(dataObj, distanceB);
@@ -132,15 +144,19 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 	}
 	
 	/**
-	 * Collects all data objects inside the hypersphere defined by queryRadius of centre.
+	 * Recursively performs a sphere query on the local subtree.<br>
 	 * 
-	 * @param result the result
+	 * Collects all data objects inside the hypersphere defined by <code>queryCentre</code> and <code>queryRadius</code> and stores
+	 * the result in the specified collection.
+	 * The function is called recursively for the child nodes if that is necessary.
+	 * 
+	 * @param result the result collection
 	 * @param centqueryCenterre the centre of the query
 	 * @param queryRadius the square radius of the query
 	 */
 	public void sphereQuery(Collection<IndexedDataObject<T>> result, T queryCenter, double queryRadius)
 	{
-		double distToCentre = this.tree.getDistanceFunction().distance(this.obj.x, queryCenter);
+		double distToCentre = this.tree.getMetric().distance(this.obj.x, queryCenter);
 		
 		// if the query ball does not intersects the local subset ball, do nothing
 		if(distToCentre > queryRadius + this.getRadius()) return;
@@ -165,9 +181,18 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 	}
 	
 	/**
-	 * @param result
-	 * @param centre
-	 * @param k
+	 * Recursively performs a k-NN query on the local subtree.<br>
+	 * 
+	 * A {@link PriorityQueue} is used to find the <code>k</code> data objects that are closest the query.
+	 * The centre and radius information of the nodes are used to prune the tree and only go deaper in the tree
+	 * if that is necessary. That is, if the current k-furthest data object is further away than the distance
+	 * to the child minus its radius. The traversation is performed with the child node that is closer to the
+	 * query first to increase the chance of pruning the subtree of the right child node.
+	 * 
+	 * @param queue The {@link PriorityQueue} that contains the current k-closest data objects.
+	 * @param query The query object.
+	 * @param k The number of data objects to be reported.
+	 * @param distanceX The distance of the data object of this node to the query data object.
 	 */
 	public void kNNQuery(PriorityQueue<OrderedDataObject<T>> queue, T query, int k, double distanceX)
 	{
@@ -202,7 +227,7 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		// if rightChild is null and leftChild is not, only test leftChild for recursion
 		if(this.rightChild == null)
 		{
-			distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().x, query);
+			distanceA = this.tree.getMetric().distance(this.leftChild.getObj().x, query);
 			
 			// if the farthest so far observed data object is further away than the closest potential data object from the child, do recursion.
 			if(distanceA - this.leftChild.radius < -queue.peek().compare) this.leftChild.kNNQuery(queue, query, k, distanceA);
@@ -211,8 +236,8 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 		}
 
 		// this node has two childs, recurse with the one closer to the data object first, then with the other.
-		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.getObj().x, query);
-		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.getObj().x, query);
+		distanceA = this.tree.getMetric().distance(this.leftChild.getObj().x, query);
+		distanceB = this.tree.getMetric().distance(this.rightChild.getObj().x, query);
 		
 		// start recursion with the closer child node but check for both if a recursion is really necessary
 		if(distanceA <= distanceB)
@@ -229,6 +254,8 @@ public class BallTreeNode<T> extends AbstractTreeNode<T, BallTreeNode<T>, BallTr
 	}
 
 	/**
+	 * Returns the radius of the node.
+	 * 
 	 * @return the radius
 	 */
 	public double getRadius()

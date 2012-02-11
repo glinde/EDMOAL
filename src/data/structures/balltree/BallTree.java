@@ -53,54 +53,84 @@ import data.structures.queries.KNNQueryProvider;
 import data.structures.queries.SphereQueryProvider;
 
 /**
- * TODO Class Description
+ * The ball Tree is a data structure to organize data, based on the distance between pairs of data objects.
+ * Each node of the tree can be regarded as sphere with a data object as centre and a radius (therefore, the name"Ball-Tree").
+ * The radius is determined by the elements of the subtree of a node: The radius of a node is the maximum of all distances
+ * to the data objects of its subtree. So the sphere is a convex hull of all data objects. Furthermore, the sphere of a node is 
+ * the minimal bounding sphere, with the nodes element as centre, containing all subtree elements.<br>
  * 
- * Paper: Omohundro, S. M. Five Balltree Construction Algorithms International Computer Science Institute, 1989
- * Paper: Uhlmann, J. K. Satisfying general proximity / similarity queries with metric trees Information Processing Letters, 1991, 40, 175 - 179
- * Paper: Ciaccia, P.; Patella, M. & Zezula, P. M-tree: An Efficient Access Method for Similarity Search in Metric Spaces Proceedings of the 23rd International Conference on Very Large Data Bases, Morgan Kaufmann Publishers Inc., 1997, 426-435
+ * The first data object of a node is stored in the left child node, the second in the right child node. All subsequent
+ * data objects are stored in the subtree that is closest of the two child node data objects. So if a data object is
+ * added to the local subtree, it is added to the left child node if the distance to the left data object is smaller
+ * or equal than the distance to the right data object.<br>
+ * 
+ * Note that for this kind of tree, no vector space structure is required, it is enough to define a distance function
+ * that satisfies the metric conditions in order to use a ball tree.<br>
  *
+ * This of course, does not uniquely defines the tree structure. There are several buidling strategies, either by keeping the
+ * Tree as flat as possible or by minimizing the total sphere volume. Usually, the ball tree is used in order to
+ * store neighbourhood information. Because of that, it is not advisable to create a tree that is as balanced as
+ * possible because it is very likely that a balanced tree does not reflect he true data distribution.<br>
+ * 
+ * See the following papers for more information:
+ * <ul>
+ * <li> Paper: Omohundro, S. M. Five Balltree Construction Algorithms International Computer Science Institute, 1989</li>
+ * <li> Paper: Uhlmann, J. K. Satisfying general proximity / similarity queries with metric trees Information Processing Letters, 1991, 40, 175 - 179</li>
+ * <li> Paper: Ciaccia, P.; Patella, M. & Zezula, P. M-tree: An Efficient Access Method for Similarity Search in Metric Spaces Proceedings of the 23rd International Conference on Very Large Data Bases, Morgan Kaufmann Publishers Inc., 1997, 426-435</li>
+ * </ul>
+ *
+ * At moment only a very naive tree building is implemented: it simply dertermines the next child node by the
+ * order of data objects. The tree construction time is in O(n log(n)). If the tree structure
+ * reflects the underlying data distribution, it is likely that sphere queries have a complexity in O(k log(n)).
+ * and kNN queries have a complexity in O(k log(k) log(n)). <br>
+ *  
+ * @TODO implement more building algorithms for ball trees. See Omohundros paper.
+ * 
  * @author Roland Winkler
- * 
- * TODO: more building algorithms
- *
  */
 public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> implements KNNQueryProvider<T>, SphereQueryProvider<T>
 {
 	
 	/**  */
 	private static final long	serialVersionUID	= 7686113033242605201L;
-	/**  */
-	protected final Metric<T> distanceFunction;
+	
+	/** The metric that is used for distance calculations. */
+	protected final Metric<T> metric;
 	
 	/**
+	 * Creates a new ball tree, with the specified data set and metric.
 	 * 
-	 * @param dataSet
-	 * @param distance
+	 * @param dataSet The data set underlying this tree
+	 * @param distance The metric, used for this tree.
 	 */
 	public BallTree(IndexedDataSet<T> dataSet, Metric<T> distance)
 	{
 		super(dataSet);
 		
-		this.distanceFunction = distance;
+		this.metric = distance;
 	}
 	
-	/* (non-Javadoc)
-	 * @see data.set.structures.AbstractTree#build()
+	/** 
+	 * Build the tree. In this case, {@link #buildNaive()} is called. 
+	 * 
+	 * @see data.structures.AbstractTree#build()
+	 * @see data.structures.balltree.BallTree#buildNaive()
 	 */
 	@Override
-	public void build()
+	public void build() throws DataSetNotSealedException
 	{
-		if(!this.dataSet.isSealed()) throw new DataSetNotSealedException("The data set is not sealed.");
-		if(this.isBuild()) this.clearBuild();
-		
 		this.buildNaive();
 	}
 	
 	/**
-	 * A naive way of building the tree, adding data objects one by one, no optimization.
-	 * Seals the data set.
+	 * A naive way of building the tree, adding data objects one by one, no optimization. The spheres
+	 * are therefore determined by the order of the data objects in the data set. Note that the data set must be
+	 * sealed in order to call this function.
+	 * 
+	 * @throws DataSetNotSealedException if the indexed data set was not sealed before trying to build the tree structure.
+	 * 
 	 */
-	public void buildNaive()
+	public void buildNaive() throws DataSetNotSealedException
 	{
 		if(!this.dataSet.isSealed()) throw new DataSetNotSealedException("The data set is not sealed.");
 		if(this.isBuild()) this.clearBuild();
@@ -119,17 +149,22 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 		while(dataSetIterator.hasNext())
 		{
 			next = dataSetIterator.next();
-			this.root.addNaive(next, this.distanceFunction.distance(this.root.getObj().x, next.x));
+			this.root.addNaive(next, this.metric.distance(this.root.getObj().x, next.x));
 		}
 
 		this.build = true;
 	}
 	
 
-	/* (non-Javadoc)
-	 * @see data.set.structures.queries.SphereQueryProvider#sphereQuery(java.util.Collection, java.lang.Object, double)
+	/**
+	 * Performs a sphere query. For a tree structure, that is consistent with the neighbourhood structure of the data,
+	 * the complexity is roughly O(k*log(n)) with k being the number or reported data objects.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure was not build before calling the function.
+	 * 
+	 * @see BallTreeNode#sphereQuery(Collection, Object, double)
 	 */
-	public Collection<IndexedDataObject<T>> sphereQuery(Collection<IndexedDataObject<T>> result, T centre, double radius)
+	public Collection<IndexedDataObject<T>> sphereQuery(Collection<IndexedDataObject<T>> result, T centre, double radius) throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -140,11 +175,17 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 		return result;
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see data.set.structures.queries.KNNQueryProvider#knnQuery(java.util.Collection, java.lang.Object, int)
+
+	/**
+	 * Performs a k-NN query. For a tree structure, that is consistent with the neighbourhood structure of the data,
+	 * the complexity is roughly O(k log(k) log(n)). The term k log(k) comes from the fact that a sorted list of k elements
+	 * needs to be available all the time. 
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure was not build before calling the function.
+	 * 
+	 * @see BallTreeNode#kNNQuery(PriorityQueue, Object, int)
 	 */
-	public Collection<IndexedDataObject<T>> knnQuery(Collection<IndexedDataObject<T>> result, T centre, int k)
+	public Collection<IndexedDataObject<T>> knnQuery(Collection<IndexedDataObject<T>> result, T centre, int k) throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -159,7 +200,7 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 			queue.add(new OrderedDataObject<T>(null, Double.NEGATIVE_INFINITY));
 		}
 		
-		this.root.kNNQuery(queue, centre, k, this.distanceFunction.distance(this.root.getObj().x, centre));
+		this.root.kNNQuery(queue, centre, k, this.metric.distance(this.root.getObj().x, centre));
 		
 		// reverse the order for returning the result so it is in ascending order w.r.t. to the distances.
 		while(!queue.isEmpty()) reversedResult.add(queue.poll().dataObject);
@@ -169,17 +210,22 @@ public class BallTree<T> extends AbstractTree<T, BallTreeNode<T>, BallTree<T>> i
 	}
 
 	/**
-	 * @return the distanceFunction
+	 * Returns the metric.
+	 * 
+	 * @return the metric
 	 */
-	public Metric<T> getDistanceFunction()
+	public Metric<T> getMetric()
 	{
-		return this.distanceFunction;
+		return this.metric;
 	}
 
 	/**
-	 * @return the radiusList
+	 * Gets the list of radius values that are present in the nodes of the tree.
+	 * 
+	 * @return the list of radius values
+	 * @throws DataStructureNotBuildException if the tree structure was not build
 	 */
-	public double[] radiusList()
+	public double[] radiusList() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		

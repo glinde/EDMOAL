@@ -63,8 +63,14 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 	/** The distance from the center to the farthest child */
 	protected double radius;
 		
+
 	/**
+	 *  Constructs a new centered ball tree node with the specified tree, parent and data object. If the parent is
+	 *  unspecified (i.e. if it is <code>null</code>), the node is the root of the tree.
 	 * 
+	 * @param tree The tree this node belongs to
+	 * @param parent The parent of the node. If it is <code>null</code>, the node is the root of the tree.
+	 * @param obj The data object, stored in the node
 	 */
 	protected CenteredBallTreeNode(CenteredBallTree<T> tree, CenteredBallTreeNode<T> parent, IndexedDataObject<T> obj)
 	{
@@ -73,10 +79,20 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		this.centerOfGravity = this.tree.vectorSpace.copyNew(obj.x); 
 		this.radius = 0.0d;
 	}
-	
-	/** adds new data objects recursively
+
+	/**
+	 * Adds a data set to build the tree.
+	 * The first data object of <code>subtreeElements</code> is stored in the left child node.
+	 * The second data object of <code>subtreeElements</code> is stored in the right child node.
+	 * All other data objects are stored in the respective subtree with the closer centre.<br>
 	 * 
-	 * @param subtreeElements
+	 * This implementation is significantly different to the one in {@link BallTreeNode}. This implementation
+	 * requires more organizing time, but it provides a consistancy for the local centre of gravity.
+	 * @TODO: make a faster implementation by copying the implementation of {@link BallTreeNode} and
+	 * than recursivly build the centre of gravity for each node. It is possible using the combination
+	 * of the subtree size and its local centre of gravity.
+	 * 
+	 * @param subtreeElements The elements of the local subtree
 	 */
 	protected void addNaive(Collection<IndexedDataObject<T>> subtreeElements)
 	{
@@ -93,7 +109,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		for(IndexedDataObject<T> d:subtreeElements)
 		{
 			// if the new data object is equivalent to this one
-			if(this.tree.distanceFunction.distance(this.obj.x, d.x) == 0.0d)
+			if(this.tree.metric.distance(this.obj.x, d.x) == 0.0d)
 			{
 				// if this data object is this data object
 				if(this.obj.equals(d)) throw new IllegalArgumentException("Data Object multiple times added! id: " + this.obj.getID());
@@ -110,8 +126,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 				}
 	
 				// if the data object is not contained in equivalents, add it to equivalents and take t into account for the center calculation.
-				this.size++;
-				this.equivalents.add(d);
+				this.addEquivalent(d);
 				this.tree.vectorSpace.add(this.centerOfGravity, d.x);
 			}
 			else
@@ -127,7 +142,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 				}
 				else
 				{
-					distToLeft = this.tree.distanceFunction.distance(left.x, d.x);
+					distToLeft = this.tree.metric.distance(left.x, d.x);
 				}
 				
 				// in case the element is equivalent to the left child, no right child should be generated
@@ -145,7 +160,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 				}
 				else
 				{
-					distToRight = this.tree.distanceFunction.distance(right.x, d.x);
+					distToRight = this.tree.metric.distance(right.x, d.x);
 				}
 				
 				// the node has two childs and the elements of the list must be put into the subtree according to their distance
@@ -159,10 +174,10 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		
 		// calculate the radius of the node
 		// the radius is the distance from the this.center to the furthest away subtree element
-		this.radius = this.tree.distanceFunction.distanceSq(this.centerOfGravity, this.obj.x);
+		this.radius = this.tree.metric.distanceSq(this.centerOfGravity, this.obj.x);
 		for(IndexedDataObject<T> d:subtreeElements)
 		{
-			distToCenter = this.tree.distanceFunction.distanceSq(this.centerOfGravity, d.x);
+			distToCenter = this.tree.metric.distanceSq(this.centerOfGravity, d.x);
 			if(this.radius < distToCenter) this.radius = distToCenter;
 		}
 		this.radius = Math.sqrt(this.radius);
@@ -183,17 +198,21 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 			this.height = Math.max(this.leftChild.getHeight(), this.rightChild.getHeight()) + 1;
 		}
 	}
-	
+
 	/**
-	 * Collects all data objects inside the hypersphere defined by queryCenter and queryRadius
+	 * Recursively performs a sphere query on the local subtree.<br>
 	 * 
-	 * @param result the result
-	 * @param queryCenter the centre of the query
+	 * Collects all data objects inside the hypersphere defined by <code>queryCentre</code> and <code>queryRadius</code> and stores
+	 * the result in the specified collection.
+	 * The function is called recursively for the child nodes if that is necessary.
+	 * 
+	 * @param result the result collection
+	 * @param centqueryCenterre the centre of the query
 	 * @param queryRadius the square radius of the query
 	 */
 	public void sphereQuery(Collection<IndexedDataObject<T>> result, T queryCenter, double queryRadius)
 	{
-		double distqueryToCoG = this.tree.getDistanceFunction().distance(this.centerOfGravity, queryCenter);
+		double distqueryToCoG = this.tree.getMetric().distance(this.centerOfGravity, queryCenter);
 		
 		// if the query ball does not intersects the local subset ball, do nothing
 		if(distqueryToCoG > queryRadius + this.getRadius()) return;
@@ -206,7 +225,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		}
 
 		// if the local element is inside the query sphere
-		if(this.tree.getDistanceFunction().distance(this.obj.x, queryCenter) < queryRadius)
+		if(this.tree.getMetric().distance(this.obj.x, queryCenter) < queryRadius)
 		{
 			result.add(this.obj);
 			if(this.equivalents != null) result.addAll(this.equivalents);
@@ -216,16 +235,25 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		if(this.leftChild != null) this.leftChild.sphereQuery(result, queryCenter, queryRadius);
 		if(this.rightChild != null) this.rightChild.sphereQuery(result, queryCenter, queryRadius);
 	}
-	
+
 	/**
-	 * @param result
-	 * @param centre
-	 * @param k
+	 * Recursively performs a k-NN query on the local subtree.<br>
+	 * 
+	 * A {@link PriorityQueue} is used to find the <code>k</code> data objects that are closest the query.
+	 * The centre and radius information of the nodes are used to prune the tree and only go deaper in the tree
+	 * if that is necessary. That is, if the current k-furthest data object is further away than the distance
+	 * to the child minus its radius. The traversation is performed with the child node that is closer to the
+	 * query first to increase the chance of pruning the subtree of the right child node.
+	 * 
+	 * @param queue The {@link PriorityQueue} that contains the current k-closest data objects.
+	 * @param query The query object.
+	 * @param k The number of data objects to be reported.
+	 * @param distanceX The distance of the data object of this node to the query data object.
 	 */
 	public void kNNQuery(PriorityQueue<OrderedDataObject<T>> queue, T query, int k)
 	{
 		OrderedDataObject<T> tmpOrderedObject;
-		double distanceX = this.tree.distanceFunction.distance(this.obj.x, query);
+		double distanceX = this.tree.metric.distance(this.obj.x, query);
 		double distanceA, distanceB;
 		
 		// if this.obj is closer to the query than previously found data objects
@@ -256,7 +284,7 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		// if rightChild is null and leftChild is not, only test leftChild for recursion
 		if(this.rightChild == null)
 		{
-			distanceA = this.tree.getDistanceFunction().distance(this.leftChild.centerOfGravity, query);
+			distanceA = this.tree.getMetric().distance(this.leftChild.centerOfGravity, query);
 			
 			// if the farthest so far observed data object is further away than the closest potential data object from the child, do recursion.
 			if(distanceA - this.leftChild.radius < -queue.peek().compare) this.leftChild.kNNQuery(queue, query, k);
@@ -265,8 +293,8 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 		}
 		
 		// this node has two childs, recurse with the one closer to the data object first, then with the other.
-		distanceA = this.tree.getDistanceFunction().distance(this.leftChild.centerOfGravity, query);
-		distanceB = this.tree.getDistanceFunction().distance(this.rightChild.centerOfGravity, query);
+		distanceA = this.tree.getMetric().distance(this.leftChild.centerOfGravity, query);
+		distanceB = this.tree.getMetric().distance(this.rightChild.centerOfGravity, query);
 		
 		// start recursion with the closer child node but check for both if a recursion is really necessary
 		if(distanceA <= distanceB)
@@ -282,6 +310,8 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 	}
 
 	/**
+	 * Returns the radius of the node.
+	 * 
 	 * @return the radius
 	 */
 	public double getRadius()
@@ -290,7 +320,9 @@ public class CenteredBallTreeNode<T> extends AbstractTreeNode<T, CenteredBallTre
 	}
 
 	/**
-	 * @return the centerOfGravity
+	 * Returns the center of gravity of the local subtree.
+	 * 
+	 * @return the center of gravity of the local subtree.
 	 */
 	public T getCenterOfGravity()
 	{

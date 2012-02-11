@@ -43,19 +43,25 @@ import data.set.IndexedDataObject;
 import data.structures.DataSetFunctionalityProvider;
 
 /**
- * TODO Class Description
- *
+ * Provides the functionality of a sphere query. A sphere query is returns all data objects, that
+ * are within a specified distance of a specified centre.
+ * 
  * @author Roland Winkler
  */
 public interface SphereQueryProvider<T> extends DataSetFunctionalityProvider<T>
 {
 	/**
-	 * Performs a sphere query on the data objects, i.e. it returns all data objects closer to centre than radius. The centre object does not need to be contained in the structure.
+	 * Performs a sphere query on the data objects, i.e. it returns all data objects closer to <code>centre</code>
+	 * than the specified <code>radius</code>. The <code>centre</code> object does not need to be contained as a
+	 * member of the underlying data structure. The query result is added to the collection.<br>
 	 * 
-	 * @param result
-	 * @param centre
-	 * @param radius
-	 * @return
+	 * If the <code>result</code> is <code>null</code>, a new instance of a Collection is returned, containing the result. 
+	 * 
+	 * @param result A collection to which the query result is added 
+	 * @param centre The centre of the query
+	 * @param radius The radius of the query, must be larger than 0.
+	 * @return The <code>result</code> collection, or in case <code>result</code> is <code>null</code>,
+	 * 		   a new Collection containing the result
 	 */
 	public Collection<IndexedDataObject<T>> sphereQuery(Collection<IndexedDataObject<T>> result, T centre, double radius);
 	

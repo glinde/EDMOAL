@@ -42,8 +42,8 @@ import java.io.Serializable;
 import data.set.IndexedDataObject;
 
 /**
- * TODO Class Description
- *
+ * This is a container class for ordering a dynamic number of <code>IndexedDataObject</code>s w.r.t. a specific property. 
+ * 
  * @author Roland Winkler
  */
 public class OrderedDataObject<T> implements Comparable<OrderedDataObject<T>>, Serializable
@@ -51,14 +51,18 @@ public class OrderedDataObject<T> implements Comparable<OrderedDataObject<T>>, S
 	/**  */
 	private static final long	serialVersionUID	= 5049956479112818499L;
 
+	/** The <code>IndexedDataObject</code> that is put into some sort of ordering */
 	public IndexedDataObject<T> dataObject;
 	
+	/** The property that should be used for the ordering. */
 	public double compare;
 
 
 	/**
-	 * @param dataObject
-	 * @param compare
+	 * Creates a new  <code>OrderedDataObject</code>.
+	 * 
+	 * @param dataObject The <code>IndexedDataObject</code> to store
+	 * @param compare The comparable property to store
 	 */
 	public OrderedDataObject(IndexedDataObject<T> dataObject, double compare)
 	{

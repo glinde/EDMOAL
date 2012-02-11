@@ -40,38 +40,51 @@ package data.structures;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
+import sun.awt.image.ImageWatched.Link;
+
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
+import data.set.Sealable;
+import data.structures.balltree.BallTree;
+import data.structures.balltree.BallTreeNode;
 
-/**
- * TODO Class Description
+/** 
+ * The {@link AbstractTree} class, together with the {@link AbstractTreeNode} class are designed to
+ * represent a type-save binary tree structure without specifying the way how it is build.
+ * The abstraction is used to mask the building process of the tree structure and queries.  Other than that,
+ * several functions for testing a tree structure are implemented.<br>
+ * 
+ * The rather complicated construction of generic variables is done in order to allow a variable combination of
+ * Tree classes and Node classes. This complicated generic structure should be masked for any non-abstract
+ * implementation of the tree structure, as it is done for example in the {@link BallTree} and {@link BallTreeNode}. <br>
+ * 
+ * @TODO: resolve inconsistency issue with {@link Sealable} in {@link IndexedDataObject}.
  *
  * @author Roland Winkler
  */
-public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tree>, Tree extends AbstractTree<T, Node, Tree>> implements Serializable, DataSetFunctionalityProvider<T>
+public abstract class AbstractTree<E, N extends AbstractTreeNode<E, N, T>, T extends AbstractTree<E, N, T>> implements Serializable, DataSetFunctionalityProvider<E>
 {
-
 	/**  */
 	private static final long	serialVersionUID	= -1879919519833096654L;
 
-	/**  */
-	protected IndexedDataSet<T> dataSet;
+	/** The data set the tree structure is build on */
+	protected IndexedDataSet<E> dataSet;
 	
-	/** The root of the tree. If null, there are no data objects */
-	protected Node root;
+	/** The root of the tree. If null, the tree contains no data */
+	protected N root;
 	
-	/**  */
-	protected ArrayList<Node> nodeList;
+	/** A list of all nodes for O(1) access of the nodes, having an {@link IndexedDataObject} */
+	protected ArrayList<N> nodeList;
 	
-	/**  */
+	/** Indicates if the tree structure is build */
 	protected boolean build;
 	
 
 	/**
-	 * 
-	 * @param dataSet
-	 * @param distance
+	 * Constructs a new, empty tree structure.
 	 */
 	public AbstractTree()
 	{
@@ -79,31 +92,39 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 		
 		this.root = null;
 		this.build = false;
-		this.nodeList = new ArrayList<Node>();
+		this.nodeList = new ArrayList<N>();
 	}
 	
 	/**
+	 * Constructs a new tree structure for the specified data set.
 	 * 
-	 * @param dataSet
-	 * @param distance
+	 * @param dataSet The data set on which the tree structure should be build.
 	 */
-	public AbstractTree(IndexedDataSet<T> dataSet)
+	public AbstractTree(IndexedDataSet<E> dataSet)
 	{
 		this.dataSet = dataSet;
 		
 		this.root = null;
 		this.build = false;
-		this.nodeList = new ArrayList<Node>(dataSet.size());
+		this.nodeList = new ArrayList<N>(dataSet.size());
 	}
 	
+	/* (non-Javadoc)
+	 * @see data.structures.DataSetFunctionalityProvider#build()
+	 */
 	public abstract void build();
 
-	/** returns the node of the object in question or null if the object is not contained
+	/**
+	 * Returns the node of the specified {@link IndexedDataObject} or null if the object is not contained.<br> 
+	 *  
+	 * Complexity: O(1)
 	 * 
-	 * @param dataObj
-	 * @return
+	 * @param dataObj The data object that is contained in a node of the tree.
+	 * @return The node that contains the dataObj
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public Node nodeOfObj(IndexedDataObject<T> dataObj)
+	public N nodeOfObj(IndexedDataObject<E> dataObj) throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		if(!this.dataSet.contains(dataObj)) return null;
@@ -112,12 +133,16 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 	
 	/**
-	 *  True if the object is contained in the tree
+	 *  Determines whether or not the specified object is contained in the tree.<br> 
+	 *  
+	 * Complexity: O(1)
 	 * 
-	 * @param dataObj
-	 * @return
+	 * @param dataObj The data object for which the test should be applied
+	 * @return true, if the data object is contained, false otherwise
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public boolean contains(IndexedDataObject<T> dataObj)
+	public boolean contains(IndexedDataObject<E> dataObj) throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -125,9 +150,15 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 
 	/**
-	 * @return
+	 * Counts the number of inner nodes of the tree. That are all nodes with at least one child node.<br> 
+	 *  
+	 * Complexity: O(n), with n being the number of data objects, stored in the tree.
+	 * 
+	 * @return The total number of inner nodes.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public int numberOfInnerNodes()
+	public int numberOfInnerNodes() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -135,9 +166,13 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 
 	/**
-	 * @return
+	 * Counts the number of leaf nodes of the tree. That are all nodes that have no child nodes.
+	 * 
+	 * @return The total number of leaf nodes.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public int numberOfLeafNodes()
+	public int numberOfLeafNodes() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -145,9 +180,18 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 	
 	/**
-	 * @return
+	 * Counts the number of leafs, depending on their depth in the tree. That is, for each level of the tree,
+	 * the number of leafs of that level is returned. A level of the tree are all nodes which have the same depth,
+	 * that is the number of parent nodes until they reach the root. The root has depth 0, its child nodes have
+	 * depth 1, etc.<br> 
+	 *  
+	 * Complexity: O(n), with n being the number of data objects, stored in the tree.
+	 *  
+	 * @return A list that contains for each level of the tree, the number of leaf nodes of this level.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public int[] leafDepthDistribution()
+	public int[] leafDepthDistribution() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -159,14 +203,30 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 
 	/**
-	 * @param k
-	 * @return
+	 * Returns all data objects of level <code>k</code> and below in a 2-dimensional {@link ArrayList}.
+	 * The structure is like this: For each node of depth <code>k</code>, the first level {@link ArrayList} contains
+	 * an entry. In a second level {@link ArrayList}, all elements of the subtree of a node of depth
+	 * <code>k</code> is contained. A level of the tree are all nodes which have the same depth,
+	 * that is the number of parent nodes until they reach the root. The root has depth 0, its child nodes have
+	 * depth 1, etc.<br>
+	 * 
+	 * In other words, all data objects of a subtree with its root node of depth <code>k</code> are stored in one
+	 * {@link ArrayList}. Then, all the {@link ArrayList}s (one for each node of depth <code>k</code>) are 
+	 * stored in an other {@link ArrayList} which is returned.<br> 
+	 *  
+	 * Complexity: O(n), with n being the number of data objects, stored in the tree. 
+	 * 
+	 * @param k the level for the subtree elements.
+	 * @return A 2-dimensional {@link ArrayList}, containing all elements of the subtrees with roots
+	 * of depth <code>k</code>.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public ArrayList<ArrayList<IndexedDataObject<T>>> subtreeElementsOfLevel(int k)
+	public ArrayList<ArrayList<IndexedDataObject<E>>> subtreeElementsOfLevel(int k) throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
-		ArrayList<ArrayList<IndexedDataObject<T>>> subtreeElements = new ArrayList<ArrayList<IndexedDataObject<T>>>(100);
+		ArrayList<ArrayList<IndexedDataObject<E>>> subtreeElements = new ArrayList<ArrayList<IndexedDataObject<E>>>(100);
 		
 		this.root.subtreeElementsOfLevel(k, subtreeElements);
 		
@@ -174,12 +234,20 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 	
 	/**
-	 * @param k
-	 * @return
+	 * Returns all Nodes of level (with depth) <code>k</code>.<br> 
+	 *  
+	 * Complexity: O(n), with n being the number of reported nodes.
+	 * 
+	 * @param k The depth of the nodes.
+	 * @return A list of nodes of level <code>k</code>. 
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public ArrayList<Node> nodesOfLevel(int k)
+	public ArrayList<N> nodesOfLevel(int k) throws DataStructureNotBuildException
 	{
-		ArrayList<Node> nodes = new ArrayList<Node>(100);
+		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
+		
+		ArrayList<N> nodes = new ArrayList<N>(100);
 		
 		this.root.nodesOfLevel(k, nodes);
 		
@@ -187,23 +255,35 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 	
 	/**
-	 * @param obj
-	 * @return
+	 * Gets the size of the subtree that corresponds with the specified data object. If the data object is
+	 * not contained in the tree, the result is -1.<br> 
+	 *  
+	 * Complexity: O(k + log(n)), with n being the number of nodes of the tree and k being the number of reportet data objects.
+	 * 
+	 * @param obj The object for which the subtree size should be determined.
+	 * @return The subtree size of the object, or -1, if the data object is not contained. 
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public int subtreeSizeOf(IndexedDataObject<T> obj)
+	public int subtreeSizeOf(IndexedDataObject<E> obj) throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
+		if(!this.dataSet.contains(obj)) return -1;
 
 		return this.nodeList.get(obj.getID()).getSize();
 	}
 		
 		
 	/**
-	 * returns the number of data objects, stored in the tree
+	 * Returns the number of data objects, stored in the tree.<br> 
+	 *  
+	 * Complexity: O(1)
 	 * 
-	 * @return
+	 * @return the number of data objects, stored in the tree.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public int size()
+	public int size() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -211,10 +291,16 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 
 	/**
-	 * @return
-	 * @see data.structures.balltree.BallTreeNode#getHeight()
+	 * The height of the tree. That is the longest path that is possible, starting from the root.
+	 * It is equal to the maximal depth of all leaf nodes.<br> 
+	 *  
+	 * Complexity: O(1)
+	 * 
+	 * @return The height of the tree.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public int height()
+	public int height() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -222,9 +308,15 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 	}
 	
 	/**
-	 * @return the root
+	 * Returns the root of the tree.<br> 
+	 *  
+	 * Complexity: O(1)
+	 * 
+	 * @return the root.
+	 * 
+	 * @throws DataStructureNotBuildException if the data structure is not build before calling this function.
 	 */
-	public Node getRoot()
+	public N getRoot() throws DataStructureNotBuildException
 	{
 		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
 		
@@ -233,39 +325,31 @@ public abstract class AbstractTree<T, Node extends AbstractTreeNode<T, Node, Tre
 
 
 	/* (non-Javadoc)
-	 * @see data.DataSetFunctionalityProvider#getDataSet()
+	 * @see data.structures.DataSetFunctionalityProvider#getDataSet()
 	 */
 	@Override
-	public IndexedDataSet<T> getDataSet()
+	public IndexedDataSet<E> getDataSet()
 	{
 		return this.dataSet;
 	}
 
-	/* (non-Javadoc)
-	 * @see data.DataSetFunctionalityProvider#setDataSet(data.set.IndexedDataSet)
+	/**
+	 * Sets the data set for the tree. If the data set is not yet sealed, an exception is thrown.<br> 
+	 *  
+	 * Complexity: O(1)
+	 * 
+	 * @param dataSet The data set to set.
+	 * 
+	 * @throws DataSetNotSealedException If the specified data set is not yet sealed. 
+	 * 
+	 * @see data.structures.DataSetFunctionalityProvider#setDataSet(data.set.IndexedDataSet)
 	 */
 	@Override
-	public void setDataSet(IndexedDataSet<T> dataSet)
+	public void setDataSet(IndexedDataSet<E> dataSet) throws DataSetNotSealedException
 	{
 		if(!dataSet.isSealed()) throw new DataSetNotSealedException("The data set is not sealed.");
 		this.clearBuild();
 		this.dataSet = dataSet;
-	}
-
-	/**
-	 * @return the subtreeSizeList
-	 */
-	public int[] subtreeSizeList()
-	{
-		if(!this.build) throw new DataStructureNotBuildException("Data structure is not build.");
-
-		int[] sizeList = new int[this.dataSet.size()];
-		for(Node node:this.nodeList)
-		{
-			sizeList[node.getObj().getID()] = node.size; 
-		}
-		
-		return sizeList;
 	}
 
 	/* (non-Javadoc)

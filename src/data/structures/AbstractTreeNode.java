@@ -43,36 +43,53 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import data.set.IndexedDataObject;
+import data.structures.balltree.BallTree;
+import data.structures.balltree.BallTreeNode;
 
 /**
- * TODO Class Description
+ * An abstract implementation of the tree node. All information and some basic recursive algorithms
+ * for analysing the tree is implemented. <br>
+ * 
+ * The rather complicated construction of generic variables is done in order to allow a variable combination of
+ * Tree classes and Node classes. This complicated generic structure should be masked for any non-abstract
+ * implementation of the tree structure, as it is done for example in the {@link BallTree} and {@link BallTreeNode}.<br>
+ * 
+ * This class also provides a special property in dealing with data objects that are equivalent to others.
+ * Usually, for each data object, a node is represented in the tree. This is possible with this
+ * tree structure, but also an alternative is provided. If two data objects are indistinguishable using
+ * their data property (i.e. they are equal to any data analysis algorithm), they can be stored in the same
+ * node. In this case, the data objects are stored in a HashSet, with the index of the {@link IndexedDataObject} as
+ * hash key. That way, it is possible to handle large amounts of equivalent data objects without any impact
+ * on the trees performance.
  *
  * @author Roland Winkler
+ * 
+ * @see AbstractTree
  */
-public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, Tree extends AbstractTree<T, Node, Tree>> implements Serializable
+public class AbstractTreeNode<E, N extends AbstractTreeNode<E, N, T>, T extends AbstractTree<E, N, T>> implements Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 6512063591779793509L;
 
 	/** the data object of this node */
-	protected final IndexedDataObject<T> obj;
+	protected final IndexedDataObject<E> obj;
 	
 	/** The associated tree */
-	protected final Tree tree;
+	protected final T tree;
 	
 	/** The parent of the node. If it is null, this node is the root node */
-	protected final Node parent;
+	protected final N parent;
 	
 	/** A list of data object elements that are equivalent to this.obj.element.
 	 * That is, all objects that have a distance of 0 to this.obj.
 	 * The reference to this object will remain null until the first equivalent data object is added. */
-	protected HashSet<IndexedDataObject<T>> equivalents;
+	protected HashSet<IndexedDataObject<E>> equivalents;
 	
 	/** left child node */
-	protected Node leftChild;
+	protected N leftChild;
 	
 	/** right child node */
-	protected Node rightChild;
+	protected N rightChild;
 	
 	/** The number of data objects in this subtree (including this.obj) */
 	protected int size;	
@@ -84,9 +101,15 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	protected int depth;
 		
 	/**
+	 *  Constructs a new tree node with the specified tree, parent and data object. If the parent is
+	 *  unspecified (i.e. if it is <code>null</code>), the node is the root of the tree.
 	 * 
+	 * @param tree The tree this node belongs to
+	 * @param parent The parent of the node. If it is <code>null</code>, the node is the root of the tree.
+	 * @param obj The data object, stored in the node
 	 */
-	protected AbstractTreeNode(Tree tree, Node parent, IndexedDataObject<T> obj)
+	@SuppressWarnings("unchecked")
+	protected AbstractTreeNode(T tree, N parent, IndexedDataObject<E> obj)
 	{
 		this.obj = obj;
 		this.tree = tree;
@@ -99,24 +122,54 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 
 		this.depth = (this.parent == null)? 0 : (this.parent.getDepth()+1);
 		this.size = (this.obj == null)? 0:1;
+		if(this.obj != null)
+		{
+			this.tree.nodeList.set(this.obj.getID(), (N) this);
+		}
 	}
 	
-	/** collects all data objects of the current subset and stores them in localDataSet
-	 * @param localDataSet
+	/**
+	 * Adds the specified object to the set of equivalents.
+	 * 
+	 * @param obj
 	 */
-	public void collectSubtreeElements(Collection<IndexedDataObject<T>> localDataSet)
+	@SuppressWarnings("unchecked")
+	public void addEquivalent(IndexedDataObject<E> obj)
+	{
+		if(obj == null) return;
+		if(this.equivalents == null) this.equivalents = new HashSet<IndexedDataObject<E>>();
+		
+		this.size++;
+		this.equivalents.add(obj);
+		this.tree.nodeList.set(obj.getID(), (N) this);
+	}
+	
+	
+	/**
+	 * Recursively collects all subtree elements of this node and adds them to the
+	 * specified collection.<br>
+	 * 
+	 * Complexity: O(n), with n being the number of nodes of the local subtree.
+	 * 
+	 * @param subtreeCollection The collection to store the subtree data objects in.
+	 */
+	public void collectSubtreeElements(Collection<IndexedDataObject<E>> subtreeCollection)
 	{
 		// add this element and all its equivalents
-		localDataSet.add(this.obj);
-		if(this.equivalents != null) localDataSet.addAll(this.equivalents); 
+		subtreeCollection.add(this.obj);
+		if(this.equivalents != null) subtreeCollection.addAll(this.equivalents); 
 		
 		// recursively add all child data objects
-		if(this.leftChild != null) this.leftChild.collectSubtreeElements(localDataSet);
-		if(this.rightChild != null) this.rightChild.collectSubtreeElements(localDataSet);
+		if(this.leftChild != null) this.leftChild.collectSubtreeElements(subtreeCollection);
+		if(this.rightChild != null) this.rightChild.collectSubtreeElements(subtreeCollection);
 	}
 
 	/**
-	 * @return
+	 * Recursively counts the number of inner nodes in the subtree, specified by this node. <br>
+	 * 
+	 * Complexity: O(n), with n being the number of nodes of the local subtree.
+	 * 
+	 * @return the number of inner nodes of this subtree
 	 */
 	public int countInnerNodes()
 	{
@@ -131,7 +184,11 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 
 	/**
-	 * @return
+	 * Recursively counts the number of leaf nodes in the subtree, specified by this node.<br>
+	 * 
+	 * Complexity: O(n), with n being the number of nodes of the local subtree. 
+	 * 
+	 * @return the number of leaf nodes of this subtree
 	 */
 	public int countLeafNodes()
 	{
@@ -146,7 +203,11 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 
 	/**
-	 * @param leafCounts
+	 * Recursively fills a list that contains the number of leaf nodes, depending on their respective depth.<br>
+	 * 
+	 * Complexity: O(n), with n being the number of nodes of the local subtree.
+	 * 
+	 * @param leafCounts The list of leafs w.r.t. their depth in the tree.
 	 */
 	public void countLeafDepth(int[] leafCounts)
 	{
@@ -156,32 +217,52 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 		if(this.rightChild != null) this.rightChild.countLeafDepth(leafCounts);	
 	}
 
+
 	/**
-	 * @param k
-	 * @return
+	 * Recursively collects all data objects of level <code>k</code> and below in a 2-dimensional {@link ArrayList}.
+	 * If this node is above <code>k</code>, the function is recursively called for all child nodes.
+	 * If this node is at depth <code>k</code>, all its subtree elements are collected in a {@link ArrayList} and
+	 * the list is added to <code>list</code>. If its depth is larger than <code>k</code>, nothing happens.<br> 
+	 *  
+	 * Complexity: O(n), with n being the number of nodes in the current subtree. 
+	 * 
+	 * @param k the level for the subtree elements.
+	 * @param list A 2-dimensional {@link ArrayList}, containing all elements of the subtrees with roots
+	 * of depth <code>k</code>.
+	 * 
+	 * @see AbstractTree#subtreeElementsOfLevel(int)
 	 */
-	public void subtreeElementsOfLevel(int k, ArrayList<ArrayList<IndexedDataObject<T>>> list)
+	public void subtreeElementsOfLevel(int k, ArrayList<ArrayList<IndexedDataObject<E>>> list)
 	{
 		if(this.depth == k)
 		{
-			ArrayList<IndexedDataObject<T>> subtreeElements = new ArrayList<IndexedDataObject<T>>(this.size);
+			ArrayList<IndexedDataObject<E>> subtreeElements = new ArrayList<IndexedDataObject<E>>(this.size);
 			this.collectSubtreeElements(subtreeElements);
 			list.add(subtreeElements);
 		}
-		else
+		else if(this.depth < k)
 		{
 			if(this.leftChild != null) this.leftChild.subtreeElementsOfLevel(k, list);
 			if(this.rightChild != null) this.rightChild.subtreeElementsOfLevel(k, list);
 		}
+		else return;
 	}
 	
+	/**
+	 * Recursively collects all nodes of level <code>k</code> and stores them in the specified list.<br>
+	 * 
+	 * Complexity: O(k), with k being the number of reported nodes from the current subtree. 
+	 * 
+	 * @param k the level of which the nodes are supposed to be stored.
+	 * @param list the list of nodes.
+	 */
 	@SuppressWarnings("unchecked")
-	public void nodesOfLevel(int k, ArrayList<Node> list)
+	public void nodesOfLevel(int k, ArrayList<N> list)
 	{
 
 		if(this.depth == k)
 		{
-			list.add((Node) this); // how to avoid the cast?
+			list.add((N) this); // how to avoid the cast?
 		}
 		else
 		{
@@ -191,39 +272,59 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 
 	/**
+	 * Returns the data object.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
 	 * @return the obj
 	 */
-	public IndexedDataObject<T> getObj()
+	public IndexedDataObject<E> getObj()
 	{
 		return this.obj;
 	}
 
 	/**
+	 * Returns the parent node.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
 	 * @return the parent
 	 */
-	public Node getParent()
+	public N getParent()
 	{
 		return this.parent;
 	}
 
 	/**
+	 * Returns the left child node.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
 	 * @return the leftChild
 	 */
-	public Node getLeftChild()
+	public N getLeftChild()
 	{
 		return this.leftChild;
 	}
 
 	/**
+	 * Returns the right child node.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
 	 * @return the rightChild
 	 */
-	public Node getRightChild()
+	public N getRightChild()
 	{
 		return this.rightChild;
 	}
 	
 	/**
-	 * @return
+	 * Determines whether or not this node is the root of the tree. <br>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @return true if this node is the root of the tree.
 	 */
 	public boolean isRoot()
 	{
@@ -231,7 +332,11 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 	
 	/**
-	 * @return
+	 * Determines whether or not this node is a leaf. <br>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @return true if this node is a leaf.
 	 */
 	public boolean isLeaf()
 	{
@@ -239,6 +344,11 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 
 	/**
+	 * Returns the local height of this node. That is the maximal number steps that can be
+	 * done until reaching a leaf node. if the node is a leaf, the height is 0.<br>
+	 * 
+	 * Complexity: O(1)   
+	 * 
 	 * @return the height
 	 */
 	public int getHeight()
@@ -247,6 +357,11 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 
 	/**
+	 * Returns the depth of this node. That is the number of steps until the root is reached.
+	 * If this node is the root, the depth is 0.<br>
+	 * 
+	 * Complexity: O(1)   
+	 * 
 	 * @return the depth
 	 */
 	public int getDepth()
@@ -255,6 +370,10 @@ public class AbstractTreeNode<T, Node extends AbstractTreeNode<T, Node, Tree>, T
 	}
 
 	/**
+	 * Returns the size of the local subtree.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
 	 * @return the size
 	 */
 	public int getSize()
