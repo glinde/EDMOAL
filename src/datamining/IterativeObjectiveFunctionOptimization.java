@@ -38,17 +38,38 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining;
 
 /**
- * TODO Class Description
- *
+ * If an algorithm is both, iterative and optimizes an objective function, the objective function value
+ * can be monitored over time. This interface provides the required meothods for classes like that. 
+ * 
  * @author Roland Winkler
  */
 public interface IterativeObjectiveFunctionOptimization extends IterativeAlgorithm, ObjectiveFunctionOptimization
 {
+	/**
+	 * Causes the algorithm to record the current objective function value. Note that this function can
+	 * be called at any time, even in between iteration steps.
+	 */
 	public void recordCurrentObjectiveFunctionValue();
 	
+	/**
+	 * Returns the history of recorded objective function values. That is, all objective function values
+	 * that have been stored over time in time-ascending order.
+	 * 
+	 * @return the history of recorded objective function values.
+	 */
 	public double[] getObjectiveFunctionValueHistory();
 	
+	/**
+	 * States whether or not the objective function values are monitored after each iteration. 
+	 * 
+	 * @return true, if the objective function values are monitored, false otherwise. 
+	 */
 	public boolean isObjectiveFunctionMonitoring();
 	
+	/**
+	 * Sets the objective function monitoring. If set to true, the objective function is monitored after each iteration.
+	 * 
+	 * @param monitor sets the monitoring of the objective function values.
+	 */
 	public void setObjectiveFunctionMonitoring(boolean monitor);
 }
