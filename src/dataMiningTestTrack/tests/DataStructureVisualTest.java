@@ -60,7 +60,12 @@ import etc.DataGenerator;
 
 
 /**
- * TODO Class Description
+ * This class provides some functionality to test data structure algorithms and to verify them visually.
+ * The data for testing is generated artificially, which is also done by this class.<br>
+ * 
+ * The data set is just 2-dimensional and semi-randomly generated.
+ * The actual location of the data objects is randomly generated, but the distribution
+ * of the data objects is predefined.
  *
  * @author Roland Winkler
  */
@@ -68,8 +73,19 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 {
 	/**  */
 	private static final long	serialVersionUID	= 7166084323032199964L;
+	
+	/**
+	 *  The data set, used for the tests.
+	 */
 	private IndexedDataSet<double[]> dataSet;
 	
+	/**
+	 * Generates a new test environment. The data set is just 2-dimensional and semi-randomly generated.
+	 * The actual location of the data objects is randomly generated, but the distribution
+	 * of the data objects is predefined.
+	 * 
+	 * @param dataObjectCount The number of data objects, generated for this test.
+	 */
 	public DataStructureVisualTest(int dataObjectCount)
 	{
 		ArrayList<double[]> data = new ArrayList<double[]>();
@@ -88,6 +104,12 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		this.dataSet.seal();
 	}
 	
+	/**
+	 * Organises the data set in a ball tree, using the naive build. It visualises
+	 * the data set according to each level of the tree. So for each level, a
+	 * new window is opened and the properties of the nodes of this level are
+	 * visualised.
+	 */
 	public void ballTreeStructureTest()
 	{
 		int k = 10;
@@ -167,7 +189,14 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			dataViewFrame.repaint();
 		}
 	}
+
 	
+	/**
+	 * Organises the data set in a centered ball tree, using the naive build. It visualises
+	 * the data set according to each level of the tree. So for each level, a
+	 * new window is opened and the properties of the nodes of this level are
+	 * visualised.
+	 */
 	public void centeredBallTreeStructureTest()
 	{
 		int k = 10;

@@ -61,7 +61,9 @@ import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
 
 /**
- * TODO Class Description
+ * A class to provide basic functions for visualisation and defines some layout constants.
+ * It takes care of transforming clustering algorithm objects or data set objects into
+ * their graphical representation.
  *
  * @author Roland Winkler
  */
@@ -71,22 +73,69 @@ public abstract class TestVisualizer implements Serializable
 	private static final long	serialVersionUID	= 121707857795848952L;
 	
 	
+	/**
+	 * The font for text in the figure.
+	 */
 	public static final Font FIGURE_TEXT_FONT = new Font("Dialog", Font.PLAIN, 50);
+	
+	/**
+	 * The font for naming the axis.
+	 */
 	public static final Font AXIS_TEXT_FONT = new Font("Dialog", Font.PLAIN, 50);
+	
+	/**
+	 * The font for the axis ticks, e.g. the numbers next to the axis.
+	 */
 	public static final Font TICK_TEXT_FONT = new Font("Dialog", Font.PLAIN, 40);
+	
+	/**
+	 * The font for the legend.
+	 */
 	public static final Font LEGEND_TEXT_FONT = new Font("Dialog", Font.PLAIN, 45);
+	
+	/**
+	 * The font for the figure title.
+	 */
 	public static final Font TITLE_TEXT_FONT = new Font("Dialog", Font.BOLD, 60);
+	
+	/**
+	 * The stroke object for the axis lines and ticks.
+	 */
 	public static final Stroke LINE_STROKE = new BasicStroke(5.0f);
 		
+	/**
+	 * A list of predefined colours. 
+	 */
 	public Color[] seriesColorList;
 
+	/**
+	 * States if the figure is saved in the SVG format, if the figure is printed to a file.
+	 */
 	public boolean printSVG;
+
+	/**
+	 * States if the figure is saved in the JPG format, if the figure is printed to a file.
+	 */
 	public boolean printJPG;
+
+	/**
+	 * States if the figure is saved in the PDF format, if the figure is printed to a file.
+	 */
 	public boolean printPDF;
+
+	/**
+	 * States if the figure is saved in the PNG format, if the figure is printed to a file.
+	 */
 	public boolean printPNG;
 	
+	/**
+	 * The visual size of a data object in pixels.
+	 */
 	public float dataObjectSize;
 	
+	/**
+	 * The standard constructor.
+	 */
 	public TestVisualizer()
 	{
 		this.printSVG = false;
@@ -105,6 +154,14 @@ public abstract class TestVisualizer implements Serializable
 			};
 	}
 	
+	/**
+	 * Creates a visualisation of the specified clustering algorithm and its results.
+	 * The visualisation is automatically adopted to the type of the algorithm.
+	 * 
+	 * @param clusterAlgo The algorithm that is to be visualised.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
 	@SuppressWarnings("unchecked")
 	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, String title, String filename)
 	{
@@ -144,6 +201,14 @@ public abstract class TestVisualizer implements Serializable
 		this.print(sv.screen, filename);
 	}
 		
+	/**
+	 * Visualises the specified data set. Currently, only the first two dimensions of
+	 * the data vectors are presented. For visualising other dimensions, please change
+	 * the order of the attributes in the data vector.
+	 * 
+	 * @param dataSet The data set to be visualised.
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
 	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, String filename)
 	{
 		ScreenViewer sv  = new ScreenViewer();
@@ -168,7 +233,17 @@ public abstract class TestVisualizer implements Serializable
 		this.print(sv.screen, filename);
 	}
 
-	public void showCrispDataSetClustering(Collection<IndexedDataObject<double[]>> dataSet, int clusterCount, int[] crispClister, String filename)
+	/**
+	 * Presents the specified data set, coloured by the specified crisp clustering (partitioning). Currently,
+	 * only the first two dimensions of the data vectors are presented. For visualising other
+	 * dimensions, please change the order of the attributes in the data vector.
+	 * 
+	 * @param dataSet The data set to be visualised.
+	 * @param clusterCount The number of clusters in the clustering or the number of partitions of the data set.
+	 * @param crispCluster The crisp clustering (partitioning) that should be used for colouring the data.
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
+	public void showCrispDataSetClustering(Collection<IndexedDataObject<double[]>> dataSet, int clusterCount, int[] crispCluster, String filename)
 	{
 		GClusteredDataSet gClusteredDS;
 		ScreenViewer sv;
@@ -178,7 +253,7 @@ public abstract class TestVisualizer implements Serializable
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
 		gClusteredDS.setFuzzyColoring(false);
 		gClusteredDS.setDataSet(dataSet);
-		gClusteredDS.setCrispClusterAssignments(crispClister);
+		gClusteredDS.setCrispClusterAssignments(crispCluster);
 
 		sv = new ScreenViewer();
 		sv.screen.setFileName(filename);
@@ -196,6 +271,15 @@ public abstract class TestVisualizer implements Serializable
 		this.print(sv.screen, filename);
 	}
 	
+	/**
+	 * Prints the specified screen to the hard disk. Note, that the
+	 * fields <code>printSVG</code>, <code>printJPG</code>, <code>printPDF</code> and <code>printPNG</code>
+	 * specify the data type the screen should be saved in. Any combination of the
+	 * print-fields are possible.
+	 * 
+	 * @param screen The screen to be printed.
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
 	private void print(Screen screen, String filename)
 	{
 		if(filename!=null && !filename.equals(""))

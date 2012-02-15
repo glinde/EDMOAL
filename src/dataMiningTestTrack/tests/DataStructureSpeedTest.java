@@ -53,8 +53,13 @@ import etc.DataManipulator;
 
 
 /**
- * TODO Class Description
- *
+ * This class provides some functionality to test data structure algorithms and to verify their performance
+ * of applying queries. When performing tests, please do take care not to disturb the process
+ * by using other, CPU intensive or memory intensive applications.<br>
+ * 
+ * 
+ * The data for testing is generated artificially, which is also done by this class.
+ * 
  * @author Roland Winkler
  */
 public class DataStructureSpeedTest extends TestVisualizer implements Serializable
@@ -62,14 +67,40 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 	/**  */
 	private static final long	serialVersionUID	= 3319024847560964090L;
 
+	/**
+	 * The data set that is used for the tests.
+	 */
 	private IndexedDataSet<double[]> dataSet;
 	
+	/**
+	 * The list of sphere query centres that are used for testing.
+	 */
 	private ArrayList<double[]> sphereQueryList;
+	
+	/**
+	 * The list of sphere query radius values that are used for testing.
+	 */
 	private double[] shereQueryRadius;
+	
+	/**
+	 * Randomly generated data objects that are used for k-nearest neighbour queries.
+	 */
 	private ArrayList<double[]> knnQueryRandomList;
+	
+	/**
+	 * List of (randomly picked) data objects from the data set that are used for k-nearest neighbour queries.
+	 */
 	private ArrayList<IndexedDataObject<double[]>> knnQueryDataList;
 	
 	
+	/**
+	 * Creates a new test environment and generates a data set with the specified number of
+	 * dimensions and data objects. Also generates the queries, used for testing.
+	 * 
+	 * @param dim The dimension of the data set.
+	 * @param dataObjectCount The number of data objects in the data set.
+	 * @param queryNumber The number of queries that are to be performed on the data set.
+	 */
 	public DataStructureSpeedTest(int dim, int dataObjectCount, int queryNumber)
 	{
 		super();
@@ -104,7 +135,11 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 	}
 	
 	/**
-	 * @param numberOfDataObjects
+	 * Shows a subset of the data set. This is useful because the test may be performed for
+	 * very large data sets which are difficult to visualise. Therefore, this method
+	 * only visualises a randomly picked subset of data objects of the original data set.
+	 * 
+	 * @param numberOfDataObjects The number of data objects to be visualised.
 	 */
 	public void showSimplifiedDataSet(int numberOfDataObjects)
 	{
@@ -115,6 +150,10 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		this.showDataSet(smallerDataSet, null);
 	}
 	
+	/**
+	 * Performs a speed test on a ball tree structure, including
+	 * time to build the tree, and the time needed for performing the queries.
+	 */
 	public void ballTreeSpeedTest()
 	{
 		long milliseconds = 0;
@@ -189,6 +228,10 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		System.out.println("Number of reported objects: " + queryResultCounter);
 	}
 
+	/**
+	 * Performs a speed test on a centered ball tree structure, including
+	 * time to build the tree, and the time needed for performing the queries.
+	 */
 	public void centeredBallTreeSpeedTest()
 	{
 		long milliseconds = 0;

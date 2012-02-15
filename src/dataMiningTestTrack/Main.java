@@ -37,19 +37,27 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack;
 
+import data.structures.balltree.BallTree;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
 import dataMiningTestTrack.tests.DataStructureSpeedTest;
 import dataMiningTestTrack.tests.DataStructureVisualTest;
 
 /**
- * TODO Class Description
- *
+ * Since the EDMOAL project is just an API, a main class would not be necessary to provide.
+ * In fact, it is very likely that it will vanish in due time. For now, the main function and all the
+ * classes in this package are provided for the user to get some examples, how to use EDMOAL.<br>
+ * 
+ * Many commands are deactivated by line comments. Please activate them as you wish.
+ * 
  * @author Roland Winkler
  */
 public class Main
 {
 	/**
-	 * @param args
+	 * Decide whether you want to visually test some algorithms or if zyou like to
+	 * perform a performance test of the various aspects of EDMOAL.
+	 * 
+	 * @param args The command arguments. They are ignored for now.
 	 */
 	public static void main(String[] args)
 	{
@@ -61,14 +69,23 @@ public class Main
 	}
 	
 	
+	/**
+	 * Performs a test of the data structure algorithms like the {@link BallTree} and visualises
+	 * the result such that the properties of the data structure become visible.
+	 */
 	public static void dataStructureVisualTest()
 	{
 		DataStructureVisualTest visualTest = new DataStructureVisualTest(10000);
 		visualTest.ballTreeStructureTest(); System.gc();
-		visualTest.centeredBallTreeStructureTest(); System.gc();
+//		visualTest.centeredBallTreeStructureTest(); System.gc();
 	}
 	
 
+	/**
+	 * Performs a test of the data structures w.r.t. to their time consumption on certain tasks.
+	 * Please refrain from applying other applications that require high CPU power or need a lot
+	 * of memory bandwidth.
+	 */
 	public static void dataStructureSpeedTest()
 	{
 		long milliseconds = 0;		
@@ -85,6 +102,13 @@ public class Main
 		speedTest.centeredBallTreeSpeedTest();System.gc();
 	}
 	
+	/**
+	 * Performs tests of the clustering algorithms, using synthetic data sets.
+	 * The result is visualised so that the result of the algorithm is easily
+	 * interpretable. The point of these tests is, to give the user some
+	 * feeling of how the algorithms behave and to decide whether or not they
+	 * might be useful for him.
+	 */
 	public static void clusterAlgorithmVisualTest()
 	{
 		int dim = 2, number = 30000, clusterCount = 2*dim-1;

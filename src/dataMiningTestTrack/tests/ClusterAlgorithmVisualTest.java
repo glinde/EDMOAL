@@ -66,7 +66,17 @@ import etc.DataGenerator;
 
 
 /**
- * TODO Class Description
+ * This class provides some functionality to test cluster algorithms and to verify the result visually.
+ * The data for testing is generated artificially, which is also done by this class.<br>
+ * 
+ * The data set is generated in the following way: The number of clusters determines the
+ * number of seeds that are uniformly distributed in the hypercube with cornes at each
+ * dimension at 0.1 and 0.9 (the hypercube is specified by [0.1, 0.9]^dim).
+ * For each seed, a set of dim-dimensional normal distributed data objects is generated.
+ * The variance of the (dim-dimensional) normal distribution is randomly picked between 0 and 0.1.
+ * Finally, 10% of noise data objects is added to the data set.
+ * The noise data objects are generated uniformly on the unit-hypercube ([0, 1]^dim) 
+ * 
  *
  * @author Roland Winkler
  */
@@ -75,14 +85,43 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**  */
 	private static final long	serialVersionUID	= -4791280640176444354L;
 
+	/**
+	 * The data set to be clustered
+	 */
 	private IndexedDataSet<double[]> dataSet;
 	
+	/**
+	 * The number of clusters
+	 */
 	private int clusterCount;
 	
+	/**
+	 * The correct clustering (partitioning) according to the data generation process.
+	 */
 	private int[] correctClustering;
 	
+	/**
+	 * The initial positions of prototypes.
+	 */
 	private ArrayList<double[]> initialPositons;
 	
+	/**
+	 * The standard constructor. It generates a data set of double arrays with the specified
+	 * dimension and number of data objects and generates the starting positions for prototypes
+	 * according to the number of clusters.<br>
+	 * 
+	 * The data set is generated in the following way: The number of clusters determines the
+	 * number of seeds that are uniformly distributed in the hypercube with cornes at each
+	 * dimension at 0.1 and 0.9 (the hypercube is specified by [0.1, 0.9]^dim).
+	 * For each seed, a set of dim-dimensional normal distributed data objects is generated.
+	 * The variance of the (dim-dimensional) normal distribution is randomly picked between 0 and 0.1.
+	 * Finally, 10% of noise data objects is added to the data set.
+	 * The noise data objects are generated uniformly on the unit-hypercube ([0, 1]^dim) 
+	 * 
+	 * @param dim The dimension of the data set.
+	 * @param dataObjectCount The number of data objects.
+	 * @param clusterCount The number of clusters.
+	 */
 	public ClusterAlgorithmVisualTest(int dim, int dataObjectCount, int clusterCount)
 	{
 		super();
@@ -152,7 +191,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	}
 	
 	/**
-	 * 
+	 * Shows the generated data set.
 	 */
 	public void showDataSet()
 	{
@@ -160,7 +199,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	}
 	
 	/**
-	 * 
+	 * Shows the generated data set, coloured with the clusters, specified by the generation.
 	 */
 	public void showClusteredDataSet()
 	{
@@ -168,7 +207,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	}
 	
 	/**
-	 * 
+	 * Performs a hard c-means clustering algorithm on the generated data set.
 	 */
 	public void testHardCMeans()
 	{
@@ -180,7 +219,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * 
+	 * Performs a fuzzy c-means clustering algorithm on the generated data set.
 	 */
 	public void testFuzzyCMeans()
 	{
@@ -192,9 +231,9 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
-
+	
 	/**
-	 * 
+	 * Performs a fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
 	public void testFuzzyCMeansNoise()
 	{
@@ -209,7 +248,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 
 
 	/**
-	 * 
+	 * Performs a fuzzy c-means clustering algorithm with polynomial fuzzifier function on the generated data set.
 	 */
 	public void testPolynomialFuzzyCMeans()
 	{
@@ -223,7 +262,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 
 
 	/**
-	 * 
+	 * Performs a fuzzy c-means (noise-) clustering algorithm with polynomial fuzzifier function on the generated data set.
 	 */
 	public void testPolynomialFuzzyCMeansNoise()
 	{
@@ -238,7 +277,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 
 
 	/**
-	 * 
+	 * Performs a rewarding crisp membership values fuzzy c-means clustering algorithm on the generated data set.
 	 */
 	public void testRewardingCrispFCM()
 	{
@@ -253,7 +292,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 
 
 	/**
-	 * 
+	 * Performs a rewarding crisp membership values fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
 	public void testRewardingCrispFCMNoise()
 	{
@@ -269,7 +308,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * 
+	 * Performs a voronoi cell opimized fuzzy c-means clustering algorithm on the generated data set.
 	 */
 	public void testVoronoiPartitionFCM()
 	{
@@ -283,7 +322,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * 
+	 * Performs a voronoi cell opimized fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
 	public void testVoronoiPartitionFCMNoise()
 	{
@@ -298,7 +337,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * 
+	 * Performs distance adapted fuzzy c-means clustering algorithm on the generated data set.
 	 */
 	public void testDistAdaptedFCM()
 	{
@@ -313,7 +352,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * 
+	 * Performs a  distance adapted fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
 	public void testDistAdaptedFCMNoise()
 	{
@@ -327,8 +366,9 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
+
 	/**
-	 * 
+	 * Performs a fuzzy c-means clustering algorithm, opimised by using a centered ball tree on the generated data set.
 	 */
 	public void testBallTreeFuzzyCMeans()
 	{
@@ -343,7 +383,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 
 
 	/**
-	 * 
+	 * Performs an expectation maximisation clustering algorithm  with a mixture of spherical gaussians model on the generated data set.
 	 */
 	public void testExpectationMaximization()
 	{
@@ -360,7 +400,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * 
+	 * Performs the DBScan clustering algorithm on the generated data set.
 	 */
 	public void testDBScan()
 	{
