@@ -41,7 +41,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * TODO Class Description
+ * A comparator for comparing double arrays at a specific index.
  *
  * @author Roland Winkler
  */
@@ -49,8 +49,17 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 6817735594513021048L;
+	
+	/**
+	 * The index of the array that is used for comparisons.
+	 */
 	private int index;
 	
+	/**
+	 * Creates a new comparator which addresses the specified index.
+	 * 
+	 * @param i The index of the array that is used for comparisons. 
+	 */
 	public ArrayIndexComparator(int i)
 	{
 		this.index = i;
@@ -66,7 +75,9 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	}
 
 	/**
-	 * @return the index
+	 * Returns the index.
+	 * 
+	 * @return the index.
 	 */
 	public int getIndex()
 	{
@@ -74,7 +85,9 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	}
 
 	/**
-	 * @param index the index to set
+	 * Sets the index.
+	 * 
+	 * @param index The index to set.
 	 */
 	public void setIndex(int index)
 	{

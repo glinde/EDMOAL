@@ -45,7 +45,8 @@ import java.util.Collection;
 import data.set.IndexedDataObject;
 
 /**
- * TODO Class Description
+ * This class provides some basic statistical functions like calculating the mean or
+ * the sample variance of a collection of double values.
  *
  * @author Roland Winkler
  */
@@ -54,9 +55,15 @@ public class SimpleStatistics implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -4215266533598669192L;
 
+	/**
+	 * Calculates the mean of an array of double values.
+	 * 
+	 * @param data An array of double values.
+	 * @return The mean of the values in the double array.
+	 */
 	public static double mean(double[] data)
 	{
-		double mean =0;
+		double mean = 0.0d;
 		
 		for(int i=0; i<data.length; i++) mean+=data[i];
 		
@@ -64,7 +71,14 @@ public class SimpleStatistics implements Serializable
 		
 		return mean;
 	}
-	
+
+	/**
+	 * Calculates the multidimensional mean of a collection of double arrays, embedded in an
+	 * indexed data object.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional mean.
+	 */
 	public static double[] meanIndexed(Collection<IndexedDataObject<double[]>> data)
 	{
 		double[] mean = null;
@@ -82,6 +96,12 @@ public class SimpleStatistics implements Serializable
 		return mean;
 	}
 	
+	/**
+	 * Calculates the multidimensional mean of a collection of double arrays.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional mean.
+	 */
 	public static double[] mean(Collection<double[]> data)
 	{
 		double[] mean = null;
@@ -99,6 +119,15 @@ public class SimpleStatistics implements Serializable
 		return mean;
 	}
 	
+
+	/** 
+	 * Calculates the median of a collection of double arrays, embedded in an
+	 * indexed data object. The median is the multidimensional median, which is
+	 * composed of the individual median values for each dimension.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional median.
+	 */
 	public static double[] medianIndexed(Collection<IndexedDataObject<double[]>> data)
 	{
 		int i, k, m=data.size()/2;
@@ -125,6 +154,14 @@ public class SimpleStatistics implements Serializable
 		return median;
 	}
 	
+	/** 
+	 * Calculates the median of a collection of double arrays. The median
+	 * is the multidimensional median, which is composed of the individual
+	 * median values for each dimension.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional median.
+	 */
 	public static double[] median(Collection<double[]> data)
 	{
 		int i, k, m=data.size()/2;
@@ -151,6 +188,12 @@ public class SimpleStatistics implements Serializable
 		return median;
 	}
 	
+	/**
+	 * Calculates the sample variance of a list of double values.
+	 * 
+	 * @param data The double values
+	 * @return The variance of a list of double value.
+	 */
 	public static double variance(double[] data)
 	{
 		double variance = 0.0d;
@@ -166,6 +209,13 @@ public class SimpleStatistics implements Serializable
 		return variance;
 	}
 	
+	/**
+	 * Calculates the sample variance of a list of double values, given the specified mean.
+	 * 
+	 * @param data The double values
+	 * @param mean The mean of the double values (to save some calculation time, because it usually is known already, if the sample variance is supposed to be of interest).
+	 * @return The variance of a list of double value.
+	 */
 	public static double variance(double[] data, double mean)
 	{
 		double variance = 0.0d;
@@ -182,8 +232,12 @@ public class SimpleStatistics implements Serializable
 
 	
 	/**
-	 * @param data
-	 * @return double[mean, variance]
+	 * Calculates the mean and the sample variance of a set of double values and
+	 * returns it in form of an array where the first value holds the mean
+	 * and the second holds the sample variance.
+	 * 
+	 * @param data The double values.
+	 * @return The mean and sample variance as array: double[mean, variance].
 	 */
 	public static double[] varianceMean(double[] data)
 	{
@@ -200,6 +254,13 @@ public class SimpleStatistics implements Serializable
 		return new double[]{mean, variance};
 	}
 
+	/**
+	 * Calculates an axis parallel hyper rectangle as bounding box of the specified
+	 * list of double arrays that are stored as indexed data objects.
+	 * 
+	 * @param list The list of double arrays.
+	 * @return The axis parallel bounding box.
+	 */
 	public static ArrayList<double[]> boundingBoxCornersIndexed(Collection<IndexedDataObject<double[]>> list)
 	{
 		ArrayList<double[]> corners = new ArrayList<double[]>();
@@ -233,6 +294,13 @@ public class SimpleStatistics implements Serializable
 		return corners;
 	}
 	
+	/**
+	 * Calculates an axis parallel hyper rectangle as bounding box of the specified
+	 * list of double arrays.
+	 * 
+	 * @param list The list of double arrays.
+	 * @return The axis parallel bounding box.
+	 */
 	public static ArrayList<double[]> boundingBoxCorners(Collection<double[]> list)
 	{
 		ArrayList<double[]> corners = new ArrayList<double[]>();

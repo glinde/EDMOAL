@@ -41,7 +41,10 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * TODO Class Description
+ * Similar to the {@link ArrayIndexComparator}, but this comparator class
+ * specifies a list of indices. If the compared double arrays are equal at the first index,
+ * the second index of the index list is compared. If these are equal too, the third is
+ * compared etc. until no more indeces are left in the list.
  *
  * @author Roland Winkler
  */
@@ -49,8 +52,17 @@ public class ArrayIndexListComparator implements Comparator<double[]>, Serializa
 {
 	/**  */
 	private static final long	serialVersionUID	= 5822489769788186713L;
+	
+	/**
+	 * The list of indices that are used for comparing double arrays.
+	 */
 	private int[] indexList;
 	
+	/**
+	 * Creates a new Comparator for the cpecified list of indices.
+	 * 
+	 * @param indexList The list of indices that are used for comparing double arrays.
+	 */
 	public ArrayIndexListComparator(int[] indexList)
 	{
 		this.indexList = indexList.clone();
@@ -70,7 +82,9 @@ public class ArrayIndexListComparator implements Comparator<double[]>, Serializa
 	}
 
 	/**
-	 * @return the indexList
+	 * Returns the index list.
+	 * 
+	 * @return the index list.
 	 */
 	public int[] getIndexList()
 	{
@@ -78,7 +92,9 @@ public class ArrayIndexListComparator implements Comparator<double[]>, Serializa
 	}
 
 	/**
-	 * @param indexList the indexList to set
+	 * Sets the index list.
+	 * 
+	 * @param indexList The indexList to set.
 	 */
 	public void setIndexList(int[] indexList)
 	{

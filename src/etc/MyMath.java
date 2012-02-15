@@ -41,7 +41,8 @@ import java.io.Serializable;
 import java.util.Vector;
 
 /**
- * TODO Class Description
+ * A collection of mathematical methods and constants, not included in java.lang.Math.
+ * 
  *
  * @author Roland Winkler
  */
@@ -225,7 +226,8 @@ public class MyMath implements Serializable
 	}
 	
 	
-	/** circle center is (0,0) and coordinates of a and b are relative to circlecenter.
+	/** 
+	 * circle center is (0,0) and coordinates of a and b are relative to circlecenter.
 	 * 
 	 * calculates the t in the equasion: a + t*(b - a) = d
 	 * 

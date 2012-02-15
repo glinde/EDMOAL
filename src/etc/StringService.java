@@ -42,7 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * TODO Class Description
+ * The class provides some string format functionality.
  *
  * @author Roland Winkler
  */
@@ -52,21 +52,15 @@ public class StringService implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -6636833430995328123L;
 
+	/**
+	 * Returns a string of the current time and date in "yyyyMMdd_hhmmss" format.
+	 * 
+	 * @return a string of the current time and date in "yyyyMMdd_hhmmss" format.
+	 */
 	public static String getTimeFormatted()
 	{		
-//		GregorianCalendar cal = new GregorianCalendar();
-//				
-//		return String.format("%04d%02d%02d_%02d%02d%02d",
-//								cal.get(GregorianCalendar.YEAR),
-//								cal.get(GregorianCalendar.MONTH)+1,
-//								cal.get(GregorianCalendar.DAY_OF_MONTH),
-//								
-//								cal.get(GregorianCalendar.HOUR_OF_DAY),
-//								cal.get(GregorianCalendar.MINUTE),
-//								cal.get(GregorianCalendar.SECOND));
-		
-	 SimpleDateFormat formatter = new SimpleDateFormat ("yyyyMMdd_hhmmss");
-	 Date time = new Date();
-	 return formatter.format(time);
+		SimpleDateFormat formatter = new SimpleDateFormat ("yyyyMMdd_hhmmss");
+		Date time = new Date();
+		return formatter.format(time);
 	}
 }

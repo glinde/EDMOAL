@@ -111,16 +111,16 @@ public class Main
 	 */
 	public static void clusterAlgorithmVisualTest()
 	{
-		int dim = 2, number = 30000, clusterCount = 2*dim-1;
+		int dim = 3, number = 3000, clusterCount = 2*dim-1;
 		
 		ClusterAlgorithmVisualTest clusterTest = new ClusterAlgorithmVisualTest(dim, number, clusterCount);
 //		clusterTest.showDataSet();
 //		clusterTest.showClusteredDataSet();
 //		clusterTest.testHardCMeans();
-		clusterTest.testFuzzyCMeans();
+//		clusterTest.testFuzzyCMeans();
 //		clusterTest.testFuzzyCMeansNoise();
 //		clusterTest.testPolynomialFuzzyCMeans();
-//		clusterTest.testPolynomialFuzzyCMeansNoise();
+		clusterTest.testPolynomialFuzzyCMeansNoise();
 //		clusterTest.testRewardingCrispFCM();		
 //		clusterTest.testRewardingCrispFCMNoise();
 //		clusterTest.testVoronoiPartitionFCM();		
