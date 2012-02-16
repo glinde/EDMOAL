@@ -38,7 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering;
 
 /**
- * TODO Class Description
+ * An abstract class for the basic functionality a cluster should provide.
  *
  * @author Roland Winkler
  */
@@ -47,16 +47,26 @@ public class AbstractCluster implements Cluster, Cloneable
 	/**  */
 	private static final long	serialVersionUID	= -1818571761181329327L;
 
-	/**  */
+	/** States whether or not the cluster is activated */
 	protected boolean activated;
 	
-	/**  */
+	/** The index of the cluster */
 	protected int clusterIndex;
 	
-	/** */
+	/** The standard constructor. 
+	 * 
+	 * @param index The index of the cluster.
+	 */
 	public AbstractCluster(int index)
 	{
 		this.activated = true;
+	}
+	
+	/** The copy constructor */
+	public AbstractCluster(AbstractCluster cluster)
+	{
+		this.activated = cluster.activated;
+		this.clusterIndex = cluster.clusterIndex;
 	}
 
 	/* (non-Javadoc)
@@ -97,6 +107,8 @@ public class AbstractCluster implements Cluster, Cloneable
 	}
 	
 	/**
+	 * @TODO: remove.
+	 * 
 	 * @param clone
 	 */
 	public void clone(AbstractCluster clone)

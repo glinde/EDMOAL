@@ -41,7 +41,8 @@ import data.set.IndexedDataSet;
 import datamining.AbstractStaticDataMiningAlgorithm;
  
 /**
- * TODO Class Description
+ * Extends the {@link AbstractStaticDataMiningAlgorithm} class by adding the basic functionality of a clustering algorithms.
+ * At the moment, there is no additional functionality, but that might change in the future.
  *
  * @author Roland Winkler
  */
@@ -60,13 +61,9 @@ public abstract class AbstractClusteringAlgorithm<T> extends AbstractStaticDataM
 	}
 	
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to scip some clusters
-	 * if they are not needed any more.
+	 * A copy constructor.
 	 * 
 	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
 	 */
 	public AbstractClusteringAlgorithm(AbstractClusteringAlgorithm<T> c)
 	{

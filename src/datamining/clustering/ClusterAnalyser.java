@@ -48,7 +48,22 @@ import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
 
 /**
- * TODO Class Description
+ * This class provides a collection of standard cluster validation indices.
+ * Some of the indices compare data objects pairwise. That is quite some effort for large data
+ * sets. Therefore, there are two options, <code>PAIRWISE_DATAOBJECTS</code> and <code>PAIRWISE_PROTOTYPES</code>.
+ * The former (<code>PAIRWISE_DATAOBJECTS</code>) indicates, that the exact, but cost intensive method is used.
+ * The latter calculates first the weighted mean in form of a virtual prototype of a cluster and calculates
+ * the prototype positions for calculations.<br>
+ * 
+ * The second option, if the cluster size is calculated <code>LINEAR</code> or  <code>SQUARED</code> is not
+ * a performance option but rather how the user likes it to be applied either one might work.<br>
+ * 
+ * For all algorithms in this class, a paper reference is provided. However, even though the original
+ * papers are cited, the actual implementations are followed by the habilitation thesis of Christian Borgelt:<br>
+ *
+ * See: Borgelt, C. Prototype-based Classification and Clustering, Otto-von-Guericke-University of Magdeburg, Germany, 2005 http://www.borgelt.net/habil.html
+ * 
+ * @TODO: implement consistent cluster diameter calculations, especially some that do not require a vector space.
  *
  * @author Roland Winkler
  */
@@ -57,25 +72,63 @@ public class ClusterAnalyser<T>  implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= 3198045630164304643L;
 
+	/**
+	 * This enum is used for specifying the type of algorithm that is used for pairwise cluster distance calculations.
+	 *
+	 * @author Roland Winkler
+	 */
 	public static enum ClusterDistance
 	{
-		PAIRWISE_DATAOBJECTS, PAIRWISE_PROTOTYPES
+		
+		/**
+		 * States, that for cluster distance calculations, the data objects are used and no prototype is used.
+		 */
+		PAIRWISE_DATAOBJECTS,
+		
+		/** 
+		 * Uses the prototype positions of pairs of clusters for calculating the distance in between the clusters. 
+		 */
+		PAIRWISE_PROTOTYPES;
 	}
 	
+	/**
+	 * This states the type of distance that is used for cluster diameter calculations,
+	 * either the linear distance or the squared distance.
+	 *
+	 * @author Roland Winkler
+	 */
 	public static enum ClusterSize
 	{
-		LINEAR, SQUARED
+		
+		/** Indicates that the linear distance is used. */
+		LINEAR,
+		
+		/** Indicates that the squared distance is used. */
+		SQUARED;
 	}
 	
+	/** Stores with which algorithm the distance between pairs of clusters is calculated. */
 	private ClusterDistance clusterDistance;
+	
+	/** Stored with which distance function the diameter of clusters is calculations. */
 	private ClusterSize clusterSize;
 	
+	/**
+	 * The standard constructor, setting the cluster distance to <code>PAIRWISE_DATAOBJECTS</code> and
+	 * the cluster size to <code>LINEAR</code>.
+	 */
 	public ClusterAnalyser()
 	{
 		this.clusterDistance = ClusterDistance.PAIRWISE_DATAOBJECTS;
 		this.clusterSize = ClusterSize.LINEAR;
 	}
 
+	/**
+	 * Creates a new instance, using the specified methods for calculations.
+	 * 
+	 * @param cd Specifies the pairwise cluster distance algorithm
+	 * @param cs Specifies the cluster size distance function
+	 */
 	public ClusterAnalyser(ClusterDistance cd, ClusterSize cs)
 	{
 		this.clusterDistance = cd;
@@ -83,6 +136,20 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 	
 	
+	/**
+	 * Calculates the pairwise distance of clusters using the position of the data objects and the
+	 * the fuzzy membership value. The result is a distance matrix, each entry corresponding to
+	 * a pair of clusters. The equation for calculating the distance between cluster A and Cluster B is as follows:<br>
+	 * 
+	 * cluster_dist(A, B) = \frac{1}{(\sum_{i=0}^n u_{Ai})*(\sum_{i=0}^n u_{Bi})} \sum_{i=0}^n \sum_{j=0}^n u_{Ai} u_{Bj} dist(x_i, x_j)<br>
+	 * 
+	 * The complexity of this method is therefore: O(n^2 * c^2) with n being the number of data objects and c being the number of clusters. 
+	 * 
+	 * @param dataSet The data set.
+	 * @param fuzzyResult The fuzzy clustering result.
+	 * @param dist The distance function 
+	 * @return A distance matrix containing the pairwise distances of clusters.
+	 */
 	public double[][] pariwise_dataObject_clusterDistance(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, Metric<T> dist)
 	{
 		int i, j, k, l;
@@ -141,6 +208,19 @@ public class ClusterAnalyser<T>  implements Serializable
 		return pairwiseClusterDistances;
 	}
 
+	/**
+	 * Calculates the pairwise distance of clusters using the position of the prototypes.
+	 * The result is a distance matrix, each entry corresponding to a pair of clusters.
+	 * The equation for calculating the distance between cluster A and Cluster B is as follows:<br>
+	 * 
+	 * cluster_dist(A, B) = dist(y_A, y_B)<br>
+	 * 
+	 * The complexity of this method is therefore: O(c^2) with c being the number of clusters. 
+	 * 
+	 * @param prototypes The prototypes for the corresponding clusters
+	 * @param dist The distance function 
+	 * @return A distance matrix containing the pairwise distances of clusters.
+	 */
 	public double[][] pariwise_prototype_clusterDistance(List<Prototype<T>> prototypes, Metric<T> dist)
 	{
 		int i, k;
@@ -163,6 +243,20 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 	
 	
+	/**
+	 * Calculates the diameter of a cluster, using the distance of the data objects to the prototype of the cluster. The
+	 * equation for calculating the diameter of cluster A is:
+	 * 
+	 * cluster_diameter(A) = 2 \frac{\sum_{i=0}^n u_{Ai} dist(x_i, y_A)}{\sum_{i=0}^n u_{Ai}} <br>
+	 * 
+	 * Hence the complexity for calculating this value is in O(n) with n being the number of data objects.
+	 *  
+	 * @param dataSet The data set.
+	 * @param fuzzyResult The fuzzy clustering result.
+	 * @param prototypes The location of the prototypes
+	 * @param dist The distance function 
+	 * @return A diameter of the cluster.
+	 */
 	public double[] clusterDiameters(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, List<Prototype<T>> prototypes, Metric<T> dist)
 	{
 		int i, j;
@@ -216,6 +310,23 @@ public class ClusterAnalyser<T>  implements Serializable
 		return clusterDiameters;
 	}
 	
+	/**
+	 * Not all clustering algorithms are based on prototypes, therefore, some algorithms cant provide their location as
+	 * a distinctive characteristic. Most of the indices provided in this class require a prototype location. Therefore,
+	 * it can be estimated using the fuzzy mean of data objects of one cluster. This is basically the result that can be expected from
+	 * fuzzy c means if the membership values are fixed and the prototype positions are calculated. The equation for calculating
+	 * the prototype position (fuzzy mean) of cluster A is as follows:<br>
+	 * 
+	 * y_A = \frac{\sum_{i=0}^n u_{Ai} x_i}{\sum_{i=0}^n u_{Ai}} <br>
+	 * 
+	 * Since this calue is calculated for all clusters, the complexity of this function is in O(n*c)
+	 *  with n being the number of data objects and c being the number of clusters. 
+	 * 
+	 * @param dataSet The data set.
+	 * @param fuzzyResult The fuzzy clustering result.
+	 * @param vs A vector space.
+	 * @return The estimated prototype positions (fuzzy mean) of the clusters. 
+	 */
 	public ArrayList<Prototype<T>> estimatePrototypeLocations(List<IndexedDataObject<T>> dataSet, List<double[]> fuzzyResult, VectorSpace<T> vs)
 	{
 		int i, j;
@@ -250,6 +361,14 @@ public class ClusterAnalyser<T>  implements Serializable
 		return prototypes;
 	}
 	
+	/**
+	 * Calculates the sum of membership values for all clusters.
+	 * 
+	 * Complexity: O(n*c)
+	 * 
+	 * @param fuzzyResult The fuzzy clustering result.
+	 * @return The sum of membership values as double array with each entry corresponding to one cluster.
+	 */
 	public double[] membershipValueSums(List<double[]> fuzzyResult)
 	{
 		int i, j, clusterCount = fuzzyResult.get(0).length;
@@ -267,10 +386,19 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 		
 	/** 
-	 * @param fuzzyAlgorithm
-	 * @param vs
-	 * @param dist
-	 * @return
+	 * Calculates the Xie - Beni index. The complexity depends on how the pairwise distances of clusters and the
+	 * diameter of one cluster is calculated.<br>
+	 * 
+	 * Complexity for pairwise prototype calculations: O(n*c + c^2). 
+	 * Complexity for pairwise data object calculations: O(n^2*c^2), 
+	 *  with n being the number of data objects and c being the number of clusters.<br> 
+	 * 
+	 * See paper: X.L. Xie and G.A. Beni. Validity Measure for Fuzzy Clustering.IEEE Transactions on Pattern Analysis and Machine Intel-ligence (PAMI) 3(8):841–846. IEEE Press, Piscataway, NJ, USA 1991. Reprinted in [Bezdek and Pal 1992], 219–226
+	 * 
+	 * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
+	 * @param vs The vector space used for the clustering process
+	 * @param dist The distance metric.
+	 * @return The Xie - Beni index for the specified clustering result.
 	 */
 	public double xieBeniIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
@@ -331,12 +459,19 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 
 	/**
-	 * TODO: make version that does not need a vector space, i.e. make one that does not uses prototypes
+	 * Calculates the Davies - Bouldin index. The complexity depends on how the pairwise distances of clusters and the
+	 * diameter of one cluster is calculated.<br>
 	 * 
-	 * @param fuzzyAlgorithm
-	 * @param vs
-	 * @param dist
-	 * @return
+	 * Complexity for pairwise prototype calculations: O(n*c + c^2).
+	 * Complexity for pairwise data object calculations: O(n^2*c^2),
+	 *  with n being the number of data objects and c being the number of clusters.<br>    
+	 * 
+	 * See paper: D.L. Davies and D.W. Bouldin. A Cluster Separation Measure.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI) 1(4):224–227. IEEE Press, Piscataway, NJ, USA 1979
+	 * 
+	 * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
+	 * @param vs The vector space used for the clustering process
+	 * @param dist The distance metric.
+	 * @return The Davies - Bouldin index for the specified clustering result.
 	 */
 	public double daviesBouldinIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
@@ -390,12 +525,24 @@ public class ClusterAnalyser<T>  implements Serializable
 		
 		return maxRatioSum/fuzzyAlgorithm.getClusterCount();
 	}
-	
+
 	/**
-	 * TODO: make version that does not need a vector space, i.e. make one that does not uses prototypes
+	 * Calculates the Bezdec separation index. It is actually a more robust form of Dunns separation index, but
+	 * since bezdec made the more importent alterations and Dunns index is not valid for fuzzy membership values,
+	 * it is called Bezdec separation index here. The complexity depends on how the pairwise distances of clusters and the
+	 * diameter of one cluster is calculated.<br>
 	 * 
-	 * @param exampleSet
-	 * @return
+	 * Complexity for pairwise prototype calculations: O(n*c + c^2).
+	 * Complexity for pairwise data object calculations: O(n^2*c^2),
+	 *  with n being the number of data objects and c being the number of clusters. <br>   
+	 * 
+	 * See paper: J.C. Bezdek, W.Q. Li, Y. Attikiouzel, and M. Wind-ham. A Geometric Approach to Cluster Validity for Normal Mixtures. Soft Computing 1(4):166–179. Springer-Verlag, Heidelberg, Germany 1997<br>
+	 * See paper: J.C. Dunn. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters.Journal of Cyber-netics3(3):32–57. American Society for Cybernetics, Washington, DC, USA 1973 Reprinted in [Bezdek and Pal 1992], 82–101<br>
+	 * 
+	 * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
+	 * @param vs The vector space used for the clustering process
+	 * @param dist The distance metric.
+	 * @return The Bezdec separation index (fuzzy Dunn separation index) for the specified clustering result.
 	 */
 	public double bezdecSeperationIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
@@ -446,14 +593,19 @@ public class ClusterAnalyser<T>  implements Serializable
 		
 		return minClusterDistance/maxDiameter;
 	}
-	
+
 	/**
-	 * @return
+	 * Calculates the partition entropie of the fuzzy clustering result.<br>
+	 * 
+	 * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
+	 * 
+	 * See paper: J.C. Bezdek.Pattern Recognition with Fuzzy Objective Func-tion Algorithms. Plenum Press, New York, NY, USA 1981
+	 *
+	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
+	 * @return The partition coefficient of the specified clustering result.
 	 */
 	public double partitionEntropy(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm)
 	{
-//		System.out.println("Partition Entropy");
-		
 		double sum = 0.0d;
 		int i;		
 
@@ -472,9 +624,16 @@ public class ClusterAnalyser<T>  implements Serializable
 		
 		return -sum;
 	}
-	
+
 	/**
-	 * @return
+	 * Calculates the partition coefficient of the fuzzy clustering result.<br>
+	 * 
+	 * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
+	 * 
+	 * See paper: J.C. Bezdek.Pattern Recognition with Fuzzy Objective Func-tion Algorithms. Plenum Press, New York, NY, USA 1981
+	 *
+	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
+	 * @return The partition coefficient of the specified clustering result.
 	 */
 	public double partitionCoefficient(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm)
 	{
@@ -494,18 +653,32 @@ public class ClusterAnalyser<T>  implements Serializable
 		
 		return sum;
 	}
-	
+
 	/**
-	 * @return
+	 * Calculates the non fuzzines index (normalised partition coefficient) of the fuzzy clustering result.<br>
+	 * 
+	 * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
+	 * 
+	 * See paper: E. Backer and A.K. Jain. A Clustering Performance Measure based on Fuzzy Set Decomposition.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI)3(1):66–74. IEEE Press, Piscataway, NJ, USA 1981<br>
+	 *
+	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
+	 * @return The partition coefficient of the specified clustering result.
 	 */
 	public double nonFuzzynessIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm)
 	{
-//		System.out.println("Non Fuzziness Index");
-		
 		return 1.0d - (((double)fuzzyAlgorithm.getClusterCount())/(((double)fuzzyAlgorithm.getClusterCount()) - 1.0d))*(1.0d - this.partitionCoefficient(fuzzyAlgorithm));
 	}
 	
 
+	/**
+	 * Creates a report of all indices and returns the string. Depending on the complexity of the data set
+	 * and the calculation methods, this may take some time. 
+	 * 
+	 * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
+	 * @param vs The vector space used for the clustering process
+	 * @param dist The distance metric.
+	 * @return The string holding the report.
+	 */
 	public String clusterResultProperties(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
 		StringBuffer sb = new StringBuffer();
@@ -542,7 +715,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 
 	/**
-	 * @return the clusterDistance
+	 * Returns the type of distance calculation algorithm for the pairwise cluster distances.
+	 * 
+	 * @return the cluster distance indicator.
 	 */
 	public ClusterDistance getClusterDistance()
 	{
@@ -550,7 +725,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 
 	/**
-	 * @param clusterDistance the clusterDistance to set
+	 * Sets the type of distance calculation algorithm for the pairwise cluster distances.
+	 * 
+	 * @param clusterDistance the cluster distance indicator to set
 	 */
 	public void setClusterDistance(ClusterDistance clusterDistance)
 	{
@@ -558,7 +735,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 
 	/**
-	 * @return the clusterSize
+	 * Returns the type of distance function for the diameter calculation of a cluster.
+	 * 
+	 * @return the cluster diameter indicator.
 	 */
 	public ClusterSize getClusterSize()
 	{
@@ -566,7 +745,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 
 	/**
-	 * @param clusterSize the clusterSize to set
+	 * Sets the type of distance function for the diameter calculation of a cluster.
+	 * 
+	 * @param clusterSize the cluster diameter indicator to set
 	 */
 	public void setClusterSize(ClusterSize clusterSize)
 	{

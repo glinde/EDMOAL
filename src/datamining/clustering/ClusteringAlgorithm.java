@@ -40,25 +40,41 @@ package datamining.clustering;
 import datamining.DataMiningAlgorithm;
 
 /**
- * TODO Class Description
+ * The basic interface for all clustering algorithms. Clustering, in the sense of unsupervised classification.
+ *  
+ * There are two kinds of clusters,  active clusters and inactive clusters. If an algorithm
+ * provides a dynamic number of clusters, only active clusters are interesting. But if a clustering
+ * algorithm requires the number of clusters be known in advance to starting the clustering process,
+ * active and inactive clusters becomes more interesting.<br>
+ * 
+ * Inactive clusters are clusters that are available in principle, but which have no data objects assigned to.
+ * So if the number of clusteres is fixed from the start, the concept of inactive clusters allows
+ * to adjust the number of relevant (=active) clusters. Usually, inactive clusters do not participate 
+ * in the clustering procedure.
  *
  * @author Roland Winkler
  */
 public interface ClusteringAlgorithm<T> extends DataMiningAlgorithm<T>
 {
 	/**
-	 * @return the number of clusters or 0 if unknown
+	 * Returns the total number of clusters.
+	 * 
+	 * @return the total number of clusters.
 	 */
 	public int getClusterCount();
 	
 	/**
-	 * @return the number of active clusters
+	 * Returns the number of active clusters.
+	 * 
+	 * @return the number of active clusters.
 	 */
 	public int getActiveClusterCount();
 	
 	
 	/**
-	 * @return the number of inactive clusters
+	 * Returns the number of inactive clusters.
+	 * 
+	 * @return the number of inactive clusters.
 	 */
 	public int getInactiveClusterCount();
 }

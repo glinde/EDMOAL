@@ -50,9 +50,26 @@ import datamining.clustering.CrispClusteringAlgorithm;
 import datamining.clustering.CrispNoiseClusteringAlgorithm;
 
 /**
- * TODO Class Description
+ * The DBScan algorithm, implemented using a ball tree. This is one of the best and fastest clustering algorithms
+ * that have been invented. It finds any kind of cluster shape, provided the data objects are fairly dense inside
+ * the cluster and sparse in between the clusters. The algorithm is able to detect noise data objects, based
+ * on two parameters: A core distance and a minimal number of core data objects.<br>
+ * 
+ * <ul>The Algorithm in short goes as follows: Start at one random data object.
+ * <li> 1. case: If in the _radius_ around the data object are at least
+ * 		a _min_ number of data objects, this data object forms a new cluster.
+ * 		Note that all data objects belong to this cluster.
+ * 		Then perform the test recursively for all untested or noise data objects in range of the _radius_.</li>
+ * <li> 2. case: If there are not enough data objects around and this data object is not noted to belong to
+ * 		a cluster already, note it as being noise and contionue with the next untested, random data object.</li>
+ * </ul>
+ * 
+ * Using a ball tree to perform a sphere query makes this algorithm be for well defined parameters be in O(n * log(n)).
+ * For a large data set with many clusters, this is significantly faster most prototype based algorithm. <br>
  * 
  * Paper: Ester, M.; Kriegel, H.-P.; Jörg, S. & Xu, X. A density-based algorithm for discovering clusters in large spatial databases with noise 2nd International Conference on Knowledge Discovery and Data Mining, AAAI Press, 1996, 226-231
+ * 
+ * @see data.structures.balltree.BallTree
  * 
  * @author Roland Winkler
  */
@@ -61,29 +78,38 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	/**  */
 	private static final long	serialVersionUID	= 8539759213273998996L;
 
+	/** For the DBScan clustering algorithm, the constants for noise and unassigned are changed. This is masked to the outside to fit the crisp noise clustering interface.  */
 	private static final int DBSCAN_UNASSIGNED_ID = -2;
 	
+	/** For the DBScan clustering algorithm, the constants for noise and unassigned are changed. This is masked to the outside to fit the crisp noise clustering interface.  */
 	private static final int DBSCAN_NOISE_ID = -1;	
 	
-	/**  */
+	/** The core distance */
 	protected double coreDist;
 	
-	/**  */
+	/** The minimal number of core data objects. */
 	protected int coreNum;
 	
-	/**  */
+	/** The number of clusterd found so far. */
 	protected int clusterCount;
 	
-	/**  */
+	/** The metric for calculating distances amoung data objects */
 	protected Metric<T> distanceFunction;
 		
-	/**  */
+	/** The sphere query provider, for example a ball tree. */
 	protected SphereQueryProvider<T> sphereQueryProvider;
 	
-	/**  */
+	/** A list to hold the cluster ID's for all data objects. */
 	protected int[] clusterIDs;
 		
-	/** */
+	/**
+	 *  The standard constructor.
+	 * 
+	 * @param dataSet The data set that is to be clustered.
+	 * @param coreDist The core distance
+	 * @param coreNum The minimal number of data object to become a core point
+	 * @param dist The metric for calculating distances amoung data objects.
+	 */
 	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Metric<T> dist)
 	{
 		super(dataSet);
@@ -102,7 +128,12 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	
 	
 	/**
-	 *	The initial constructor for clustering.
+	 *	A constructor assuming <code>coreDist</code> = 1 and <code>coreNum</code> = 4.
+	 *
+	 * @TODO: make an algorithm to estimate the parameter.
+	 * 
+	 * @param dataSet The data set that is to be clustered.
+	 * @param dist The metric for calculating distances amoung data objects.
 	 */
 	public DBScan(IndexedDataSet<T> dataSet, Metric<T> dist)
 	{
@@ -110,13 +141,9 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	}
 		
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to scip some clusters
-	 * if they are not needed any more.
+	 * The copy constructor.
 	 * 
-	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
+	 * @param c The elder clustering algorithm object.
 	 */
 	public DBScan(DBScan<T> c)
 	{
@@ -132,11 +159,11 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	}
 	
 	/**
-	 * Sets the given sphereQueryProvider. If the data set of the provider is identical to this data set,
-	 * it is not used as is. If it contains a different data set, it is cleared and the data set of this
+	 * Sets the specified {@link SphereQueryProvider}. If the data set of the provider is identical to this data set,
+	 * it is used as is. If it contains a different data set, it is cleared and the data set of this
 	 * algorithm is added to the SphereQueryProvider.
 	 * 
-	 * @param provider
+	 * @param provider The SphereQueryProvider to be used for this clustering algorithm.
 	 */
 	public void registerSphereQueryProvider(SphereQueryProvider<T> provider)
 	{
@@ -150,7 +177,8 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	}
 	
 	/**
-	 * 
+	 * If the {@link SphereQueryProvider} is not specified in ths instance, a new {@link BallTree} is created to perform the
+	 * clustering. 
 	 */
 	private void autoBuildTree()
 	{
