@@ -42,7 +42,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import etc.MyMath;
+import data.algebra.Metric;
 
 
 /**
@@ -63,8 +63,9 @@ public class DoubleArraySequence implements Serializable
 	/** The sequence of double arrays, it is public because there is no need to hide the data. */
 	public ArrayList<double[]> sq;
 	
+	
 	/**
-	 * The standard constructor, creating an empty sequence.
+	 * The standard constructor, creating an empty sequence and using the Euclidean metric.
 	 */
 	public DoubleArraySequence()
 	{
@@ -104,14 +105,14 @@ public class DoubleArraySequence implements Serializable
 	 * 
 	 * @return The length of the double array sequence
 	 */
-	public double length()
+	public double length(Metric<double[]> metric)
 	{
 		double length = 0.0d;
 		int i;
 		
 		for(i=1; i<this.sq.size(); i++)
 		{
-			length += MyMath.euclideanDist(this.sq.get(i-1), this.sq.get(i));
+			length += metric.distance(this.sq.get(i-1), this.sq.get(i));
 		}
 		
 		return length;

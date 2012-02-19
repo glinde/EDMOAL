@@ -40,7 +40,6 @@ package data.objects.sequence;
 import java.io.Serializable;
 
 import data.algebra.Metric;
-import etc.MyMath;
 
 /**
  * This class provides an implementation of a metric between two double array sequences, similar to the <code>PointSamplingDistance</code>.
@@ -58,11 +57,27 @@ public class MaxPointSamplingDistance implements Metric<DoubleArraySequence>, Se
 {
 	/**  */
 	private static final long	serialVersionUID	= 7053934220906860988L;
+	
+	/** 
+	 * The number of sample points, used to calculate the distance.
+	 */
 	protected int numberOfSamplePoints;
 	
-	public MaxPointSamplingDistance(int numberOfSamplePoints)
+	/** The metric that is used for inter-point distances in the algebraic space the sequences live in. */
+	protected Metric<double[]> metric;
+	
+	/**
+	 * Creates a new {@link MaxPointSamplingDistance} object with the specified number of sampling points and
+	 * for the specified metric. 
+	 * 
+	 * @param numberOfSamplePoints The number of sampling points
+	 * @param metric The metric used for calculating distances in the algebraic space of the sequence points.
+	 */
+	public MaxPointSamplingDistance(int numberOfSamplePoints, Metric<double[]> metric)
 	{
 		this.numberOfSamplePoints = numberOfSamplePoints;
+		
+		this.metric = metric;
 	}
 
 	/**
@@ -92,16 +107,16 @@ public class MaxPointSamplingDistance implements Metric<DoubleArraySequence>, Se
 		
 //		sampledDataA.add(a.sequence.firstElement());
 		distance = 0.0d;
-		sampleLengthA = a.length()/((double)this.numberOfSamplePoints);
-		sampleLengthB = b.length()/((double)this.numberOfSamplePoints);
+		sampleLengthA = a.length(this.metric)/((double)this.numberOfSamplePoints);
+		sampleLengthB = b.length(this.metric)/((double)this.numberOfSamplePoints);
 		coveredLengthA = 0.0d;
 		coveredLengthB = 0.0d;
 		accumulatedSegmentLengthA = 0.0;
 		accumulatedSegmentLengthB = 0.0;
 		indexA = 1;
 		indexB = 1;
-		segmentLengthA = MyMath.euclideanDist(a.sq.get(indexA-1), a.sq.get(indexA));
-		segmentLengthB = MyMath.euclideanDist(b.sq.get(indexB-1), b.sq.get(indexB));
+		segmentLengthA = this.metric.distance(a.sq.get(indexA-1), a.sq.get(indexA));
+		segmentLengthB = this.metric.distance(b.sq.get(indexB-1), b.sq.get(indexB));
 		for(i=0; i<this.numberOfSamplePoints-1; i++)
 		{
 			localDistance = 0.0d;
@@ -122,18 +137,18 @@ public class MaxPointSamplingDistance implements Metric<DoubleArraySequence>, Se
 			{
 				accumulatedSegmentLengthA += segmentLengthA;
 				indexA++;
-				segmentLengthA = MyMath.euclideanDist(a.sq.get(indexA-1), a.sq.get(indexA));
+				segmentLengthA = this.metric.distance(a.sq.get(indexA-1), a.sq.get(indexA));
 			}
 			
 			while(coveredLengthB - accumulatedSegmentLengthB > segmentLengthB)
 			{
 				accumulatedSegmentLengthB += segmentLengthB;
 				indexB++;
-				segmentLengthB = MyMath.euclideanDist(b.sq.get(indexB-1), b.sq.get(indexB));
+				segmentLengthB = this.metric.distance(b.sq.get(indexB-1), b.sq.get(indexB));
 			}
 		}
 		
-		localDistance = MyMath.euclideanDistSquare(a.sq.get(a.sq.size()-1), b.sq.get(b.sq.size()-1));
+		localDistance = this.metric.distanceSq(a.sq.get(a.sq.size()-1), b.sq.get(b.sq.size()-1));
 		if(distance < localDistance) distance = localDistance;
 		
 //		System.out.println("max Dist = " + Math.sqrt(distance));
