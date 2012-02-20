@@ -37,6 +37,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining.clustering;
 
+import data.algebra.Metric;
 import datamining.DataMiningAlgorithm;
 
 /**
@@ -50,7 +51,11 @@ import datamining.DataMiningAlgorithm;
  * Inactive clusters are clusters that are available in principle, but which have no data objects assigned to.
  * So if the number of clusteres is fixed from the start, the concept of inactive clusters allows
  * to adjust the number of relevant (=active) clusters. Usually, inactive clusters do not participate 
- * in the clustering procedure.
+ * in the clustering procedure.<br>
+ * 
+ * Very abstract speaking, clustering is an analysis of the distances among data objects. Naturally,
+ * that distance needs to be measurable in order to do any analysis. Therefore, a metric is required for all clustering
+ * algorithms, independent of their nature.
  *
  * @author Roland Winkler
  */
@@ -77,4 +82,13 @@ public interface ClusteringAlgorithm<T> extends DataMiningAlgorithm<T>
 	 * @return the number of inactive clusters.
 	 */
 	public int getInactiveClusterCount();
+	
+	
+	/**
+	 * Returns the metric that is required to measure the distance among data objects or arbitrary locations
+	 * and data objects.
+	 * 
+	 * @return the metric.
+	 */
+	public Metric<T> getMetric();
 }

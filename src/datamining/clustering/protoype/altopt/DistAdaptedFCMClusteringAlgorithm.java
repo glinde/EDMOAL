@@ -47,6 +47,7 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import data.structures.balltree.BallTree;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
@@ -96,17 +97,17 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public DistAdaptedFCMClusteringAlgorithm(DistAdaptedFCMClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public DistAdaptedFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
+
+		this.mergePrototypes = false;
+		this.mergingDistance = 0.0d;
 		
-		this.mergePrototypes = c.mergePrototypes ;
-		this.mergingDistance = c.mergingDistance;
+		this.removeEmptyPrototypes = false;
+		this.minMemembershipValueSum = 0.0d;
 		
-		this.removeEmptyPrototypes = c.removeEmptyPrototypes;
-		this.minMemembershipValueSum = c.minMemembershipValueSum;
-		
-		this.distanceCorrectionParameter = c.distanceCorrectionParameter;
+		this.distanceCorrectionParameter = 3.0d;
 	}
 
 
@@ -188,7 +189,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				{
 					if(!this.getPrototypes().get(i).isActivated()) continue;
 					
-					doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -254,7 +255,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -323,7 +324,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				distancesSq[i] = doubleTMP;
 				if(doubleTMP <= 0.0d)
 				{
@@ -393,7 +394,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -479,7 +480,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -566,7 +567,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		{
 			if(!this.getPrototypes().get(i).isActivated()) continue;
 			
-			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -630,7 +631,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				{
 					if(!this.getPrototypes().get(j).isActivated()) continue;
 					
-					if(this.dist.distanceSq(this.getPrototypes().get(i).getPosition(), this.getPrototypes().get(j).getPosition()) < this.mergingDistance*this.mergingDistance)
+					if(this.metric.distanceSq(this.getPrototypes().get(i).getPosition(), this.getPrototypes().get(j).getPosition()) < this.mergingDistance*this.mergingDistance)
 					{
 						this.getPrototypes().get(j).setActivated(false);
 						mergedPrototypes++;
@@ -644,7 +645,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 			tmpPrototypeDataSet = new IndexedDataSet<T>();
 			for(Centroid<T> p:this.prototypes) tmpPrototypeDataSet.add(new IndexedDataObject<T>(p.getPosition()));
 			tmpPrototypeDataSet.seal();
-			ballTree = new BallTree<T>(tmpPrototypeDataSet, this.dist);
+			ballTree = new BallTree<T>(tmpPrototypeDataSet, this.metric);
 			closePrototypes = new ArrayList<IndexedDataObject<T>>(activePrototypes.size());
 			
 			for(Centroid<T> p : activePrototypes)
@@ -694,7 +695,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		
 		for(IndexedDataObject<T> p:list)
 		{
-			result[i] = this.dist.distance(p.x, reference);
+			result[i] = this.metric.distance(p.x, reference);
 			i++;
 		}
 		

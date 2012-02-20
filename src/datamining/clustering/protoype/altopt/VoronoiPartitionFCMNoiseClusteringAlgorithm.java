@@ -45,6 +45,7 @@ import data.algebra.EuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
@@ -78,11 +79,11 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public VoronoiPartitionFCMNoiseClusteringAlgorithm(VoronoiPartitionFCMNoiseClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public VoronoiPartitionFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, EuclideanVectorSpace<T> evs, boolean useOnlyActivePrototypes)
 	{
-		super(c, useOnlyActivePrototypes);
-		
-		this.noiseDistance = c.noiseDistance;
+		super(c, evs, useOnlyActivePrototypes);
+
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
 
 	/* (non-Javadoc)

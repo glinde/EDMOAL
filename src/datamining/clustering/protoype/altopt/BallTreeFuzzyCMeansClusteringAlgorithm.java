@@ -80,11 +80,11 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	/**
 	 * 
 	 */
-	public BallTreeFuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> dataSet, VectorSpace<T> vs, Metric<T> dist)
+	public BallTreeFuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> dataSet, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(dataSet, vs, dist);
+		super(dataSet, vs, metric);
 				
-		this.cBallTree = new CenteredBallTree<T>(dataSet, this.vs, this.dist);
+		this.cBallTree = new CenteredBallTree<T>(dataSet, this.vs, this.metric);
 		this.cBallTree.build();
 		
 		this.maximalMembershipIntervalLength = 0.0d;
@@ -237,7 +237,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		{
 			if(this.calculationDepth[i] >= node.getDepth())
 			{
-				this.prototypeDistances[i] = this.dist.distance(node.getCenterOfGravity(), this.prototypes.get(i).getPosition());
+				this.prototypeDistances[i] = this.metric.distance(node.getCenterOfGravity(), this.prototypes.get(i).getPosition());
 				// TODO: insert proper 0-distances handling. the current implementation uses numeric errors for correct calculation.
 				if(this.prototypeDistances[i] > 0.0d) 
 				{
@@ -424,7 +424,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 					this.vs.add(this.newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), this.newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), this.newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				

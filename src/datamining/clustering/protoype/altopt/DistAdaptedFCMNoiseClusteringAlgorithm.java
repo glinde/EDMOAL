@@ -45,7 +45,9 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
+import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 import etc.SimpleStatistics;
 
@@ -72,6 +74,8 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 	public DistAdaptedFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
+
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
 
 		
@@ -79,11 +83,11 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public DistAdaptedFCMNoiseClusteringAlgorithm(DistAdaptedFCMNoiseClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public DistAdaptedFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
-		
-		this.noiseDistance = c.noiseDistance;
+
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
 
 
@@ -163,7 +167,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 				{
 					if(!this.getPrototypes().get(i).isActivated()) continue;
 					
-					doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -232,7 +236,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -301,7 +305,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				distancesSq[i] = doubleTMP;
 				if(doubleTMP <= 0.0d)
 				{
@@ -378,7 +382,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -466,7 +470,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -556,7 +560,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 		{
 			if(!this.getPrototypes().get(i).isActivated()) continue;
 			
-			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -645,7 +649,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 			{
 				if(!this.getPrototypes().get(i).isActivated()) continue;
 				
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -720,7 +724,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 		{
 			if(!this.getPrototypes().get(i).isActivated()) continue;
 			
-			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
+			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition()) - dynamicDistanceCorrectionValues[i];
 			if(doubleTMP <= 0.0d)
 			{
 				zeroDistanceCount++;

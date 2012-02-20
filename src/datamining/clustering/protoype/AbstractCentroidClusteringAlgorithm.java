@@ -39,6 +39,7 @@ package datamining.clustering.protoype;
 
 import java.util.Collection;
 
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 
@@ -79,9 +80,9 @@ public abstract class AbstractCentroidClusteringAlgorithm<T> extends AbstractPro
 	 * @param data The data set for clustering.
 	 * @param vs The vector space of which the data objects are elements.
 	 */
-	public AbstractCentroidClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs)
+	public AbstractCentroidClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 	}
 
 	/* (non-Javadoc)

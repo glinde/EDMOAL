@@ -44,6 +44,7 @@ import java.util.PriorityQueue;
 import data.algebra.EuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
@@ -93,11 +94,11 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public VoronoiPartitionFCMClusteringAlgorithm(VoronoiPartitionFCMClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public VoronoiPartitionFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, EuclideanVectorSpace<T> evs, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 		
-		this.evs = c.evs;
+		this.evs = evs;
 	}
 
 

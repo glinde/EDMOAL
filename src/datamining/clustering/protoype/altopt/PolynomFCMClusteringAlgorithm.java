@@ -47,6 +47,7 @@ import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 
@@ -87,8 +88,6 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		}
 	}
 	
-	protected final Metric<T> dist;
-	
 	/** the distance ratio at which data objects are clustered in hard clustering */
 	protected double beta;
 		
@@ -97,11 +96,10 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	 * @param data
 	 * @param vs
 	 */
-	public PolynomFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
+	public PolynomFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 		
-		this.dist = dist;
 		this.beta = 0.5d;
 	}
 
@@ -110,11 +108,11 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public PolynomFCMClusteringAlgorithm(PolynomFCMClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public PolynomFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
-		this.dist = c.dist;
-		this.beta = c.beta;
+		
+		this.beta = 0.5d;
 	}
 
 	/* (non-Javadoc)
@@ -174,7 +172,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 					unsortedPrototypes.get(i).included = false;
-					unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 				}
 				
@@ -264,7 +262,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -314,7 +312,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -399,7 +397,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		for(i = 0; i < this.getClusterCount(); i++)
 		{
 			unsortedPrototypes.get(i).included = false;
-			unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
 		
@@ -495,7 +493,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -594,7 +592,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -685,14 +683,4 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	{
 		this.beta = beta;
 	}
-
-
-	/**
-	 * @return the dist
-	 */
-	public Metric<T> getDist()
-	{
-		return this.dist;
-	}
-	
 }

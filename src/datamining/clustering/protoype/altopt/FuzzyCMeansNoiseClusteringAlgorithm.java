@@ -46,7 +46,9 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
+import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
@@ -75,11 +77,11 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	 * @param c
 	 * @param useCluster
 	 */
-	public FuzzyCMeansNoiseClusteringAlgorithm(FuzzyCMeansNoiseClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public FuzzyCMeansNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 
-		this.noiseDistance				= c.noiseDistance;
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
 
 	/* (non-Javadoc)
@@ -138,7 +140,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 				distanceSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
-					doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -206,7 +208,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());		
 				}
 
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 
@@ -249,7 +251,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -307,7 +309,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -374,7 +376,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -442,7 +444,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 		distanceSum = 0.0d;
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -522,7 +524,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 		distanceSum = 0.0d;
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -584,7 +586,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -647,7 +649,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	 */
 	public FuzzyCMeansNoiseClusteringAlgorithm<T> clone()
 	{
-		FuzzyCMeansNoiseClusteringAlgorithm<T> clone = new FuzzyCMeansNoiseClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.dist);
+		FuzzyCMeansNoiseClusteringAlgorithm<T> clone = new FuzzyCMeansNoiseClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.metric);
 		this.clone(clone);
 		return clone;
 	}

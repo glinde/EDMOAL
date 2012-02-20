@@ -46,11 +46,16 @@ import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.CrispClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 
 /**
- * TODO Class Description
+ * The hard c-means clustering algorithm is a prototype based clustering algorithm and maybe one of the first clustering algorithms
+ * that have been invented. Hard c-means is an iterative, objection function based, crisp clustering algorithm and therefore,
+ * provides all functionalities or these properties. For calculating the prototype positions, a {@link VectorSpace} on type <code>T</code> is required, and for
+ * calculating the distance between data objects and prototypes, a {@link Metric} necessary. See the paper for more information
+ * on the algorithm and the theory connected to it. <br> 
  *
  * Paper: MacQueen, J. B. Some Methods for Classification and Analysis of MultiVariate Observations Proc. of the fifth Berkeley Symposium on Mathematical Statistics and Probability, University of California Press, 1967, 1, 281-297
  * 
@@ -60,36 +65,43 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 {		
 	/**  */
 	private static final long	serialVersionUID	= -2518725991257149820L;
-
-	/**  */
-	protected Metric<T> dist;
 	
+	/**
+	 *  A list of integer values containing the clustering result. Each
+	 *  element of the array corresponds to the data object with the same index and
+	 *  the value of the element is the cluster the data obiect is associated to.
+	 */
 	protected int[] clusteringResult;
 	
 	/**
-	 * @param data
-	 * @param numberOfClusters
+	 * Creates a new HardCMeansClusteringAlgorithm with the specified data set, vector space and metric.
+	 * All data objects are set to {@link CrispClusteringAlgorithm#UNASSIGNED_INDEX}. No prototypes
+	 * are initialized so far.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data obejcts and prototypes.
 	 */
-	public HardCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
+	public HardCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 
-		this.dist = dist;
 		this.clusteringResult = new int[this.data.size()];
-		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = -1;
+		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = CrispClusteringAlgorithm.UNASSIGNED_INDEX;
 	}
 
 	/**
+	 *
+	 * 
 	 * @param data
 	 * @param numberOfClusters
 	 */
-	public HardCMeansClusteringAlgorithm(HardCMeansClusteringAlgorithm<T> fcmA, boolean useOnlyActivePrototypes)
+	public HardCMeansClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
-		super(fcmA, useOnlyActivePrototypes);
+		super(c, useOnlyActivePrototypes);
 		
-		this.dist = fcmA.dist;
-		this.clusteringResult = fcmA.clusteringResult.clone();
-		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = -1;
+		this.clusteringResult = new int[this.data.size()];
+		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = CrispClusteringAlgorithm.UNASSIGNED_INDEX;
 	}
 
 	/* (non-Javadoc)
@@ -115,7 +127,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 	
 	/**
-	 * @return
+	 * 
 	 */
 	private void recalculateClusterAssignments()
 	{
@@ -130,7 +142,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			distMin = Double.MAX_VALUE;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
+				dist = this.metric.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
 				if(dist < distMin)
 				{
 					distMin = dist;
@@ -187,7 +199,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 				distMin = Double.MAX_VALUE;
 				for(i=0; i<this.getClusterCount(); i++)
 				{
-					dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
+					dist = this.metric.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
 					if(dist < distMin)
 					{
 						distMin = dist;
@@ -243,7 +255,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			distMin = Double.MAX_VALUE;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				dist = this.dist.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
+				dist = this.metric.distanceSq(this.prototypes.get(i).getPosition(), x.x); 
 				if(dist < distMin)
 				{
 					distMin = dist;

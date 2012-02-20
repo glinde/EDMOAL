@@ -40,6 +40,7 @@ package datamining.clustering.protoype;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import datamining.IterativeObjectiveFunctionOptimization;
@@ -106,9 +107,9 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	 * @param data The data set for clustering.
 	 * @param vs The vector space of which the data objects are elements.
 	 */
-	public AbstractPrototypeClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs)
+	public AbstractPrototypeClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data);
+		super(data, metric);
 		
 		this.vs								= vs;
 		this.initialized					= false;
@@ -136,7 +137,7 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	@SuppressWarnings("unchecked")
 	public AbstractPrototypeClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, S> c, boolean useOnlyActivePrototypes)
 	{
-		super(c.data);
+		super(c.data, c.getMetric());
 		
 		this.vs								= c.vs;
 		this.prototypes						= new ArrayList<S>(c.getClusterCount());

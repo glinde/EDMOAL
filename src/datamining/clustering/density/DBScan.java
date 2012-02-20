@@ -90,12 +90,9 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	/** The minimal number of core data objects. */
 	protected int coreNum;
 	
-	/** The number of clusterd found so far. */
+	/** The number of clustered found so far. */
 	protected int clusterCount;
-	
-	/** The metric for calculating distances amoung data objects */
-	protected Metric<T> distanceFunction;
-		
+			
 	/** The sphere query provider, for example a ball tree. */
 	protected SphereQueryProvider<T> sphereQueryProvider;
 	
@@ -108,17 +105,16 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	 * @param dataSet The data set that is to be clustered.
 	 * @param coreDist The core distance
 	 * @param coreNum The minimal number of data object to become a core point
-	 * @param dist The metric for calculating distances amoung data objects.
+	 * @param metric The metric for calculating distances amoung data objects.
 	 */
-	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Metric<T> dist)
+	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Metric<T> metric)
 	{
-		super(dataSet);
+		super(dataSet, metric);
 		
 		this.coreDist = coreDist;
 		this.coreNum = coreNum;
 		
 		this.clusterCount = 1;
-		this.distanceFunction = dist;
 
 		this.sphereQueryProvider = null;
 		
@@ -133,11 +129,11 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	 * @TODO: make an algorithm to estimate the parameter.
 	 * 
 	 * @param dataSet The data set that is to be clustered.
-	 * @param dist The metric for calculating distances amoung data objects.
+	 * @param metric The metric for calculating distances amoung data objects.
 	 */
-	public DBScan(IndexedDataSet<T> dataSet, Metric<T> dist)
+	public DBScan(IndexedDataSet<T> dataSet, Metric<T> metric)
 	{
-		this(dataSet, 1.0d, 4, dist);
+		this(dataSet, 1.0d, 4, metric);
 	}
 		
 	/**
@@ -147,12 +143,11 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	 */
 	public DBScan(DBScan<T> c)
 	{
-		super(c.data);
+		super(c);
 		
 		this.coreDist				= c.coreDist;
 		this.coreNum				= c.coreNum;
 		
-		this.distanceFunction		= c.distanceFunction;
 		this.sphereQueryProvider	= c.sphereQueryProvider;
 		
 		this.clusterIDs				= c.clusterIDs.clone();
@@ -182,7 +177,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	 */
 	private void autoBuildTree()
 	{
-		this.sphereQueryProvider = new BallTree<T>(this.data, this.distanceFunction);
+		this.sphereQueryProvider = new BallTree<T>(this.data, this.metric);
 		this.sphereQueryProvider.build();
 	}
 	

@@ -47,7 +47,9 @@ import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
+import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
@@ -71,33 +73,29 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	 */
 	protected double fuzzifier;
 	
-	/**  */
-	protected final Metric<T> dist;
 		
 	/**
 	 * @param data the data set
 	 * @param vs the vector space of the data set
-	 * @param dist The distance must be differenciable w.r.t. y in dist(x, y)^2, and the directed differencial in direction of
+	 * @param metric The distance must be differenciable w.r.t. y in dist(x, y)^2, and the directed differencial in direction of
 	 * 				y must yield d/dy dist(x, y)^2 = 2(y - x) 
 	 */
-	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
+	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 		
 		this.fuzzifier					= 2.0d;
-		this.dist						= dist;
 	}
 	
 	/**
 	 * @param c
 	 * @param useCluster
 	 */
-	public FuzzyCMeansClusteringAlgorithm(FuzzyCMeansClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public FuzzyCMeansClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
-
-		this.fuzzifier					= c.fuzzifier;
-		this.dist						= c.dist;
+		
+		this.fuzzifier					= 2.0d;
 	}
 
 	/* (non-Javadoc)
@@ -157,7 +155,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				distanceSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
-					doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -222,7 +220,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -264,7 +262,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -317,7 +315,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -383,7 +381,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -450,7 +448,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		distanceSum = 0.0d;
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -517,15 +515,6 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/**
-	 * @return the dist
-	 */
-	public Metric<T> getDist()
-	{
-		return this.dist;
-	}
-
-
-	/**
 	 * @param clone
 	 */
 	public void clone(FuzzyCMeansNoiseClusteringAlgorithm<T> clone)
@@ -540,7 +529,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	 */
 	public FuzzyCMeansClusteringAlgorithm<T> clone()
 	{
-		FuzzyCMeansClusteringAlgorithm<T> clone = new FuzzyCMeansClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.dist);
+		FuzzyCMeansClusteringAlgorithm<T> clone = new FuzzyCMeansClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.metric);
 		this.clone(clone);
 		return clone;
 	}

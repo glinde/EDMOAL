@@ -49,6 +49,7 @@ import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
+import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
 
 /**
@@ -74,9 +75,6 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 {	
 	/**  */
 	private static final long	serialVersionUID	= -8858858125481849303L;
-
-	/**  */
-	protected final Metric<double[]> dist;
 	
 	protected double[] clusterProbability;
 	
@@ -90,29 +88,26 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public ExpectationMaximizationSGMMClusteringAlgorithm(ExpectationMaximizationSGMMClusteringAlgorithm c, boolean useOnlyActivePrototypes)
+	public ExpectationMaximizationSGMMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<double[], SphericalNormalDistributionPrototype> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 
-		this.dist = c.dist;
-		this.clusterProbability = c.clusterProbability.clone();
-		this.conditionalProbabilities = new ArrayList<double[]>(c.getDataCount());
-		for(int j=0; j<c.getDataCount(); j++) this.conditionalProbabilities.add(c.conditionalProbabilities.get(j).clone());
+		this.clusterProbability = null;
+		this.conditionalProbabilities = null;
 		
-		this.varianceBounded = c.varianceBounded;
-		this.varianceLowerBound = c.varianceLowerBound;
-		this.varianceUpperBound = c.varianceUpperBound;
+		this.varianceBounded = false;
+		this.varianceLowerBound = 0.0d;
+		this.varianceUpperBound = Double.MAX_VALUE;
 	}
 
 	/**
 	 * @param data
 	 * @param vs
 	 */
-	public ExpectationMaximizationSGMMClusteringAlgorithm(IndexedDataSet<double[]> data, VectorSpace<double[]> vs, Metric<double[]> dist)
+	public ExpectationMaximizationSGMMClusteringAlgorithm(IndexedDataSet<double[]> data, VectorSpace<double[]> vs, Metric<double[]> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 		
-		this.dist = dist;
 		this.clusterProbability = null;
 		this.conditionalProbabilities = null;
 		
@@ -180,7 +175,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		this.prototypes.clear();		
 		for(double[] x: initialPrototypePositions) 
 		{
-			centr = new SphericalNormalDistributionPrototype(this.vs, this.dist, x, 1.0d);
+			centr = new SphericalNormalDistributionPrototype(this.vs, this.metric, x, 1.0d);
 			centr.setClusterIndex(i);
 			centr.setVariance(0.1d);
 			this.prototypes.add(centr);
@@ -301,7 +296,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 					this.vs.add(newExpectationValues.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newExpectationValues.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newExpectationValues.get(i));
 				if(doubleTMP > prototypeMovement) prototypeMovement = doubleTMP;
 				
 				this.prototypes.get(i).moveTo(newExpectationValues.get(i));
@@ -313,7 +308,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 				doubleTMP = 0.0d;				
 				for(j=0; j<this.getDataCount(); j++)
 				{
-					doubleTMP += this.conditionalProbabilities.get(j)[i] *  this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					doubleTMP += this.conditionalProbabilities.get(j)[i] *  this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				}
 				doubleTMP *= invCondDOProbSum[i] / ((double)this.vs.getDimension());
 
@@ -360,7 +355,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 
 			for(j=0; j<this.getDataCount(); j++)	
 			{
-				objectiveFunctionValue += this.conditionalProbabilities.get(j)[i] * (doubleTMP - 0.5d*this.dist.distanceSq(this.prototypes.get(i).getPosition(), this.data.get(j).x)/this.prototypes.get(i).getVariance());
+				objectiveFunctionValue += this.conditionalProbabilities.get(j)[i] * (doubleTMP - 0.5d*this.metric.distanceSq(this.prototypes.get(i).getPosition(), this.data.get(j).x)/this.prototypes.get(i).getVariance());
 			}
 		}
 		
@@ -470,14 +465,6 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	public void setVarianceUpperBound(double varianceUpperBound)
 	{
 		this.varianceUpperBound = varianceUpperBound;
-	}
-
-	/**
-	 * @return the dist
-	 */
-	public Metric<double[]> getDist()
-	{
-		return this.dist;
 	}
 
 	/**

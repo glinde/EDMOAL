@@ -46,6 +46,7 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 /**
@@ -78,11 +79,11 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public PolynomFCMNoiseClusteringAlgorithm(PolynomFCMNoiseClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public PolynomFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 
-		this.noiseDistance = c.noiseDistance;
+		this.noiseDistance = 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
 
 	/* (non-Javadoc)
@@ -146,7 +147,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 					unsortedPrototypes.get(i).included = false;
-					unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 				}
 				sortedNoise.included = false;
@@ -238,7 +239,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -290,7 +291,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -376,7 +377,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		for(i = 0; i < this.getClusterCount(); i++)
 		{
 			unsortedPrototypes.get(i).included = false;
-			unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
 		
@@ -475,7 +476,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -577,7 +578,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -687,7 +688,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
 			
@@ -768,7 +769,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		for(i = 0; i < this.getClusterCount(); i++)
 		{
 			unsortedPrototypes.get(i).included = false;
-			unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
 		
