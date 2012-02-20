@@ -46,8 +46,15 @@ import datamining.IterativeObjectiveFunctionOptimization;
 import datamining.clustering.AbstractClusteringAlgorithm;
 
 /**
- * TODO Class Description
- *
+ * An abstract class for all prototype based clustering algorithms, without specifying the class of the prototype.
+ * It provides functionalities to record the objective function and it also provides some functionalities regarding
+ * the learning factor.<br>
+ * 
+ * The learning factor influences the movement speed of the prototypes. When setting a prototype
+ * to a new position, the difference vector from the current to the new position is multiplied
+ * by the learning factor. Thus, it is possible to slow down the clustering process or to speed
+ * it up.
+ * 
  * @author Roland Winkler
  */
 public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends AbstractClusteringAlgorithm<T> implements PrototypeClusteringAlgorithm<T, S>, IterativeObjectiveFunctionOptimization
@@ -55,30 +62,35 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	/**  */
 	private static final long	serialVersionUID	= -7799213874962389902L;
 
-	/** The percentage of which the cluster centers shell be moved at an updating step */
+	/**
+	 * The learning factor influences the movement speed of the prototypes. When setting a prototype
+	 * to a new position, the difference vector from the current to the new position is multiplied
+	 * by the learning factor. Thus, it is possible to slow down the clustering process or to speed
+	 * it up. 
+	 */
 	protected double learningFactor;
 	
-	/**  */
+	/** The vector space that is used for prototype position calculations. */
 	protected final VectorSpace<T> vs;
 	
 	/** 
-	 *	the vector of prototypes used for the clustering. 
+	 *	The vector of prototypes used for the clustering. 
 	 */
 	protected ArrayList<S> prototypes;
 	
 	/** 
-	 *  true if the prototypes have been initialized after object construction or a reset.<br>
-	 *  false if the prototypes have not been initialized yet or if they have been reseted.
+	 *  True if the prototypes have been initialised after object construction or a reset.
+	 *  False if the prototypes have not been initialised yet or if they have been reseted.
 	 */
 	protected boolean initialized;
 	
-	/** counts the steps the clustering algorithm is performed */
+	/** The number of iteration steps the algorithm has performed. */
 	protected int iterationCount;
 		
 	/** If true, the objective function values are recorded. */
 	protected boolean monitorObjectiveFunctionValues;
 	
-	/** The recorded objective function values */
+	/** The recorded objective function values. */
 	protected ArrayList<Double> objectiveFunctionValues;
 	
 	/**
@@ -88,8 +100,11 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	protected double epsilon;
 		
 	/**
-	 *	The initial constructor for clustering. The number of clusters can be changed after initialization, but it
-	 * is not recommended because some algorithms have to be reinitialized.
+	 * The initial constructor for clustering. The number of clusters can be changed after initialisation, but it
+	 * is not recommended because some algorithms have to be reinitialised.
+	 * 
+	 * @param data The data set for clustering.
+	 * @param vs The vector space of which the data objects are elements.
 	 */
 	public AbstractPrototypeClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs)
 	{
@@ -107,13 +122,16 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	}
 	
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to skip some clusters
-	 * if they are not needed any more.
+	 * This constructor creates a new clustering algorithm, taking an existing one. It has the option to use only
+	 * active prototypes from the old clustering algorithm. This constructor is especially useful if the clusteing is done
+	 * in multiple steps. So the first clustering algorithm can for example calculate the initial positions of the 
+	 * prototypes for the second clustering algorithm. An other option is, that the first clustering algorithm
+	 * creates a set of deactivated prototypes and the second clustering algorithm is initialised with less clusters than the
+	 * first.
 	 * 
 	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	@SuppressWarnings("unchecked")
 	public AbstractPrototypeClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, S> c, boolean useOnlyActivePrototypes)
@@ -149,7 +167,7 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	}
 		
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initialize(java.util.Collection)
+	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initializeWithPrototypes(java.util.Collection)
 	 */
 	@Override
 	public void initializeWithPrototypes(Collection<S> initialPrototypes)

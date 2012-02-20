@@ -180,7 +180,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		this.prototypes.clear();		
 		for(double[] x: initialPrototypePositions) 
 		{
-			centr = new SphericalNormalDistributionPrototype(this.vs, this.dist, x);
+			centr = new SphericalNormalDistributionPrototype(this.vs, this.dist, x, 1.0d);
 			centr.setClusterIndex(i);
 			centr.setVariance(0.1d);
 			this.prototypes.add(centr);

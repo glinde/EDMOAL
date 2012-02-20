@@ -44,6 +44,12 @@ import data.algebra.VectorSpace;
 import datamining.clustering.AbstractCluster;
 
 /**
+ * The Centroid is a prototype, as it is initially intended. It provides all necessary functionality
+ * to be used in Hars c-Means, Fuzzy c-Means etc.
+ *
+ * @author Roland Winkler
+ */
+/**
  * TODO Class Description
  *
  * @author Roland Winkler
@@ -53,23 +59,27 @@ public class Centroid<T> extends AbstractCluster implements Serializable, Protot
 	/**  */
 	private static final long	serialVersionUID	= -2838176928230591009L;
 
-	/**  */
+	/** The Vectorspace of the underlying data set. */
 	protected VectorSpace<T> vs;
 	
-	/**  */
+	/** The current position of the centroid. */
 	protected T position;
 	
-	/**  */
+	/** The initial position of the centroid. */
 	protected T initialPosition;
 	
 	/** The way a prototype goes during the iteration Process */
 	protected ArrayList<T> way;
 	
-	/**  */
+	/** Whether or not to record the way of the centroid. */
 	protected boolean recordWay;
 	
 	
-	/** creates a new prototype */
+	/**
+	 *  Creates a new centroid for the specified vector space. 
+	 * 
+	 * @param vs The vector space.
+	 */
 	public Centroid(VectorSpace<T> vs)
 	{
 		super(0);
@@ -80,8 +90,14 @@ public class Centroid<T> extends AbstractCluster implements Serializable, Protot
 		this.recordWay = true;
 		this.activated = true;
 	}
-	
-	/** creates a new prototype */
+
+	/**
+	 *  Creates a new centroid for the specified vector space and
+	 *  initialises the centroid at the specified position.
+	 * 
+	 * @param vs The vector space.
+	 * @param initialPos The initial position.
+	 */
 	public Centroid(VectorSpace<T> vs, T initialPos)
 	{
 		this(vs);
@@ -90,39 +106,50 @@ public class Centroid<T> extends AbstractCluster implements Serializable, Protot
 		this.way.add(this.vs.copyNew(initialPos));
 	}
 
-	/** creates a new prototype, initialized at the location of the given prototype */
+	/** 
+	 * The copy constructor.
+	 */
 	public Centroid(Centroid<T> proto)
 	{
 		this(proto.vs, proto.position);
 	}
 	
-	/**
-	 * @param pos
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#moveTo(java.lang.Object)
 	 */
+	@Override
 	public void moveTo(T pos)
 	{
 		this.vs.copy(this.position, pos);	
 		if(this.recordWay) this.way.add(this.vs.copyNew(this.position));
 	}
 	
-	/**
-	 * @param pos
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#moveBy(java.lang.Object)
 	 */
+	@Override
 	public void moveBy(T dif)
 	{
 		this.vs.add(this.position, dif);
 		if(this.recordWay) this.way.add(this.vs.copyNew(this.position));
 	}
 	
-	/** */
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#resetToInitialPosition()
+	 */
+	@Override
 	public void resetToInitialPosition()
 	{
 		this.vs.copy(this.position, this.initialPosition);
 		this.way.clear();
 		this.way.add(this.vs.copyNew(this.position));
 	}
-	
-	/** */
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#initializeWithPosition(java.lang.Object)
+	 */
+	@Override
 	public void initializeWithPosition(T pos)
 	{
 		this.position = this.vs.copyNew(pos);
@@ -132,68 +159,82 @@ public class Centroid<T> extends AbstractCluster implements Serializable, Protot
 		this.way.add(this.vs.copyNew(pos));
 	}
 
-	/**
-	 * @return the initialPosition
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#getInitialPosition()
 	 */
+	@Override
 	public T getInitialPosition()
 	{
 		return this.initialPosition;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#getWay()
+	 */
+	@Override
 	public ArrayList<T> getWay()
 	{
 		return this.way;
 	}
 		
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#isRecordWay()
+	 */
+	@Override
 	public boolean isRecordWay()
 	{
 		return this.recordWay;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#setRecordWay(boolean)
+	 */
+	@Override
 	public void setRecordWay(boolean recordWay)
 	{
 		this.recordWay = recordWay;
 	}
 	
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#getPosition()
+	 */
+	@Override
 	public T getPosition()
 	{
 		return this.position;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#setPosition(java.lang.Object)
+	 */
+	@Override
 	public void setPosition(T pos)
 	{
 		if(this.position == null) this.position = this.vs.copyNew(pos);
 		else this.vs.copy(this.position, pos);
 	}
 
-	/**
-	 * @return the vs
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.Prototype#getVectorSpace()
 	 */
+	@Override
 	public VectorSpace<T> getVectorSpace()
 	{
 		return this.vs;
 	}
 
-	/**
-	 * @param clone
-	 */
-	public void clone(Centroid<T> clone)
-	{
-		super.clone(clone);
-		clone.position = this.vs.copyNew(this.position);
-		clone.initialPosition = this.vs.copyNew(this.initialPosition);
-		clone.recordWay = this.recordWay;
-		clone.way.clear();
-		for(T p: this.way) clone.way.add(this.vs.copyNew(p));
-	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
+	@Override
 	public Centroid<T> clone()
 	{
 		Centroid<T> clone = new Centroid<T>(this.vs);
-		this.clone(clone);
+		clone.position = this.vs.copyNew(this.position);
+		clone.initialPosition = this.vs.copyNew(this.initialPosition);
+		clone.recordWay = this.recordWay;
+		for(T p: this.way) clone.way.add(this.vs.copyNew(p));
 		return clone;
 	}
 }

@@ -48,7 +48,8 @@ import data.set.IndexedDataObject;
 import datamining.clustering.protoype.Centroid;
 
 /**
- * TODO Class Description
+ * A service class for generating prototypes at random locations providing a variety of generation
+ * strategies.  
  *
  * @author Roland Winkler
  */
@@ -57,8 +58,10 @@ public class PrototypeGenerator<T> implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -3289242112173663584L;
 
+	/** The random object to generate pseudo-random values. */
 	protected Random rand;
 	
+	/** the vector space of the data set. */
 	protected VectorSpace<T> vs;
 	
 	/**
@@ -81,10 +84,15 @@ public class PrototypeGenerator<T> implements Serializable
 	
 		
 	/**
-	 * sets the positions of the prototypes according to the given possible positions in ascending order.
-	 * In case there are more prototypes then positions, some positions are used multiple times.
+	 * Selects the first <code>number</code> of possible positions to create centroids
+	 * with initial positions at these locations.<br>
 	 * 
-	 * @param possiblePositions
+	 * If the number of <code>possiblePositions</code> is smaller than the specified <code>number</code>,
+	 * some of the positions are used multiple times.
+	 * 
+	 * @param possiblePositions A collection of possible positions.
+	 * @param number The number of prototypes to be generated.
+	 * @return A list of prototypes, initialized at the specified locations.
 	 */
 	public ArrayList<Centroid<T>> ascendingExcamples(Collection<T> possiblePositions, int number)
 	{
@@ -103,10 +111,12 @@ public class PrototypeGenerator<T> implements Serializable
 		
 	/**
 	 * Sets the positions of the prototypes according to the given possible positions by randomly picking a position.
-	 * If the number of possible positions is not large compared to the number of prototypes,
+	 * If the number of possible positions is not much larger than the number of prototypes,
 	 * it is likely that some positions are used multiple times.
 	 * 
-	 * @param possiblePositions
+	 * @param possiblePositions A collection of possible positions.
+	 * @param number The number of prototypes to be generated.
+	 * @return A list of prototypes, initialized at the specified locations.
 	 */
 	public ArrayList<Centroid<T>> randomExcamplesSample(List<T> possiblePositions, int number)
 	{
@@ -120,11 +130,16 @@ public class PrototypeGenerator<T> implements Serializable
 		
 		return prototypes;
 	}
-		
+
+	
 	/**
-	 * Samples the prototype positions from the data set, 
+	 * Uses a data set to specify the initial positions of the prototypes. The data set should be much larger than the
+	 * number of prototypes that are generated. Still, it is possible that some prototypes are initialized at
+	 * the same position.
 	 * 
-	 * @param possiblePositions
+	 * @param possiblePositions A collection of possible positions.
+	 * @param number The number of prototypes to be generated.
+	 * @return A list of prototypes, initialized at the specified locations.
 	 */
 	public ArrayList<Centroid<T>> randomDataSetSample(List<IndexedDataObject<T>> possiblePositions, int number)
 	{

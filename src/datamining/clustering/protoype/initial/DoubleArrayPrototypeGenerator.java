@@ -40,6 +40,7 @@ package datamining.clustering.protoype.initial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
@@ -48,7 +49,9 @@ import datamining.clustering.protoype.Centroid;
 import etc.DataGenerator;
 
 /**
- * TODO Class Description
+ * Generates {@link Centroid}s specifically for double array data objects. 
+ * Several distributions are available. This class is most useful for distributions that are based
+ * on a specific data set. So that prototype initializations are bound by the data set at hand. 
  *
  * @author Roland Winkler
  */
@@ -58,11 +61,14 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	private static final long	serialVersionUID	= 2089339786778802373L;
 	
 	
+	/** The data generator that is used for generating the random locations. */
 	protected DataGenerator dataGenerator; 
 	
 	/**
-	 * @param seed
-	 * @param vs
+	 * Creates a new DoubleArrayPrototypeGenerator with the specified seed and vector space.
+	 * 
+	 * @param seed The seed that should be used for the eneration of the pseudo-random locations of the prototypes.
+	 * @param vs The vector space.
 	 */
 	public DoubleArrayPrototypeGenerator(long seed, VectorSpace<double[]> vs)
 	{
@@ -71,7 +77,10 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	}
 
 	/**
-	 * @param vs
+	 * Creates a new DoubleArrayPrototypeGenerator with the vector space. For the pseudo-random locations of the
+	 * prototypes, the seed generation of the {@link Random} class is used.
+	 * 
+	 * @param vs The vector space.
 	 */
 	public DoubleArrayPrototypeGenerator(VectorSpace<double[]> vs)
 	{
@@ -80,12 +89,12 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	}
 
 	/**
-	 * Uniform distributed prototypes on the hyper rectangle defined by x and y
+	 * Uniform distributed prototypes on the hyper rectangle defined by two opposite corners x and y
 	 * 
-	 * @param x
-	 * @param y
-	 * @param number
-	 * @return
+	 * @param x The first corner of the hyper rectangle
+	 * @param y The second corner of the hyper rectangle
+	 * @param number The number of centroids to be generated.
+	 * @return The list of generated centroids.
 	 */
 	public ArrayList<Centroid<double[]>> randomUniformOnBounds(double[] x, double[] y, int number)
 	{
@@ -102,10 +111,10 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	}
 	
 	/**
-	 * Uniform distributed prototypes on the unit hyper cube [0, 1]^dim 
+	 * Uniform distributed centroids on the unit hyper cube [0, 1]^dim, with the dimension specified in the vector space.
 	 * 
-	 * @param number
-	 * @return
+	 * @param number The number of centroids to be generated.
+	 * @return The list of generated centroids.
 	 */
 	public ArrayList<Centroid<double[]>> randomUniformOnUnitCube(int number)
 	{
@@ -121,7 +130,13 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	}
 	
 	/**
-	 * Uniform distributed prototypes on the hyper rectangle defined by the data set 
+	 * Generates a set of centroids that are uniform distributed on a hyper rectangle, defined by the specified data set.
+	 * The data set is used to define a minimal, axis parallel hyper rectangle, containing all data objects.
+	 * Then, the centroids are generated using a uniform distribution on the hyper rectangle.   
+	 * 
+	 * @param data The data set for specifying the hyper rectangle.
+	 * @param number The number of centroids to be generated.
+	 * @return The list of generated centroids.
 	 */
 	public ArrayList<Centroid<double[]>> randomUniformOnDataBounds(Collection<IndexedDataObject<double[]>> data, int number)
 	{
@@ -155,8 +170,13 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	}
 	
 	/**
-	 * initializes the prototypes in equal intervals on a circle of the given radius
-	 * on the hyper plane of the first two dimensions
+	 * Generates a specified number of centroids in a circle around the specified center with the specified radius.
+	 * The centroids are regularly located on the circle boarder with equal distance to their neighbors.
+	 * 
+	 * @param centre The center of the circle.
+	 * @param radius The radius of the circle.
+	 * @param number The number of centroids to be generated.
+	 * @return The list of generated centroids.
 	 */
 	public ArrayList<Centroid<double[]>> circleRegular_2D(double[] centre, double radius, int number)
 	{
@@ -177,14 +197,15 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 		
 		return prototypes;
 	}
-	
+
 	/**
-	 * Samples the initial prototype positions from a spherical normal distribution with the specified parameters
+	 * Generates normal distributed prototypes with the normal distribution defined by the specified
+	 * expectation value and variance. 
 	 * 
-	 * @param expectation
-	 * @param variance
-	 * @param number
-	 * @return
+	 * @param expectation The expectation value of the normal distribution.
+	 * @param variance The variance of the normal distribution.
+	 * @param number The number of centroids to be generated.
+	 * @return The list of generated centroids.
 	 */
 	public ArrayList<Centroid<double[]>> randomSphericalNormal(double[] expectation, double variance, int number)
 	{
@@ -193,7 +214,7 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 		
 		if(expectation.length < this.vs.getDimension()) throw new IllegalArgumentException("The arrays x and y must be at least the size of the dimensionality of the vector space.");
 		
-		positions = this.dataGenerator.gaussPoints(expectation, variance, this.vs.getDimension(), number);
+		positions = this.dataGenerator.gaussPoints(expectation, Math.sqrt(variance), this.vs.getDimension(), number);
 		
 		for(double[] p: positions)	prototypes.add(new Centroid<double[]>(this.vs, p));
 		
@@ -201,12 +222,15 @@ public class DoubleArrayPrototypeGenerator extends PrototypeGenerator<double[]> 
 	}
 
 	/**
-	 * Samples the initial prototype positions from a spherical normal distribution with parameters estimated from a data set
 	 * 
-	 * @param expectation
-	 * @param variance
-	 * @param number
-	 * @return
+	 * Generates normal distributed prototypes with a normal distribution that is estimated from the specified
+	 * data set. In a first step, the mean and sample variance of the data set are calculated and than,
+	 * the specified number of centroids are generated using the estimated normal distribution. 
+	 * 
+	 * @param data The data set that specifies the normal distribution.
+	 * @param dist The metric, used for estimating the normal distribution.
+	 * @param number The number of centroids to be generated.
+	 * @return The list of generated centroids.
 	 */
 	public ArrayList<Centroid<double[]>> randomSphericalNormalLikeDataSet(Collection<IndexedDataObject<double[]>> data, Metric<double[]> dist, int number)
 	{
