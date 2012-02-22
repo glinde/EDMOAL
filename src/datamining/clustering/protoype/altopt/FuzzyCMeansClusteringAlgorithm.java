@@ -53,10 +53,24 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * The fuzzy c-means clustering algorithm is the first fuzzy type clustering algorithm, invented by Dunn and 
+ * later further generalized (adding a variable fuzzifier) by Bezdek. This class contains this extended version of the algorithm.
+ * See the papers for more information on the algorithm and the theory connected to it. <br> 
  *
- * Paper: Dunn, J. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters Cybernetics and Systems: An International Journal, 1973, 3, 32-57
- * Paper: Bezdek, J. C. Pattern Recognition with Fuzzy Objective Function Algorithms Plenum Press, 1981
+ * Paper: Dunn, J. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters Cybernetics and Systems: An International Journal, 1973, 3, 32-57<br>
+ * Paper: Bezdek, J. C. Pattern Recognition with Fuzzy Objective Function Algorithms Plenum Press, 1981<br>
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
  *
  * @author Roland Winkler
  */
@@ -66,19 +80,24 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	private static final long	serialVersionUID	= -1260886261257302868L;
 
 	/**
-	 *	The fuzzifier from the fuzzy c-means algorithm. The larger the fuzzifier is, the less it is possible to
-	 *	decide how much a data object belongs to a cluster. In other words, it the membership values become more soft.<br>
-	 *	<br>
+	 * The fuzzifier. It specifies how soft the membershiop values are going to be calculated. if the
+	 * value is 1, the algorithm is identical to crisp clustering and for values going to infinity, it is complete soft clustering.
+	 * A useful value is around 2.<br>
+	 *
 	 *	Range of values: <code>fuzzifier</code> > 1
 	 */
 	protected double fuzzifier;
 	
-		
 	/**
-	 * @param data the data set
-	 * @param vs the vector space of the data set
-	 * @param metric The distance must be differenciable w.r.t. y in dist(x, y)^2, and the directed differencial in direction of
-	 * 				y must yield d/dy dist(x, y)^2 = 2(y - x) 
+	 * Creates a new FuzzyCMeansClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
@@ -86,10 +105,19 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		
 		this.fuzzifier					= 2.0d;
 	}
-	
+
+
 	/**
-	 * @param c
-	 * @param useCluster
+	 * This constructor creates a new FuzzyCMeansClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public FuzzyCMeansClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -99,7 +127,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()
@@ -108,7 +136,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.ClusteringAlgorithm#performClustering(int)
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#apply(int)
 	 */
 	@Override
 	public void apply(int steps)
@@ -234,7 +262,6 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 	
 	
-	
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
@@ -291,9 +318,10 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		return objectiveFunctionValue;
 	}
 	
-	/**
-	 * @return
+	/* (non-Javadoc)
+	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
 	 */
+	@Override
 	public double[] getFuzzyAssignmentSums()
 	{	
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
@@ -353,7 +381,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.FuzzyClusterResultAlgorithm#getFuzzyResult()
+	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]>  assignmentList)
@@ -425,7 +453,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignments(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -490,7 +518,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
@@ -499,7 +527,9 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 	
 	/**
-	 * @return the fuzzifier
+	 * Returns the fuzzifier.
+	 * 
+	 * @return The fuzzifier.
 	 */
 	public double getFuzzifier()
 	{
@@ -507,15 +537,19 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/**
-	 * @param fuzzifier the fuzzifier to set
+	 * Sets the fuzzifier. The range of the parameter is <code>fuzzifier > 1</code>.
+	 *  
+	 * @param fuzzifier the fuzzifier to set.
 	 */
 	public void setFuzzifier(double fuzzifier)
 	{
+		if(fuzzifier <= 1.0d) throw new IllegalArgumentException("The fuzzifier must be larger than 1. Specified fuzzifier: " + fuzzifier);
+		
 		this.fuzzifier = fuzzifier;
 	}
 
 	/**
-	 * @param clone
+	 * @TODO: remove.  
 	 */
 	public void clone(FuzzyCMeansNoiseClusteringAlgorithm<T> clone)
 	{
@@ -527,6 +561,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	/* (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
+	@Override
 	public FuzzyCMeansClusteringAlgorithm<T> clone()
 	{
 		FuzzyCMeansClusteringAlgorithm<T> clone = new FuzzyCMeansClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.metric);

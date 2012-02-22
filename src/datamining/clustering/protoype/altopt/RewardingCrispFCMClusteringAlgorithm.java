@@ -50,9 +50,33 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * The rewarding crisp memberships fuzzy c-means clustering algorithm an extension of FCM.
+ * The objective function is added an penalty term, that is strong if the membership values are close to 0.5 and that is
+ * small for membership values are close to 0 or 1. That way, crisp membership values are regarded more optimal in the
+ * objective function, hence the tendency to produce membership values, that give a clear tendency to which cluster a
+ * data object belongs. See the paper for more information.<br> 
  * 
- * Paper: Höppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102
+ * Paper: Höppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102<br>
+ * 
+ * The additional term in the objective function leads to a value that is removed from all distances
+ * when calculating the membership values w.r.t. one data object. Other than in the paper, in this implementation
+ * that value is chosen to be <code>distanceMultiplierConstant</code>times the smallest distance to all prototypes.
+ * So <code>distanceMultiplierConstant</code> should be chosen between 0 and 1. When chosen 0, this algorithm is identical
+ * to {@link FuzzyCMeansClusteringAlgorithm} and when chosen 1, it turns into {@link HardCMeansClusteringAlgorithm}.  
+ * 
+ * In this particular implementation, the membership matrix is not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes. Also the additional
+ * term in the objective function has no influence on the runtime complexity of the algorithm.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ *
  * 
  * @author Roland Winkler
  */
@@ -62,31 +86,49 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	private static final long	serialVersionUID	= -5623960399726400874L;
 	/**  */
 	protected double distanceMultiplierConstant;
-	
+
 	/**
-	 * @param data
-	 * @param evs
+	 * Creates a new RewardingCrispFCMClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public RewardingCrispFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
 		super(data, vs, metric);
 		
-		this.distanceMultiplierConstant = 0.0d;
+		this.distanceMultiplierConstant = 0.5d;
 	}
 
 
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new RewardingCrispFCMClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public RewardingCrispFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 
-		this.distanceMultiplierConstant = 0.0d;
+		this.distanceMultiplierConstant = 0.5d;
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#apply(int)
+	 */
 	@Override
 	public void apply(int steps)
 	{
@@ -221,10 +263,8 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 		}
 	}
 	
-	
-	
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#getObjectiveFunctionValue()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
 	@Override
 	public double getObjectiveFunctionValue()
@@ -287,7 +327,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.FuzzyCMeansClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]>  assignmentList)
@@ -445,7 +485,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -518,7 +558,9 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	}
 		
 	/**
-	 * @return the distanceMultiplierConstant
+	 * Returns the distance multiplier constant.
+	 * 
+	 * @return the distance multiplier constant.
 	 */
 	public double getDistanceMultiplierConstant()
 	{
@@ -526,15 +568,19 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	}
 
 	/**
-	 * @param distanceMultiplierConstant the distanceMultiplierConstant to set
+	 * Sets the distance multiplier constant. The value must be between 0 and 1.
+	 * 
+	 * @param distanceMultiplierConstant The distance multiplier constant to set.
 	 */
 	public void setDistanceMultiplierConstant(double distanceMultiplierConstant)
 	{
+		if(distanceMultiplierConstant < 0.0d || 1.0d < distanceMultiplierConstant) throw new IllegalArgumentException("The distance multiplier constant parameter must be larger than 0 and smaller than 1. Specified distance multiplier constant: " + distanceMultiplierConstant);
+				
 		this.distanceMultiplierConstant = distanceMultiplierConstant;
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()

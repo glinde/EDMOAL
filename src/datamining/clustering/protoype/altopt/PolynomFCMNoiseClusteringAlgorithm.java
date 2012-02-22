@@ -49,10 +49,42 @@ import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+
 /**
- * TODO Class Description
- *
- * Paper: Klawonn, F. & Höppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264
+ * This is an implementation of the fuzzy c-means clustering algorithm with additional noise cluster and with a polynomial fuzzifier function.
+ * It replaces the fuzzifier function <code>u<sup>w</sup></code> with <code>(1-beta)/(1+beta)u<sup>2</sup> + (2*beta)/(1+beta)*u</code>.
+ * The linear component in the fuzzifier function leads to a crisp area of clustering around each prototype. The
+ * clustering becomes crisp (in the two-cluster case), if the relative distances to the prototypes is equal to <code>beta</code>.
+ * See the papers for more information on the algorithm and the theory connected to it. <br> 
+ * 
+ * Paper: Klawonn, F. & Höppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264<br>
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes. However,
+ * the linear component in the fuzzifier function leads to a crisp assignment of data objects, near prototypes.
+ * To calculate it correctly, the prototypes must be sorted w.r.t. their distance to the data object.
+ * This sorting increases the complexity of the algorithm, especially if many prototypes are present.<br>
+ * 
+ * Due to the niose cluster and for a finite noise distance, data objects that are fare away from the prototypes are
+ * clustered crisply as noise. This effect is a direct result of fact that the noise cluster has a constant distance to
+ * all data objects and the concept of the polynomial fuzzifier function. The runtime complexity of the algorithm
+ * is not effected by the additional noise cluster.<br>
+ * 
+ * However, due to the finite range of the 'good' clusters, it is advisable to either initialize the prototypes
+ * close to the clusters, or to set the noise distance not too far at the beginning. It might be better to
+ * reduce the noise distance and apply the algorithm in 2 or 3 steps in order to minimize the chance that a prototype
+ * does not find any data objects due to an unlucky initialization and the limited distance a prototype can be effected
+ * by data objects.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c*log(c)),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*log(c)*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ * 
  * 
  * @author Roland Winkler
  */
@@ -60,13 +92,22 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 {	
 	/**  */
 	private static final long	serialVersionUID	= -4173377426715965448L;
-	/** the distance ratio at which data objects are clustered in hard clustering */
+	
+	
+	/** The noise distance. The noise cluster is equally distant to all data objects and that distance is
+	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
-		
+
 	/**
-	 * @param data
-	 * @param vs
-	 * @param dist
+	 * Creates a new PolynomFCMNoiseClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public PolynomFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
@@ -76,8 +117,16 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new PolynomFCMNoiseClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public PolynomFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -96,6 +145,9 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#apply(int)
+	 */
 	@Override
 	public void apply(int steps)
 	{
@@ -253,7 +305,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#getObjectiveFunctionValue()
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
 	@Override
 	public double getObjectiveFunctionValue()
@@ -344,7 +396,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -440,7 +492,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]> assignmentList)
@@ -541,7 +593,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getFuzzyAssignmentSums()
 	 */
 	@Override
 	public double[] getFuzzyAssignmentSums()
@@ -644,7 +696,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
@@ -816,7 +868,9 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/**
-	 * @return the noiseDistance
+	 * Returns the noise distance.
+	 * 
+	 * @return The noise distance.
 	 */
 	public double getNoiseDistance()
 	{
@@ -824,12 +878,15 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/**
+	 * Sets the noise distance.  The range of the parameter is <code>noiseDistance > 0</code>.
+	 * 
 	 * @param noiseDistance the noiseDistance to set
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
+		if(noiseDistance <= 1.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		
 		this.noiseDistance = noiseDistance;
 	}
-	
 	
 }

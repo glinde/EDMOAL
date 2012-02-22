@@ -52,9 +52,29 @@ import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 
 /**
- * TODO Class Description
+ * The fuzzy c-means clustering algorithm with polynomial fuzzifier function is an extension of FCM.
+ * It replaces the fuzzifier function <code>u<sup>w</sup></code> with <code>(1-beta)/(1+beta)u<sup>2</sup> + (2*beta)/(1+beta)*u</code>.
+ * The linear component in the fuzzifier function leads to a crisp area of clustering around each prototype. The
+ * clustering becomes crisp (in the two-cluster case), if the relative distances to the prototypes is equal to <code>beta</code>.
+ * See the papers for more information on the algorithm and the theory connected to it. <br> 
  * 
- * Paper: Klawonn, F. & Höppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264
+ * Paper: Klawonn, F. & Höppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264<br>
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes. However,
+ * the linear component in the fuzzifier function leads to a crisp assignment of data objects, near prototypes.
+ * To calculate it correctly, the prototypes must be sorted w.r.t. their distance to the data object.
+ * This sorting increases the complexity of the algorithm, especially if many prototypes are present.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c*log(c)),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*log(c)*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ *
  * 
  * @author Roland Winkler
  */
@@ -64,12 +84,26 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	private static final long	serialVersionUID	= 3347388178304679371L;
 
 
+	/**
+	 * A comparable wrapper class for prototypes to sort them w.r.t. their distance to one data object.
+	 * It also contains an indicator if it is included in the clustering process. 
+	 *
+	 * @author Roland Winkler
+	 */
 	public class SortablePrototype implements Comparable<SortablePrototype>
 	{
+		/** The Prototype */
 		public Centroid<T> prototype;
+		/** The squared distance to the data object */
 		public double squareDistance;
+		/** Indicates whether it is included in the clustering process. */
 		public boolean included;
 		
+		/**
+		 * The standard constructor for this comparable wrapper. 
+		 * 
+		 * @param proto The prototype for this comparable wrapper.
+		 */
 		public SortablePrototype(Centroid<T> proto)
 		{
 			this.prototype = proto;
@@ -88,13 +122,20 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		}
 	}
 	
-	/** the distance ratio at which data objects are clustered in hard clustering */
+	/** The distance ratio at which data objects are clustered in hard clustering */
 	protected double beta;
 		
 
 	/**
-	 * @param data
-	 * @param vs
+	 * Creates a new PolynomFCMClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public PolynomFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
@@ -103,10 +144,18 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		this.beta = 0.5d;
 	}
 
-	
+
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new PolynomFCMClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public PolynomFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -116,7 +165,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()
@@ -124,6 +173,9 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		return "Polynomial Fuzzy c-Means Clustering Algorithm";
 	}
 	
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#apply(int)
+	 */
 	@Override
 	public void apply(int steps)
 	{
@@ -555,7 +607,6 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		return assignmentList;
 	}
 
-
 	/* (non-Javadoc)
 	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
 	 */
@@ -668,7 +719,9 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 
 
 	/**
-	 * @return the beta
+	 * Returns the beta parameter.
+	 * 
+	 * @return The beta parameter.
 	 */
 	public double getBeta()
 	{
@@ -677,10 +730,14 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 
 
 	/**
+	 * Sets the beta parameter. The range of the values is 0 to 1.
+	 * 
 	 * @param beta the beta to set
 	 */
 	public void setBeta(double beta)
 	{
+		if(beta < 0.0d || 1.0d < beta)  throw new IllegalArgumentException("The beta parameter must be larger than 0 and smaller than 1. Specified beta: " + beta);
+		
 		this.beta = beta;
 	}
 }

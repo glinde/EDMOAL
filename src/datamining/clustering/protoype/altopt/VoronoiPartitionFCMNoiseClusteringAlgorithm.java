@@ -53,22 +53,64 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * This is an implementation of the Voronoi partitioning fuzzy c-means clustering algorithm with additional noise cluster.
+ * Its special property is, that for each individual data object, only the prototypes are part of the membership value
+ * calculation, that are not located 'behind' other prototypes. More specifically, if the prototypes are sorted by distance
+ * w.r.t. a data object, and a prototype <code>y<sub>far</sub></code> is further away than an other prototype <code>y<sub>near</sub></code>
+ * then the membership value to <code>y<sub>far</sub></code> is 0, if it lys behind the hyperplane that goes through
+ * <code>y<sub>near</sub></code> and is perpendicular to the vector from <code>y<sub>near</sub></code> and the data object.
+ * In other words, <code>y<sub>far</sub></code> lies behind <code>y<sub>near</sub></code> and is therefore excluded.
+ * With this, a Voronoi cell is defined for each data object and the 'close' prototypes define the faces of this Voronoi cell.<br> 
  *
- * Paper: to appear
+ * Paper: to appear<br>
  * 
+ * The Voronoi property requires, that the prototypes are sorted w.r.t. their distance towards each data object. This increases the
+ * computational costs of the algorithm by a factor of log(c). But even worse, once the prototypes are sorted, they have to
+ * be tested for being hidden behind closer prototypes. That means, for each data object, each pair of prototypes
+ * has to be tested if the closer one of them hides the other. That means, the runtime complexity for each data object
+ * is c^2 time the runtime complexity of calculating the scalar product in the algebraic space of the data objects.<br>
+ * 
+ * Of course, the Voronoi cells are not effected by the noise cluster. And even though the noise cluster might be closer to a data object
+ * than other prototypes (in fact it is possible that the noise distance is smaller than the distance to any prototype). The noise
+ * cluster has a distance to all data objects, but it has no position, which is why it can't hide any prototype. Therefore,
+ * it is not necessary to apply the algorithm in several successive steps as it is recommended for {@link RewardingCrispFCMNoiseClusteringAlgorithm}
+ * and {@link PolynomFCMNoiseClusteringAlgorithm}. Also the noise cluster does not influence the computational complexity of the algorithm.<br>
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c^2),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(c*O(scal)+O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code>, O(mul) is the complexity of scalar multiplication of type <code>T</code> and
+ * O(scal) is the complexity of calculating the scalar product for two objects from type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ *
  * @author Roland Winkler
  */
 public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiPartitionFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringAlgorithm<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= 2723685927200471389L;
-	/**  */
+
+	/** The noise distance. The noise cluster is equally distant to all data objects and that distance is
+	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
-	
+
 	/**
-	 * @param data
-	 * @param evs
+	 * Creates a new VoronoiPartitionFCMNoiseClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
+	 * @param sp The scalar product, used for determining if prototype is hidden by an other prototype.
 	 */
 	public VoronoiPartitionFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric, ScalarProduct<T> sp)
 	{
@@ -78,8 +120,17 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	}
 
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new VoronoiPartitionFCMNoiseClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param sp The scalar product, used for determining if prototype is hidden by an other prototype.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public VoronoiPartitionFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, ScalarProduct<T> sp, boolean useOnlyActivePrototypes)
 	{
@@ -98,7 +149,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.FuzzyCMeansClusteringAlgorithm#performClustering(int)
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#apply(int)
 	 */
 	@Override
 	public void apply(int steps)
@@ -271,9 +322,8 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		}
 	}
 
-
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getObjectiveFunctionValue()
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
 	@Override
 	public double getObjectiveFunctionValue()
@@ -391,7 +441,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentSums()
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#getFuzzyAssignmentSums()
 	 */
 	@Override
 	public double[] getFuzzyAssignmentSums()
@@ -508,7 +558,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]> assignmentList)
@@ -626,7 +676,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -734,7 +784,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
@@ -915,7 +965,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	}
 
 	/**
-	 * @return the noiseDistance
+	 * Returns the noise distance.
+	 * 
+	 * @return The noise distance.
 	 */
 	public double getNoiseDistance()
 	{
@@ -923,10 +975,14 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	}
 
 	/**
+	 * Sets the noise distance.  The range of the parameter is <code>noiseDistance > 0</code>.
+	 * 
 	 * @param noiseDistance the noiseDistance to set
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
+		if(noiseDistance <= 1.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		
 		this.noiseDistance = noiseDistance;
 	}
 

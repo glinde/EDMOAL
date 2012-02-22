@@ -52,10 +52,36 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * The Voronoi partitioning fuzzy c-means clustering algorithm is an extension to the standard fuzzy c-means clustering algorithm.
+ * Its special property is, that for each individual data object, only the prototypes are part of the membership value
+ * calculation, that are not located 'behind' other prototypes. More specifically, if the prototypes are sorted by distance
+ * w.r.t. a data object, and a prototype <code>y<sub>far</sub></code> is further away than an other prototype <code>y<sub>near</sub></code>
+ * then the membership value to <code>y<sub>far</sub></code> is 0, if it lys behind the hyperplane that goes through
+ * <code>y<sub>near</sub></code> and is perpendicular to the vector from <code>y<sub>near</sub></code> and the data object.
+ * In other words, <code>y<sub>far</sub></code> lies behind <code>y<sub>near</sub></code> and is therefore excluded.
+ * With this, a Voronoi cell is defined for each data object and the 'close' prototypes define the faces of this Voronoi cell.<br> 
  *
- * Paper: to appear
+ * Paper: to appear<br>
  * 
+ * The Voronoi property requires, that the prototypes are sorted w.r.t. their distance towards each data object. This increases the
+ * computational costs of the algorithm by a factor of log(c). But even worse, once the prototypes are sorted, they have to
+ * be tested for being hidden behind closer prototypes. That means, for each data object, each pair of prototypes
+ * has to be tested if the closer one of them hides the other. That means, the runtime complexity for each data object
+ * is c^2 time the runtime complexity of calculating the scalar product in the algebraic space of the data objects.<br>
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c^2),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(c*O(scal)+O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code>, O(mul) is the complexity of scalar multiplication of type <code>T</code> and
+ * O(scal) is the complexity of calculating the scalar product for two objects from type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ *
  * @author Roland Winkler
  */
 public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringAlgorithm<T>
@@ -96,11 +122,21 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		}
 	}
 	
+	/** The scalar product, used for determining if prototype is hidden by an other prototype. */
 	protected final ScalarProduct<T> sp;
-	
+
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new VoronoiPartitionFCMClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param sp The scalar product, used for determining if prototype is hidden by an other prototype.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public VoronoiPartitionFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, ScalarProduct<T> sp, boolean useOnlyActivePrototypes)
 	{
@@ -111,9 +147,16 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 
 
 	/**
-	 * @param data
-	 * @param vs
-	 * @param dist
+	 * Creates a new VoronoiPartitionFCMClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
+	 * @param sp The scalar product, used for determining if prototype is hidden by an other prototype.
 	 */
 	public VoronoiPartitionFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric, ScalarProduct<T> sp)
 	{
@@ -132,7 +175,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.FuzzyCMeansClusteringAlgorithm#performClustering(int)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#apply(int)
 	 */
 	@Override
 	public void apply(int steps)
@@ -303,7 +346,6 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		}
 	}
 
-
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
@@ -413,7 +455,6 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		
 		return objectiveFunctionValue;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentSums()
@@ -647,7 +688,6 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		return assignmentList;
 	}
 
-
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
@@ -756,7 +796,9 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 
 
 	/**
-	 * @return the sp
+	 * Returns the scalar product, used for determining if prototype is hidden by an other prototype.
+	 * 
+	 * @return The scalar product, used for determining if prototype is hidden by an other prototype.
 	 */
 	public ScalarProduct<T> getSp()
 	{

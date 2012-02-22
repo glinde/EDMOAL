@@ -64,7 +64,10 @@ public interface FuzzyClusteringAlgorithm<T> extends ClusteringAlgorithm<T>
 	
 	/**
 	 * Gets the fuzzy cluster assignments of all data objects and stores them in the specified {@link List}.
-	 * If the list is <code>null</code>, a new {@link List} object is created and returned. 
+	 * If the list is <code>null</code>, a new {@link List} object is created and returned.<br>
+	 * 
+	 * Since there is a membership value for each pair of data object and cluster, the size
+	 * of the result is in O(n*c) with n being the number of data objects and c being the number of clusters.
 	 * 
 	 * @param assignmentList The list to store the membership values in.
 	 * @return The <code>assignmentList</code> reference or a new {@link List} object if <code>assignmentList</code> is <code>null</code>. 

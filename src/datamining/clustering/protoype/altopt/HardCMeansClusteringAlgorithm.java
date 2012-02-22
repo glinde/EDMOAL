@@ -51,13 +51,24 @@ import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 
 /**
- * The hard c-means clustering algorithm is a prototype based clustering algorithm and maybe one of the first clustering algorithms
- * that have been invented. Hard c-means is an iterative, objection function based, crisp clustering algorithm and therefore,
- * provides all functionalities or these properties. For calculating the prototype positions, a {@link VectorSpace} on type <code>T</code> is required, and for
- * calculating the distance between data objects and prototypes, a {@link Metric} necessary. See the paper for more information
- * on the algorithm and the theory connected to it. <br> 
+ * The hard c-means clustering algorithm is maybe one of the first clustering algorithms that have been invented.
+ * See the paper for more information on the algorithm and the theory connected to it. <br> 
  *
- * Paper: MacQueen, J. B. Some Methods for Classification and Analysis of MultiVariate Observations Proc. of the fifth Berkeley Symposium on Mathematical Statistics and Probability, University of California Press, 1967, 1, 281-297
+ * Paper: MacQueen, J. B. Some Methods for Classification and Analysis of MultiVariate Observations Proc. of the fifth Berkeley Symposium on Mathematical Statistics and Probability, University of California Press, 1967, 1, 281-297<br>
+ *
+ * for this particular implementation, an array of integer values contain the clustering result.
+ * Each element of the array corresponds to the data object with the same index and
+ * the value of the element is the cluster the data object is associated to. Before initializing
+ * the algorithm, all data objects remain unclustered (cluster index {@link CrispClusteringAlgorithm#UNASSIGNED_INDEX}).<br>
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add))+t*c*O(mul)) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication. <br>
+ * 
+ * The memory consumption of this algorithm is in O(t+n+c).
  * 
  * @author Roland Winkler
  */
@@ -80,7 +91,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	 * 
 	 * @param data The data set that should be clustered.
 	 * @param vs The vector space that is used to calculate the prototype positions.
-	 * @param metric The metric that is used to calculate the distance between data obejcts and prototypes.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public HardCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
@@ -91,10 +102,16 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/**
-	 *
+	 * This constructor creates a new HardCMeansClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
 	 * 
-	 * @param data
-	 * @param numberOfClusters
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public HardCMeansClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -105,7 +122,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initialize(java.util.Collection)
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#initializeWithPrototypes(java.util.Collection)
 	 */
 	@Override
 	public void initializeWithPrototypes(Collection<Centroid<T>> initialPrototypes)
@@ -116,7 +133,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initialize(java.lang.Object)
+	 * @see datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm#initializeWithPositions(java.util.Collection)
 	 */
 	@Override
 	public void initializeWithPositions(Collection<T> initialPrototypePositions)
@@ -127,10 +144,14 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 	
 	/**
-	 * 
+	 * Recalculate the cluster assignments. That means, it fills the {@link #clusteringResult} with
+	 * correct clustering values, given the current position of the prototypes. Useful for example
+	 * after initialisation.
 	 */
 	private void recalculateClusterAssignments()
 	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+		
 		int i;
 		double distMin, dist;
 		int pMin = 0;
@@ -155,7 +176,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()
@@ -270,7 +291,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#getCrispClusterAssignment(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispClusteringAlgorithm#getCrispClusterAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public int getCrispClusterAssignmentOf(IndexedDataObject<T> obj)
@@ -281,7 +302,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#getCrispClusterAssignments()
+	 * @see datamining.clustering.CrispClusteringAlgorithm#getAllCrispClusterAssignments()
 	 */
 	@Override
 	public int[] getAllCrispClusterAssignments()
@@ -292,7 +313,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#isCrispClusterAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispClusteringAlgorithm#isCrispAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isCrispAssigned(IndexedDataObject<T> obj)

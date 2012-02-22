@@ -44,8 +44,8 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 
 /**
- * An abstract class for {@link Centroid} based clustering algorithms. It actually does only 
- * provide the functionality of initialisation with positions. Also it fixes the {@link Prototype}
+ * An abstract class for {@link Centroid} based clustering algorithms. It extends {@link AbstractPrototypeClusteringAlgorithm}
+ * and adds the missing functionality of initializing prototypes, using their positions. to do that, it fixes the {@link Prototype}
  * class to being a {@link Centroid}.
  *
  * @author Roland Winkler
@@ -57,14 +57,14 @@ public abstract class AbstractCentroidClusteringAlgorithm<T> extends AbstractPro
 	private static final long	serialVersionUID	= 6508613595872091359L;
 
 	/**
-	 * This constructor creates a new clustering algorithm, taking an existing one. It has the option to use only
-	 * active prototypes from the old clustering algorithm. This constructor is especially useful if the clusteing is done
-	 * in multiple steps. So the first clustering algorithm can for example calculate the initial positions of the 
-	 * prototypes for the second clustering algorithm. An other option is, that the first clustering algorithm
-	 * creates a set of deactivated prototypes and the second clustering algorithm is initialised with less clusters than the
-	 * first.
+	 * This constructor creates a prototype new clustering algorithm, taking an existing one.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
 	 * 
-	 * @param c the elders clustering algorithm object
+	 * @param c the elders clustering algorithm
 	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
 	 * algorithm are used for the new clustering algorithm.
 	 */
@@ -79,6 +79,7 @@ public abstract class AbstractCentroidClusteringAlgorithm<T> extends AbstractPro
 	 * 
 	 * @param data The data set for clustering.
 	 * @param vs The vector space of which the data objects are elements.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public AbstractCentroidClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{

@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import data.algebra.Metric;
-import data.algebra.EuclideanVectorSpace;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -52,9 +51,27 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * The fuzzy c-means clustering algorithm, extended by a noise cluster as introduced by Dave.<br>
  * 
  * Paper: Dave, R. N. Characterization and detection of noise in clustering Pattern Recogn. Lett., Elsevier Science Inc., 1991, 12, 657-664
+ * 
+ * The noise cluster is not added as a normal cluster to the clustering result. It is for the design principles of EDMOAL
+ * not wanted. I have tried this before and it makes more problems than it is good for the code, even if it is
+ * mathematically elegant. Therefore, the fuzzy result of the algorithm contains only the membership values
+ * of the 'normal' clusters. Of course, they do not add to 1 any more, but are less or equal 1. The membership
+ * to the noise cluster can be get by the dedicated functions.<br> 
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
  * 
  * @author Roland Winkler
  */
@@ -62,20 +79,41 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 {
 	/**  */
 	private static final long	serialVersionUID	= 7172180428079511424L;
-	/**  */
+	
+	/** The noise distance. The noise cluster is equally distant to all data objects and that distance is
+	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
 			
-	/** the default constructor for cloning */
+
+	/**
+	 * Creates a new FuzzyCMeansNoiseClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
+	 */
 	public FuzzyCMeansNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
 		
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
-	
+
 	/**
-	 * @param c
-	 * @param useCluster
+	 * This constructor creates a new FuzzyCMeansNoiseClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public FuzzyCMeansNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -85,7 +123,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()
@@ -94,7 +132,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.ClusteringAlgorithm#performClustering(int)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#apply(int)
 	 */
 	@Override
 	public void apply(int steps)
@@ -222,7 +260,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 		
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#getObjectiveFunctionValue()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
 	@Override
 	public double getObjectiveFunctionValue()
@@ -285,9 +323,10 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 		return objectiveFunctionValue;
 	}
 
-	/**
-	 * @return
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentSums()
 	 */
+	@Override
 	public double[] getFuzzyAssignmentSums()
 	{	
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
@@ -348,7 +387,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.FuzzyClusterResultAlgorithm#getFuzzyResult()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]>  assignmentList)
@@ -421,7 +460,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignments(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -487,7 +526,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
@@ -496,7 +535,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignment(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
@@ -619,7 +658,9 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 		
 	/**
-	 * @return the noiseDistance
+	 * Returns the noise distance.
+	 * 
+	 * @return The noise distance.
 	 */
 	public double getNoiseDistance()
 	{
@@ -627,15 +668,19 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 
 	/**
+	 * Sets the noise distance.  The range of the parameter is <code>noiseDistance > 0</code>.
+	 * 
 	 * @param noiseDistance the noiseDistance to set
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
+		if(noiseDistance <= 1.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		
 		this.noiseDistance = noiseDistance;
 	}
 
 	/**
-	 * @param clone
+	 * @TODO: remove
 	 */
 	public void clone(FuzzyCMeansNoiseClusteringAlgorithm<T> clone)
 	{
@@ -645,11 +690,12 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 	}
 	
 	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#clone()
 	 */
+	@Override
 	public FuzzyCMeansNoiseClusteringAlgorithm<T> clone()
 	{
-		FuzzyCMeansNoiseClusteringAlgorithm<T> clone = new FuzzyCMeansNoiseClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.metric);
+		FuzzyCMeansNoiseClusteringAlgorithm<T> clone = new FuzzyCMeansNoiseClusteringAlgorithm<T>(this.data, this.vs, this.metric);
 		this.clone(clone);
 		return clone;
 	}

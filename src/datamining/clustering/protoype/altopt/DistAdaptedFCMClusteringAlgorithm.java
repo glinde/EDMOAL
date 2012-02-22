@@ -53,10 +53,50 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 import etc.SimpleStatistics;
 
+
 /**
- * TODO Class Description
+ * The fuzzy c-means clustering algorithm with adopted distence function is an extension of FCM.
+ * The squared distance function is reduced by a constant value in order to counter the effect of distance concentration due to a
+ * high number of dimensions. This algorithm is particularly designed to counter the effects of the curse of dimensionality.
+ * Similar to {@link RewardingCrispFCMClusteringAlgorithm}, the objective function is added by an penalty term, but the
+ * term is different. But it also removes a value from all distances that appear during membership value calculations.
+ * A paper is soon to appear providing more insight into this algorithm. <br> 
  * 
- * Paper: to appear
+ * Paper: to appear<br>
+ * 
+ * The curse of dimensionality effects the distances w.r.t. to a reference point. Take the position of a prototype, then
+ * all data objects are roughly at the same distance. Let <code>d<sub>min</sub></code> be the distance to the
+ * closest data object. Then removing this distance <code>d<sub>rem</sub> = d<sub>min</sub></code> from all distances
+ * is not enough to counter the distance concentration effects. Therefore, in this algorithm, <code>d<sub>rem</sub></code>
+ * is chosen to be larger than <code>d<sub>min</sub></code>. To maximize the effect countering the curse of dimensionality
+ * and to minimize the effect of negative distances, <code>d<sub>rem</sub></code> depends on the mean of distances
+ * w.r.t. a prototype and the variance of these distances. The <code>distanceCorrectionParameter</code> influences the
+ * distance calculation in the following way: <code>d<sup>2</sup><sub>new</sub> = d<sup>2</sup> - d<sup>2</sup><sub>rem</sub></code> and
+ * d<sub>rem</sub></code> = mean(d<sub>i</sub>) - distanceCorrectionParameter * sqrt(var(d<sub>i</sub>))</code>.
+ * For membership value calculations, the Karush-Kuhn-Tucker conditions are met by setting negative distance values to
+ * 0.<br>
+ * 
+ * The constant removal of distances leads to the situation that close prototypes tend to move into the same position. That
+ * effect can be used to remove unnecessary prototypes be setting them inactive. If the number of clusters is not known,
+ * it is advisable to start the algorithm with an overestimated number of prototypes and to activate prototype merging and
+ * prototype removal for prototypes that ended up at some random noise data objects.<br>
+ * 
+ * The complexity of the algorithm is not increased due to the parameter calculation, still the calculation adds a small fraction of
+ * additional computation time, so even if the complexity is not higher than for {@link FuzzyCMeansClusteringAlgorithm},
+ * the calculation time is higher. Also the prototype merging ability increases the runtime complexity by O(c^2) for a small
+ * number of prototypes, or with high overhead by O(c*log(c)), if the number of prototypes c is high enough.<br>
+ * 
+ * In this particular implementation, the membership matrix is not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c+t*c^2),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))+t*c^2*O(dist)) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
  *
  * @author Roland Winkler
  */
@@ -65,20 +105,32 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	/**  */
 	private static final long	serialVersionUID	= -3814440444229284948L;
 
+	/** Indicates whether the prototypes are merged or not. */
 	protected boolean mergePrototypes;
 	
+	/** If two or more prototypes are closer together than this distance, one of them is deactivated (they merged). */
 	protected double mergingDistance;
 	
+	/** Indicates whether empty prototypes are removed (deactivated) at the end of the clustering process. */
 	protected boolean removeEmptyPrototypes;
 
+	/** If a cluster has a membership value sum that os less than this value, the prototype is removed (deactivated) at
+	 * the end of the clustering process. */
 	protected double minMemembershipValueSum;
 		
+	/** The distance correction parameter. */
 	protected double distanceCorrectionParameter;
 
 	/**
-	 * @param data
-	 * @param vs
-	 * @param dist
+	 * Creates a new DistAdaptedFCMClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public DistAdaptedFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
@@ -94,8 +146,16 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new DistAdaptedFCMClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public DistAdaptedFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -121,9 +181,8 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 	
 	
-
 	/* (non-Javadoc)
-	 * @see datamining.ClusteringAlgorithm#performClustering(int)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#apply(int)
 	 */
 	@Override
 	public void apply(int steps)
@@ -608,6 +667,11 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 	
 
+	/**
+	 * Merges prototypes that are close together than {@link #mergingDistance} by deactivating one of them.
+	 * 
+	 * @return The number of prototypes that have been deactivated.
+	 */
 	protected int mergePrototypes()
 	{
 		int i=0, j=0;
@@ -667,6 +731,12 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		return mergedPrototypes;
 	}
 
+	/**
+	 * Removes (deactivates) all prototypes that have a membership value sum of less than the specified
+	 * minimal value that is specified in {@link #minMemembershipValueSum}.
+	 * 
+	 * @return The number of prototypes that have been deactivated.
+	 */
 	protected int removePrototypes()
 	{
 		int i;
@@ -688,6 +758,13 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		return removedPrototypes;
 	}
 
+	/**
+	 * @param result
+	 * @param list
+	 * @param reference
+	 * @param sort
+	 * @return
+	 */
 	public double[] calculateDataObjectDistancePlot(double[] result, Collection<IndexedDataObject<T>> list, T reference, boolean sort)
 	{
 		if(result == null || result.length < list.size()) result = new double[list.size()];
@@ -705,7 +782,9 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @return the mergePrototypes
+	 * Indicates if prototypes that are close together are merged.
+	 * 
+	 * @return Whether or not prototypes that are close together are merged.
 	 */
 	public boolean isMergePrototypes()
 	{
@@ -713,7 +792,9 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @param mergePrototypes the mergePrototypes to set
+	 * Sets the switch to merge prototypes.
+	 * 
+	 * @param Whether or not prototypes that are close together are merged.
 	 */
 	public void setMergePrototypes(boolean mergePrototypes)
 	{
@@ -721,7 +802,9 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @return the mergingDistance
+	 * Returns the distance at which prototypes are merged.
+	 * 
+	 * @return the distance at which prototypes are merged.
 	 */
 	public double getMergingDistance()
 	{
@@ -729,15 +812,21 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @param mergingDistance the mergingDistance to set
+	 * Sets the distance at which prototypes are merged. The value must be larger than 0.
+	 * 
+	 * @param mergingDistance the distance at which prototypes are merged.
 	 */
 	public void setMergingDistance(double mergingDistance)
 	{
+		if(mergingDistance < 0.0d) throw new IllegalArgumentException("The mergin distance must be larger than 0. Specified merging distance: " + mergingDistance);
+		
 		this.mergingDistance = mergingDistance;
 	}
 
 	/**
-	 * @return the removeEmptyPrototypes
+	 * Indicates whether or not empty prototypes (prototypes with small membership value sum) are deactivated.
+	 * 
+	 * @return whether or not empty prototypes (prototypes with small membership value sum) are deactivated.
 	 */
 	public boolean isRemoveEmptyPrototypes()
 	{
@@ -745,7 +834,9 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @param removeEmptyPrototypes the removeEmptyPrototypes to set
+	 * Sets the switch to deactivate empty prototypes.
+	 * 
+	 * @param removeEmptyPrototypes the switch to deactivate empty prototypes.
 	 */
 	public void setRemoveEmptyPrototypes(boolean removeEmptyPrototypes)
 	{
@@ -753,7 +844,9 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @return the minMemembershipValueSum
+	 * Returns the value that defines whether or not a prototype is regarded as empty.
+	 * 
+	 * @return the value that defines whether or not a prototype is regarded as empty.
 	 */
 	public double getMinMemembershipValueSum()
 	{
@@ -761,15 +854,23 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @param minMemembershipValueSum the minMemembershipValueSum to set
+	 * Sets the value that defines whether or not a prototype is regarded as empty. The value must be larger than 0.
+	 * 
+	 * @param minMemembershipValueSum the value that defines whether or not a prototype is regarded as empty.
 	 */
 	public void setMinMemembershipValueSum(double minMemembershipValueSum)
 	{
+		if(minMemembershipValueSum < 0.0d) throw new IllegalArgumentException("The minimal membership value sum must be larger than 0. Specified distance concentration parameter: " + minMemembershipValueSum);
+		
 		this.minMemembershipValueSum = minMemembershipValueSum;
 	}
 
 	/**
-	 * @return the distanceCorrectionParameter
+	 * Returns the distance concentration parameter. The <code>distanceCorrectionParameter</code> influences the
+	 * distance calculation in the following way: <code>d<sup>2</sup><sub>new</sub> = d<sup>2</sup> - d<sup>2</sup><sub>rem</sub></code> and
+	 * d<sub>rem</sub></code> = mean(d<sub>i</sub>) - distanceCorrectionParameter * sqrt(var(d<sub>i</sub>))</code>.
+	 * 
+	 * @return the distance concentration parameter.
 	 */
 	public double getDistanceCorrectionParameter()
 	{
@@ -777,12 +878,18 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	}
 
 	/**
-	 * @param distanceCorrectionParameter the distanceCorrectionParameter to set
+	 * Sets the distance concentration parameter. The <code>distanceCorrectionParameter</code> influences the
+	 * distance calculation in the following way: <code>d<sup>2</sup><sub>new</sub> = d<sup>2</sup> - d<sup>2</sup><sub>rem</sub></code> and
+	 * d<sub>rem</sub></code> = mean(d<sub>i</sub>) - distanceCorrectionParameter * sqrt(var(d<sub>i</sub>))</code>.<br>
+	 * 
+	 * The distance concentration parameter value must be larger than 0.
+	 * 
+	 * @param distanceCorrectionParameter the distance concentration parameter to set.
 	 */
 	public void setDistanceCorrectionParameter(double distanceCorrectionParameter)
 	{
+		if(distanceCorrectionParameter < 0.0d) throw new IllegalArgumentException("The distance concentration parameter must be larger than 0. Specified distance concentration parameter: " + distanceCorrectionParameter);
+				
 		this.distanceCorrectionParameter = distanceCorrectionParameter;
 	}
-	
-	
 }

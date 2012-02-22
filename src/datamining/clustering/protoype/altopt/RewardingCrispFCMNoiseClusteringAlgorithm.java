@@ -52,9 +52,40 @@ import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * This is an implementation of the rewarding crisp memberships fuzzy c-means clustering algorithm with additional noise cluster.
+ * The objective function is added an penalty term, that is strong if the membership values are close to 0.5 and that is
+ * small for membership values are close to 0 or 1. That way, crisp membership values are regarded more optimal in the
+ * objective function, hence the tendency to produce membership values, that give a clear tendency to which cluster a
+ * data object belongs. See the paper for more information.<br> 
+ * 
+ * Paper: Höppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102<br>
+ * 
+ * The additional term in the objective function leads to a value that is removed from all distances
+ * when calculating the membership values w.r.t. one data object. Other than in the paper, in this implementation
+ * that value is chosen to be <code>distanceMultiplierConstant</code>times the smallest distance to all prototypes.
+ * So <code>distanceMultiplierConstant</code> should be chosen between 0 and 1. When chosen 0, this algorithm is identical
+ * to {@link FuzzyCMeansClusteringAlgorithm} and when chosen 1, it turns into {@link HardCMeansClusteringAlgorithm}.  
+ * 
+ * The noise cluster has, similar to {@link FuzzyCMeansNoiseClusteringAlgorithm}, a constant distance to all data objects.
+ * Due to the more crisp membership values, data objects that are far away from all prototypes have a membership value
+ * of almost 1 to the noise cluster. Therefore, if all prototypes are initialized far away from a cluster that is present
+ * in the data, it is likely that this cluster is never found. Therefore, similar to {@link PolynomFCMNoiseClusteringAlgorithm},
+ * it is advisable to make several runs with this clustering algorithm. The first run with a large noise distance
+ * and than iteratively reducing the noise distance for each run.<br>   
+ * 
+ * In this particular implementation, the membership matrix is not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes. Also the additional
+ * term in the objective function has no influence on the runtime complexity of the algorithm.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
  *
- * Paper: Höppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102
  * 
  * @author Roland Winkler
  */
@@ -676,19 +707,24 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	}
 
 	/**
-	 * @return the noiseDistance
+	 * Returns the noise distance.
+	 * 
+	 * @return The noise distance.
 	 */
 	public double getNoiseDistance()
 	{
 		return this.noiseDistance;
 	}
 
-
 	/**
+	 * Sets the noise distance.  The range of the parameter is <code>noiseDistance > 0</code>.
+	 * 
 	 * @param noiseDistance the noiseDistance to set
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
+		if(noiseDistance <= 1.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		
 		this.noiseDistance = noiseDistance;
 	}
 }

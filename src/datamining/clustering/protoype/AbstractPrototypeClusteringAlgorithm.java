@@ -48,13 +48,25 @@ import datamining.clustering.AbstractClusteringAlgorithm;
 
 /**
  * An abstract class for all prototype based clustering algorithms, without specifying the class of the prototype.
- * It provides functionalities to record the objective function and it also provides some functionalities regarding
- * the learning factor.<br>
+ * It provides functionalities to record the objective function and a counter for the number of iterations.
+ * The most important functionality of this class is, that it takes care of storing and initializing the prototypes.
+ * It is possible to take the prototypes of a different prototype based clustering algorithm or to put in some existing
+ * prototypes. Initializing with position however, is not possible at this point because the
+ * class of the prototypes is yet unspecified.<br>
  * 
- * The learning factor influences the movement speed of the prototypes. When setting a prototype
+ * The {@link #learningFactor} influences the movement speed of the prototypes. When setting a prototype
  * to a new position, the difference vector from the current to the new position is multiplied
  * by the learning factor. Thus, it is possible to slow down the clustering process or to speed
- * it up.
+ * it up.<br>
+ * 
+ * Typical for prototype based clustering algorithms is, that they are performed until the algorithm stabilizes (i.e.
+ * nothing changes any more). This is reflected by the parameter {@link #epsilon}. It should be used to terminate
+ * the clustering algorithm if the change in prototype position (either the sum of changes or the change of all
+ * individual prototypes) is below this value {@link #epsilon}.<br>
+ * 
+ * Prototype based algorithms require to calculate the position of a prototype, based on the location of the 
+ * data objects of the represented clusters. Algebraically, a vector space is necessary to do these calculations
+ * and therefore, this class requires a {@link VectorSpace} on the type <code>T</code> to be specified. 
  * 
  * @author Roland Winkler
  */
@@ -106,6 +118,7 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	 * 
 	 * @param data The data set for clustering.
 	 * @param vs The vector space of which the data objects are elements.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public AbstractPrototypeClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
@@ -366,7 +379,7 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	}
 
 	/**
-	 * @param clone
+	 * @TODO: remove.  
 	 */
 	@SuppressWarnings("unchecked")
 	public void clone(AbstractPrototypeClusteringAlgorithm<T, S> clone)
