@@ -312,7 +312,8 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testVoronoiPartitionFCM()
 	{
-		VoronoiPartitionFCMClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length));
+		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
+		VoronoiPartitionFCMClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMClusteringAlgorithm<double[]>(this.dataSet, evs, evs, evs);
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setEpsilon(0.001d);
@@ -326,7 +327,8 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testVoronoiPartitionFCMNoise()
 	{
-		VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length));
+		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
+		VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, evs, evs, evs);
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setNoiseDistance(0.2d);
