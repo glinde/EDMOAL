@@ -41,7 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import data.algebra.EuclideanVectorSpace;
+import data.algebra.Metric;
+import data.algebra.ScalarProduct;
+import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
@@ -62,6 +64,12 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	private static final long	serialVersionUID	= -143340496452088879L;
 
 
+	/**
+	 * A comparable wrapper class for prototypes to sort them w.r.t. their distance to one data object.
+	 * It also contains an indicator if it is included in the clustering process. 
+	 *
+	 * @author Roland Winkler
+	 */
 	public class SortablePrototype implements Comparable<SortablePrototype>
 	{
 		public Centroid<T> prototype;
@@ -74,7 +82,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			this.prototype = proto;
 			this.squareDistance = 0.0d;
 			this.included = true;
-			this.relativeVecToDataObject = VoronoiPartitionFCMClusteringAlgorithm.this.evs.getNewAddNeutralElement();
+			this.relativeVecToDataObject = VoronoiPartitionFCMClusteringAlgorithm.this.vs.getNewAddNeutralElement();
 		}
 		
 		/* (non-Javadoc)
@@ -88,17 +96,17 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		}
 	}
 	
-	protected final EuclideanVectorSpace<T> evs;
+	protected final ScalarProduct<T> sp;
 	
 	/**
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public VoronoiPartitionFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, EuclideanVectorSpace<T> evs, boolean useOnlyActivePrototypes)
+	public VoronoiPartitionFCMClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, ScalarProduct<T> sp, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 		
-		this.evs = evs;
+		this.sp = sp;
 	}
 
 
@@ -107,15 +115,15 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	 * @param vs
 	 * @param dist
 	 */
-	public VoronoiPartitionFCMClusteringAlgorithm(IndexedDataSet<T> data, EuclideanVectorSpace<T> evs)
+	public VoronoiPartitionFCMClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric, ScalarProduct<T> sp)
 	{
-		super(data, evs, evs);
+		super(data, vs, metric);
 
-		this.evs = evs;		
+		this.sp = sp;		
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()
@@ -173,9 +181,9 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 				// fill the priority queue
 				for(i=0; i<this.getClusterCount(); i++)
 				{
-					this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-					this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-					unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+					this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+					this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+					unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 				}
@@ -212,7 +220,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 						// test if prototype should be excluded due to closer, already included prototypes
 						for(SortablePrototype ip:includedPrototypes)
 						{
-							doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+							doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 														
 							if(doubleTMP > ip.squareDistance)
 							{
@@ -282,7 +290,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.evs.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -332,9 +340,9 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
 				{
@@ -364,7 +372,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -443,9 +451,9 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
@@ -482,7 +490,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -561,9 +569,9 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
@@ -600,7 +608,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -672,9 +680,9 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		// fill the priority queue
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
-			unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+			this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), obj.x);
 
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
@@ -710,7 +718,7 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 				// test if prototype should be excluded due to closer, already included prototypes
 				for(SortablePrototype ip:includedPrototypes)
 				{
-					doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+					doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 												
 					if(doubleTMP > ip.squareDistance)
 					{
@@ -748,12 +756,10 @@ public class VoronoiPartitionFCMClusteringAlgorithm<T> extends FuzzyCMeansCluste
 
 
 	/**
-	 * @return the evs
+	 * @return the sp
 	 */
-	public EuclideanVectorSpace<T> getEuclideanVectorSpace()
+	public ScalarProduct<T> getSp()
 	{
-		return this.evs;
+		return this.sp;
 	}
-	
-	
 }

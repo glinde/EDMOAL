@@ -41,7 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import data.algebra.EuclideanVectorSpace;
+import data.algebra.Metric;
+import data.algebra.ScalarProduct;
+import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
@@ -68,9 +70,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	 * @param data
 	 * @param evs
 	 */
-	public VoronoiPartitionFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, EuclideanVectorSpace<T> evs)
+	public VoronoiPartitionFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric, ScalarProduct<T> sp)
 	{
-		super(data, evs);
+		super(data, vs, metric, sp);
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
@@ -79,9 +81,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public VoronoiPartitionFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, EuclideanVectorSpace<T> evs, boolean useOnlyActivePrototypes)
+	public VoronoiPartitionFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, ScalarProduct<T> sp, boolean useOnlyActivePrototypes)
 	{
-		super(c, evs, useOnlyActivePrototypes);
+		super(c, sp, useOnlyActivePrototypes);
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 	}
@@ -145,9 +147,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 				// fill the priority queue
 				for(i=0; i<this.getClusterCount(); i++)
 				{
-					this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-					this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-					unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+					this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+					this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+					unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 				}
@@ -184,7 +186,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 						// test if prototype should be excluded due to closer, already included prototypes
 						for(SortablePrototype ip:includedPrototypes)
 						{
-							doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+							doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 														
 							if(doubleTMP > ip.squareDistance)
 							{
@@ -256,7 +258,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.evs.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -307,9 +309,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
 				{
@@ -339,7 +341,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -424,9 +426,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
@@ -463,7 +465,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -543,9 +545,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
@@ -582,7 +584,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -655,9 +657,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		// fill the priority queue
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
-			unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+			this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), obj.x);
 
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
@@ -694,7 +696,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 				// test if prototype should be excluded due to closer, already included prototypes
 				for(SortablePrototype ip:includedPrototypes)
 				{
-					doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+					doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 												
 					if(doubleTMP > ip.squareDistance)
 					{
@@ -774,9 +776,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 			// fill the priority queue
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-				this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
-				unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), this.data.get(j).x);
 	
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
@@ -802,7 +804,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 					// test if prototype should be excluded due to closer, already included prototypes
 					for(SortablePrototype ip:includedPrototypes)
 					{
-						doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 													
 						if(doubleTMP > ip.squareDistance)
 						{
@@ -860,9 +862,9 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		// fill the priority queue
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			this.evs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.evs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
-			unsortedPrototypes.get(i).squareDistance = this.evs.lengthSq(unsortedPrototypes.get(i).relativeVecToDataObject);
+			this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), obj.x);
 
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
@@ -888,7 +890,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 				// test if prototype should be excluded due to closer, already included prototypes
 				for(SortablePrototype ip:includedPrototypes)
 				{
-					doubleTMP = this.evs.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+					doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
 												
 					if(doubleTMP > ip.squareDistance)
 					{
