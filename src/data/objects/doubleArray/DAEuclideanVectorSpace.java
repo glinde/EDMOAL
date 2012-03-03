@@ -77,7 +77,9 @@ public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements Euc
 	{
 		double dist = 0.0d;
 		
-		for(int i=0; i<x.length && i<y.length; i++)
+		if(x.length < this.dim || y.length < this.dim) throw new IllegalArgumentException("The number of elements in x and y must be equal or larger than the dimension of this vector space.");
+		
+		for(int i=0; i<this.dim; i++)
 		{
 			dist += (x[i]-y[i])*(x[i]-y[i]);
 		}
@@ -86,42 +88,6 @@ public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements Euc
 	}
 	
 	
-	/**
-	 * Calculates the Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
-	 * 
-	 * @param x The coordinates of position x
-	 * @param y The coordinates of position y
-	 * @param dim The number of dimensions that should be used for calculation
-	 * @return The distance between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
-	 */
-	public double distance(double[] x, double[] y, int dim)
-	{
-		return Math.sqrt(this.distanceSq(x, y, dim));
-	}
-
-
-	/**
-	 * Calculates the squared Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
-	 * 
-	 * @param x The coordinates of position x
-	 * @param y The coordinates of position y
-	 * @param dim The number of dimensions that should be used for calculation
-	 * @return The distance between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
-	 */
-	public double distanceSq(double[] x, double[] y, int dim)
-	{
-		double dist = 0.0d;
-		
-		if(x.length < dim || y.length < dim) throw new IllegalArgumentException("The number of elements in x and y must be at least dim.");
-		
-		for(int i=0; i<dim; i++)
-		{
-			dist += (x[i]-y[i])*(x[i]-y[i]);
-		}
-		
-		return dist;
-	}	
-
 	/* (non-Javadoc)
 	 * @see data.algebra.Norm#length(data.objects.DataObject)
 	 */
@@ -139,7 +105,9 @@ public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements Euc
 	{
 		double length = 0.0d;
 		
-		for(int i=0; i<x.length; i++)
+		if(x.length < this.dim) throw new IllegalArgumentException("The number of elements in x must be equal or larger than the dimension of this vector space.");
+		
+		for(int i=0; i<this.dim; i++)
 		{
 			length += x[i]*x[i];
 		}
@@ -147,40 +115,6 @@ public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements Euc
 		return length;
 	}
 
-
-	/**
-	 * Calculates the Euclidean length for double arrays, taking only the first <code>dim</code> dimensions into account.  
-	 * 
-	 * @param x The coordinates of position x
-	 * @param dim The number of dimensions that should be used for calculation
-	 * @return The length for <code>x</code>, calculated in the first <code>dim</code> dimensions.
-	 */
-	public double length(double[] x, int dim)
-	{
-		return Math.sqrt(this.lengthSq(x));
-	}
-
-
-	/**
-	 * Calculates the squared Euclidean length for double arrays, taking only the first <code>dim</code> dimensions into account.  
-	 * 
-	 * @param x The coordinates of position x
-	 * @param dim The number of dimensions that should be used for calculation
-	 * @return The length for <code>x</code>, calculated in the first <code>dim</code> dimensions.
-	 */
-	public double lengthSq(double[] x, int dim)
-	{
-		double length = 0.0d;
-		
-		if(x.length < dim) throw new IllegalArgumentException("The number of elements in x must be at least dim.");
-		
-		for(int i=0; i<dim; i++)
-		{
-			length += x[i]*x[i];
-		}
-		
-		return length;
-	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.ScalarProduct#scalarProduct(java.lang.Object, java.lang.Object)
@@ -190,27 +124,7 @@ public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements Euc
 	{
 		double prod = 0.0d;
 		
-		for(int i=0; i<x.length && i<y.length; i++)
-		{
-			prod += x[i]*y[i];
-		}
-		
-		return prod;
-	}
-
-	/**
-	 * Calculates the scalar product between two double arrays, taking only the first <code>dim</code> dimensions into account.  
-	 * 
-	 * @param x The coordinates of position x
-	 * @param y The coordinates of position y
-	 * @param dim The number of dimensions that should be used for calculation
-	 * @return The scalar product between <code>x</code> and <code>y</code>, calculated in the first <code>dim</code> dimensions.
-	 */
-	public double scalarProduct(double[] x, double[] y, int dim)
-	{
-		double prod = 0.0d;
-		
-		if(x.length < dim || y.length < dim) throw new IllegalArgumentException("The number of elements in x and y must be at least dim.");
+		if(x.length < this.dim || y.length < this.dim) throw new IllegalArgumentException("The number of elements in x and y must be equal or larger than the dimension of this vector space.");
 		
 		for(int i=0; i<dim; i++)
 		{
@@ -219,5 +133,4 @@ public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements Euc
 		
 		return prod;
 	}
-	
 }
