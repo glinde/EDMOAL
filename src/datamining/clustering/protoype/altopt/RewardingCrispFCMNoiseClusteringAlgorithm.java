@@ -723,7 +723,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
-		if(noiseDistance <= 1.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		if(noiseDistance <= 0.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
 		
 		this.noiseDistance = noiseDistance;
 	}
