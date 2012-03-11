@@ -107,6 +107,7 @@ public abstract class AbstractTree<E, N extends AbstractTreeNode<E, N, T>, T ext
 		this.root = null;
 		this.build = false;
 		this.nodeList = new ArrayList<N>(dataSet.size());
+		for(int i=0; i<dataSet.size(); i++) this.nodeList.add(null);
 	}
 	
 	/* (non-Javadoc)

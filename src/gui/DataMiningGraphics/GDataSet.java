@@ -78,6 +78,9 @@ public class GDataSet extends DrawableObject implements Serializable
 	
 	protected int colorIndex;
 	protected int convexHullStrokeIndex;
+	
+	protected boolean dataSubsetPresentation;
+	protected int[] dataSubsetList;
 		
 	public GDataSet()
 	{
@@ -99,6 +102,9 @@ public class GDataSet extends DrawableObject implements Serializable
 				
 		this.convexHull = new ArrayList<double[]>();	
 		this.drawInternalArea = false;
+		
+		this.dataSubsetPresentation = false;
+		this.dataSubsetList = null;
 	}
 	
 	/* (non-Javadoc)
@@ -111,8 +117,22 @@ public class GDataSet extends DrawableObject implements Serializable
 		Polygon surroundingPoly;
 		double[] tmp;
 		double[] point;
+		ArrayList<double[]> dataObjectList = new ArrayList<double[]>(this.dataSubsetList.length);
 		
-		this.dataObjectsTemplate.drawAtAll(g2, this.scheme, translator.translate(this.projection.projectIndexed(this.dataObjects, null), null));
+		if(this.dataSubsetPresentation)
+		{
+			for(int l=0; l<this.dataSubsetList.length; l++)
+			{
+				dataObjectList.add(this.dataObjects.get(this.dataSubsetList[l]).x);
+			}
+			
+			this.dataObjectsTemplate.drawAtAll(g2, this.scheme, translator.translate(this.projection.project(dataObjectList, null), null));
+			
+		}
+		else
+		{
+			this.dataObjectsTemplate.drawAtAll(g2, this.scheme, translator.translate(this.projection.projectIndexed(this.dataObjects, null), null));
+		}
 		
 		if(this.drawInternalArea)
 		{
@@ -142,8 +162,23 @@ public class GDataSet extends DrawableObject implements Serializable
 	public void calcCrispInternalSourrounding()
 	{	
 		ArrayList<double[]> dataPoints = new ArrayList<double[]>(this.dataObjects.size());
-		for(IndexedDataObject<double[]> d:this.dataObjects)
-			dataPoints.add(d.x);
+		
+
+		if(this.dataSubsetPresentation)
+		{
+			for(int l=0; l<this.dataSubsetList.length; l++)
+			{
+				dataPoints.add(this.dataObjects.get(this.dataSubsetList[l]).x);
+			}
+		}
+		else
+		{
+
+			for(IndexedDataObject<double[]> d:this.dataObjects)
+				dataPoints.add(d.x);
+		}
+		
+		
 		
 		this.convexHull = DataManipulator.convexHull2D(dataPoints);
 	}
@@ -256,5 +291,38 @@ public class GDataSet extends DrawableObject implements Serializable
 	public void setConvexHullStrokeIndex(int convexHullStrokeIndex)
 	{
 		this.convexHullStrokeIndex = convexHullStrokeIndex;
+	}
+
+	/**
+	 * @return the dataSubsetPresentation
+	 */
+	public boolean isDataSubsetPresentation()
+	{
+		return this.dataSubsetPresentation;
+	}
+
+	/**
+	 * @param dataSubsetPresentation the dataSubsetPresentation to set
+	 */
+	public void setDataSubsetPresentation(boolean dataSubsetPresentation)
+	{
+		this.dataSubsetPresentation = dataSubsetPresentation;
+	}
+
+	/**
+	 * @return the dataSubsetList
+	 */
+	public int[] getDataSubsetList()
+	{
+		return this.dataSubsetList;
+	}
+
+	/**
+	 * @param dataSubsetList the dataSubsetList to set
+	 */
+	public void setDataSubsetList(int[] dataSubsetList)
+	{
+		this.dataSubsetPresentation = true;
+		this.dataSubsetList = dataSubsetList;
 	}
 }

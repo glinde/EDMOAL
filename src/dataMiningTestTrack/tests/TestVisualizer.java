@@ -200,6 +200,55 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
+	
+
+	/**
+	 * Creates a visualisation of the specified clustering algorithm and its results.
+	 * The visualisation is automatically adopted to the type of the algorithm.
+	 * 
+	 * @param clusterAlgo The algorithm that is to be visualised.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 * @param dataObjectSubsectionIndexes
+	 */
+	@SuppressWarnings("unchecked")
+	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, int[] dataObjectSubsectionIndexes, String title, String filename)
+	{
+		GClusteredDataSet gClusteredDS;
+		ScreenViewer sv;
+		
+		if(clusterAlgo instanceof PrototypeClusteringAlgorithm)
+		{
+			try
+			{
+				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo, dataObjectSubsectionIndexes);
+			}
+			catch(ClassCastException e)
+			{
+				gClusteredDS = new GClusteredDataSet(clusterAlgo, dataObjectSubsectionIndexes);
+			}
+			
+		}
+		else
+		{
+			gClusteredDS = new GClusteredDataSet(clusterAlgo, dataObjectSubsectionIndexes);
+		}
+
+		gClusteredDS.setDrawMembershipLevels(true);
+		
+		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+
+		sv = new ScreenViewer();
+		sv.screen.setFileName(filename);
+		sv.screen.setBackground(Color.WHITE);
+		sv.screen.addDrawableObject(gClusteredDS);
+		sv.screen.setScreenToDisplayAllIndexed(clusterAlgo.getDataSet());
+		sv.setTitle(title);
+		sv.repaint();
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
 		
 	/**
 	 * Visualises the specified data set. Currently, only the first two dimensions of
@@ -232,6 +281,40 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
+	
+	/**
+	 * Visualises the specified data set. Currently, only the first two dimensions of
+	 * the data vectors are presented. For visualising other dimensions, please change
+	 * the order of the attributes in the data vector.
+	 * 
+	 * @param dataSet The data set to be visualised.
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
+	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, int[] dataObjectSubsectionIndexes, String filename)
+	{
+		ScreenViewer sv  = new ScreenViewer();
+		GDataSet gCluster = new GDataSet();
+		
+		gCluster.setDataObjects(dataSet);
+		gCluster.setDataSubsetList(dataObjectSubsectionIndexes);
+		gCluster.getScheme().setColor(0, ColorList.BLACK);
+		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
+		
+		sv.screen.setFileName(filename);
+	//	sv.setPreferredSize(new Dimension(1200, 800));
+	//	sv.setSize(new Dimension(1200, 800));
+		sv.screen.addDrawableObject(gCluster);
+		sv.screen.addDrawableObject(new GScale());
+	//	sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
+	//	sv.screen.zoomToDisplay(data);
+		sv.screen.setScreenToDisplayAllIndexed(dataSet);
+		sv.repaint();
+		sv.setTitle(filename);
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
+	
 
 	/**
 	 * Presents the specified data set, coloured by the specified crisp clustering (partitioning). Currently,

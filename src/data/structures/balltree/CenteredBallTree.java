@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.structures.balltree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.PriorityQueue;
 
@@ -115,7 +116,7 @@ public class CenteredBallTree<T> extends AbstractTree<T, CenteredBallTreeNode<T>
 	public void buildNaive() throws DataSetNotSealedException
 	{
 		if(!this.dataSet.isSealed()) throw new DataSetNotSealedException("The data set is not sealed.");
-		
+
 		ArrayList<IndexedDataObject<T>> subelements = new ArrayList<IndexedDataObject<T>>(this.dataSet.size());
 		for(int i=1; i<this.dataSet.size(); i++) subelements.add(this.dataSet.get(i));
 

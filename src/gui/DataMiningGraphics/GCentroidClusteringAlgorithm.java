@@ -118,4 +118,25 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 		
 		this.updateClusterAssignments(ca);
 	}
+
+	public GCentroidClusteringAlgorithm(PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> ca, int[] dataSubsetList)
+	{
+		this(ca.getClusterCount());
+
+		this.dataSubsetPresentation = true;
+		this.dataSubsetList = dataSubsetList;
+		
+		this.clusteringAlgorithm = ca;
+		
+		this.dataSet.addAll(ca.getDataSet());	
+
+		for(int i=0; i<this.clusterCount; i++)
+		{
+			this.gCentroids.get(i).setPrototype(this.clusteringAlgorithm.getPrototypes().get(i));
+		}
+		
+		this.updateClusterAssignments(ca);
+		
+		this.updateClusterAssignments(ca);
+	}
 }

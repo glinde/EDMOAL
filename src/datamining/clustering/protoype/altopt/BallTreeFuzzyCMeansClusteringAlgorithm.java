@@ -39,6 +39,7 @@ package datamining.clustering.protoype.altopt;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.xml.crypto.Data;
@@ -142,7 +143,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	{
 		super(dataSet, vs, metric);
 				
-		this.cBallTree = new CenteredBallTree<T>(dataSet, this.vs, this.metric);
+		this.cBallTree = new CenteredBallTree<T>(this.getDataSet(), this.vs, this.metric);
 		this.cBallTree.build();
 		
 		this.maximalMembershipIntervalLength = 0.1d;
@@ -355,6 +356,8 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			
 			this.intervalLength[i] = max - min;
 		}
+		
+//		if(node.getObj().getID() == 1234) System.out.println("interval length = " + Arrays.toString(intervalLength));
 				
 		// calculate the prototypes for which a recursion is necessary
 		for(i=0; i<this.calculationDepth.length; i++)

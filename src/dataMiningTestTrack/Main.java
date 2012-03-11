@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack;
 
 import data.structures.balltree.BallTree;
+import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
 import dataMiningTestTrack.tests.DataStructureSpeedTest;
 import dataMiningTestTrack.tests.DataStructureVisualTest;
@@ -64,7 +65,8 @@ public class Main
 
 //		Main.dataStructureVisualTest();
 //		Main.dataStructureSpeedTest();
-		Main.clusterAlgorithmVisualTest();
+//		Main.clusterAlgorithmVisualTest();
+		Main.clusterAlgorithmVisualSpeedTest();
 		
 	}
 	
@@ -120,16 +122,49 @@ public class Main
 //		clusterTest.testFuzzyCMeans();
 //		clusterTest.testFuzzyCMeansNoise();
 //		clusterTest.testPolynomialFuzzyCMeans();
-		clusterTest.testPolynomialFuzzyCMeansNoise();
+//		clusterTest.testPolynomialFuzzyCMeansNoise();
 //		clusterTest.testRewardingCrispFCM();		
 //		clusterTest.testRewardingCrispFCMNoise();
 //		clusterTest.testVoronoiPartitionFCM();		
 //		clusterTest.testVoronoiPartitionFCMNoise(); 
 //		clusterTest.testDistAdaptedFCM(); 
 //		clusterTest.testDistAdaptedFCMNoise();
-//		clusterTest.testBallTreeFuzzyCMeans();
+		clusterTest.testBallTreeFuzzyCMeans();
 //		clusterTest.testExpectationMaximization();
 //		clusterTest.testDBScan();
+	}
+
+	
+	/**
+	 * Performs tests of the clustering algorithms, using synthetic data sets.
+	 * The result is visualised so that the result of the algorithm is easily
+	 * interpretable. The point of these tests is, to give the user some
+	 * feeling of how the algorithms behave and to decide whether or not they
+	 * might be useful for him. Also provides some time measurments and
+	 * the visualization of the data set is not the complete data set but rather a randomly
+	 * selected subset to limit the complexity of showing the figures.
+	 */
+	public static void clusterAlgorithmVisualSpeedTest()
+	{
+		int dim = 2, number = 1000000, clusterCount = 5, visibleDataCount = 10000;
+
+		ClusterAlgorithmVisualSpeedTest clusterTest = new ClusterAlgorithmVisualSpeedTest(dim, number, clusterCount, visibleDataCount);		
 		
+//		clusterTest.showDataSet();
+//		clusterTest.showClusteredDataSet();
+//		clusterTest.testHardCMeans();
+//		clusterTest.testFuzzyCMeans();
+//		clusterTest.testFuzzyCMeansNoise();
+//		clusterTest.testPolynomialFuzzyCMeans();
+//		clusterTest.testPolynomialFuzzyCMeansNoise();
+//		clusterTest.testRewardingCrispFCM();		
+//		clusterTest.testRewardingCrispFCMNoise();
+//		clusterTest.testVoronoiPartitionFCM();		
+//		clusterTest.testVoronoiPartitionFCMNoise(); 
+//		clusterTest.testDistAdaptedFCM(); 
+//		clusterTest.testDistAdaptedFCMNoise();
+		clusterTest.testBallTreeFuzzyCMeans();
+//		clusterTest.testExpectationMaximization();
+//		clusterTest.testDBScan();
 	}
 }

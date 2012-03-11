@@ -40,7 +40,9 @@ package dataMiningTestTrack.tests;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
@@ -66,7 +68,8 @@ import etc.DataGenerator;
 
 
 /**
- * This class provides some functionality to test cluster algorithms and to verify the result visually.
+ * This class provides some functionality to test cluster algorithms and to verify the result visually and
+ * give some numbers on their execution time.
  * The data for testing is generated artificially, which is also done by this class.<br>
  * 
  * The data set is generated in the following way: The number of clusters determines the
@@ -80,10 +83,10 @@ import etc.DataGenerator;
  *
  * @author Roland Winkler
  */
-public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serializable
+public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements Serializable
 {
 	/**  */
-	private static final long	serialVersionUID	= -4791280640176444354L;
+	private static final long	serialVersionUID	= -5614041122326224796L;
 
 	/**
 	 * The data set to be clustered
@@ -94,11 +97,15 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 * The number of clusters
 	 */
 	private int clusterCount;
+		
 	
-	/**
-	 * The correct clustering (partitioning) according to the data generation process.
+	/** 
+	 * The number of data objects that should randomly be piced for visualization.
 	 */
-	private int[] correctClustering;
+	private int visibleDataObjects;
+	
+	/** The list of data objects that are shown during the visualization. */
+	private int[] indexesOfVisibleDataObjects;
 	
 	/**
 	 * The initial positions of prototypes.
@@ -111,7 +118,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 * according to the number of clusters.<br>
 	 * 
 	 * The data set is generated in the following way: The number of clusters determines the
-	 * number of seeds that are uniformly distributed in the hypercube with cornes at each
+	 * number of seeds that are uniformly distributed in the hypercube with corners at each
 	 * dimension at 0.1 and 0.9 (the hypercube is specified by [0.1, 0.9]^dim).
 	 * For each seed, a set of dim-dimensional normal distributed data objects is generated.
 	 * The variance of the (dim-dimensional) normal distribution is randomly picked between 0 and 0.1.
@@ -121,19 +128,25 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 * @param dim The dimension of the data set.
 	 * @param dataObjectCount The number of data objects.
 	 * @param clusterCount The number of clusters.
+	 * @param visibleDataObjects The number of data objects that are visible.
 	 */
-	public ClusterAlgorithmVisualTest(int dim, int dataObjectCount, int clusterCount)
+	public ClusterAlgorithmVisualSpeedTest(int dim, int dataObjectCount, int clusterCount, int visibleDataObjects)
 	{
 		super();
 		
-		this.clusterCount = clusterCount;
+
+		long time;
+		System.out.println("Building Data Set .. ");
+		time = -System.currentTimeMillis();
 		
-		ArrayList<double[]> tmpData;
+		this.clusterCount = clusterCount;
+		this.visibleDataObjects = visibleDataObjects;
+		
 		ArrayList<double[]> data = new ArrayList<double[]>();
 		ArrayList<double[]> seeds = new ArrayList<double[]>();
 		
 		DataGenerator dg = new DataGenerator();		
-		seeds.addAll(dg.uniformStandardPoints(dim+1, clusterCount));
+		seeds.addAll(dg.uniformStandardPoints(dim, clusterCount));
 
 		// seeds for clutsers
 		for(double[] seed:seeds)
@@ -144,42 +157,20 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		// add clusters
 		for(int i=0; i<this.clusterCount; i++)
 		{
-			tmpData = dg.gaussPoints(seeds.get(i), 0.1*dg.generatorRand.nextDouble(), (9*dataObjectCount)/(10*this.clusterCount));
-
-			// indicate the correct cluster
-			for(int j=0; j<tmpData.size(); j++)
-			{
-				tmpData.get(j)[dim] = i;
-			}
-			
-			data.addAll(tmpData);
+			data.addAll(dg.gaussPoints(seeds.get(i), 0.1*dg.generatorRand.nextDouble(), (9*dataObjectCount)/(10*this.clusterCount)));
 		}
 		
 		// add noise
-		tmpData = dg.uniformStandardPoints(dim+1, dataObjectCount/10);
-
-		// indicate the noise cluster
-		for(int j=0; j<tmpData.size(); j++)
-		{
-			tmpData.get(j)[dim] = -1.0d;
-		}
-		data.addAll(tmpData);
+		data.addAll(dg.uniformStandardPoints(dim, dataObjectCount/10));
 		
 		// mix it
 		Collections.shuffle(data);
-		
-		// store the correct cluster indices with shuffled order
-		this.correctClustering = new int[data.size()];
-		for(int j=0; j<data.size(); j++)
-		{
-			this.correctClustering[j] = (int)data.get(j)[dim];
-		}
 		
 		// store data set without the cluster information
 		this.dataSet = new IndexedDataSet<double[]>(data.size());
 		for(int j=0; j<data.size(); j++)
 		{
-			this.dataSet.add(new IndexedDataObject<double[]>(Arrays.copyOfRange(data.get(j), 0, dim)));
+			this.dataSet.add(new IndexedDataObject<double[]>(data.get(j)));
 		}
 		this.dataSet.seal();
 				
@@ -188,6 +179,16 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		ArrayList<Centroid<double[]>> initialPrototypes = gen.randomUniformOnDataBounds(this.dataSet, clusterCount);
 		this.initialPositons = new ArrayList<double[]>();
 		for(Centroid<double[]> c:initialPrototypes) this.initialPositons.add(c.getInitialPosition().clone());
+		
+		// select visualized data objects
+		ArrayList<Integer> intList = new ArrayList<Integer>(dataObjectCount);
+		for(int i=0; i<dataObjectCount; i++) intList.add(new Integer(i));
+		Collections.shuffle(intList);
+		this.indexesOfVisibleDataObjects = new int[this.visibleDataObjects];
+		for(int i=0; i<this.visibleDataObjects; i++) this.indexesOfVisibleDataObjects[i] = intList.get(i).intValue();
+
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
 	}
 	
 	/**
@@ -197,24 +198,31 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	{
 		this.showDataSet(this.dataSet, null);
 	}
-	
-	/**
-	 * Shows the generated data set, coloured with the clusters, specified by the generation.
-	 */
-	public void showClusteredDataSet()
-	{
-		this.showCrispDataSetClustering(this.dataSet, this.clusterCount, this.correctClustering, null);
-	}
-	
+		
 	/**
 	 * Performs a hard c-means clustering algorithm on the generated data set.
 	 */
 	public void testHardCMeans()
 	{
+		long time;
+		System.out.println("HCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		HardCMeansClusteringAlgorithm<double[]> clusterAlgo = new HardCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "HCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "HCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -223,12 +231,27 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testFuzzyCMeans()
 	{
+		long time;
+		System.out.println("FCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		FuzzyCMeansClusteringAlgorithm<double[]> clusterAlgo = new FuzzyCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setEpsilon(0.001d);
+		clusterAlgo.setEpsilon(0.0001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 	
@@ -237,13 +260,28 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testFuzzyCMeansNoise()
 	{
+		long time;
+		System.out.println("NFCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		FuzzyCMeansNoiseClusteringAlgorithm<double[]> clusterAlgo = new FuzzyCMeansNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setNoiseDistance(0.2d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -252,12 +290,27 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testPolynomialFuzzyCMeans()
 	{
+		long time;
+		System.out.println("P-FCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		PolynomFCMClusteringAlgorithm<double[]> clusterAlgo = new PolynomFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setBeta(0.3d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -266,13 +319,28 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testPolynomialFuzzyCMeansNoise()
 	{
+		long time;
+		System.out.println("P-NFCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		PolynomFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new PolynomFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setBeta(0.3d);
 		clusterAlgo.setNoiseDistance(0.3d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -281,13 +349,28 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testRewardingCrispFCM()
 	{
+		long time;
+		System.out.println("RC-FCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		RewardingCrispFCMClusteringAlgorithm<double[]> clusterAlgo = new RewardingCrispFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setDistanceMultiplierConstant(0.7d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -296,14 +379,29 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testRewardingCrispFCMNoise()
 	{
+		long time;
+		System.out.println("RC-NFCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		RewardingCrispFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new RewardingCrispFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setDistanceMultiplierConstant(0.7d);
 		clusterAlgo.setNoiseDistance(0.3d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -312,13 +410,28 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testVoronoiPartitionFCM()
 	{
+		long time;
+		System.out.println("VP-FCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
 		VoronoiPartitionFCMClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMClusteringAlgorithm<double[]>(this.dataSet, evs, evs, evs);
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "VPFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "VPFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -327,14 +440,29 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testVoronoiPartitionFCMNoise()
 	{
+		long time;
+		System.out.println("VP-NFCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
 		VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, evs, evs, evs);
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setNoiseDistance(0.2d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -343,13 +471,28 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testDistAdaptedFCM()
 	{
+		long time;
+		System.out.println("DA-FCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		DistAdaptedFCMClusteringAlgorithm<double[]> clusterAlgo = new DistAdaptedFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setDistanceCorrectionParameter(1.0d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -358,14 +501,29 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testDistAdaptedFCMNoise()
 	{
+		long time;
+		System.out.println("DA-NFCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		DistAdaptedFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new DistAdaptedFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setDistanceCorrectionParameter(1.0d);
 		clusterAlgo.setNoiseDistance(0.2d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -374,13 +532,28 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testBallTreeFuzzyCMeans()
 	{
+		long time;
+		System.out.println("BT-FCM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		BallTreeFuzzyCMeansClusteringAlgorithm<double[]> clusterAlgo = new BallTreeFuzzyCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setMaximalMembershipIntervalLength(0.2d);
-		clusterAlgo.setEpsilon(0.01d);
+		clusterAlgo.setEpsilon(0.001d);
+
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -389,15 +562,30 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testExpectationMaximization()
 	{
+		long time;
+		System.out.println("EM-GMM");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		ExpectationMaximizationSGMMClusteringAlgorithm clusterAlgo = new ExpectationMaximizationSGMMClusteringAlgorithm(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setVarianceBounded(true);
 		clusterAlgo.setVarianceLowerBound(0.0001d);
 		clusterAlgo.setVarianceUpperBound(1000.0d);
 		clusterAlgo.setEpsilon(0.001d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply(50);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
 //		for(SphericalNormalDistributionPrototype d:clusterAlgo.getActivePrototypes()) System.out.println(d.getClusterIndex() + ": " + d.getVariance());
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -406,10 +594,25 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void testDBScan()
 	{
+		long time;
+		System.out.println("DBScan");
+		System.out.print("Initialize clustering algorithm .. ");
+		time = -System.currentTimeMillis();
+		
 		DBScan<double[]> clusterAlgo = new DBScan<double[]>(this.dataSet, new DAEuclideanMetric());
 		clusterAlgo.setCoreNum(50);
 		clusterAlgo.setCoreDist(0.02d);
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		time = -System.currentTimeMillis();
+		System.out.print("Clustering process .. ");
+		
 		clusterAlgo.apply();
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		
+		time += System.currentTimeMillis();
+		System.out.println("done. ("+time+" ms)");
+		
+		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 }
