@@ -60,7 +60,7 @@ import etc.MyMath;
  * Paper: Dunn, J. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters Cybernetics and Systems: An International Journal, 1973, 3, 32-57<br>
  * Paper: Bezdek, J. C. Pattern Recognition with Fuzzy Objective Function Algorithms Plenum Press, 1981<br>
  * 
- * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * In this particular implementation, the membership matrix is not stored when the algorithm is applied. That is possible because the membership
  * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
  * 
  * The runtime complexity of this algorithm is in O(t*n*c),
@@ -270,7 +270,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 		
-		int i, j; 
+		int i, j, k; 
 		// i: index for clusters
 		// j: index for data objects
 		// k: index for dimensions, others
@@ -282,31 +282,31 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
 		double[] fuzzDistances					= new double[this.getClusterCount()];
 		double[] distancesSq					= new double[this.getClusterCount()];
+		boolean zeroDistance = false;
 		
 						
 		for(j=0; j < this.getDataCount(); j++)
 		{				
+			zeroDistance = false;
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
-					doubleTMP = 0.0d;
-					distancesSq[i] = doubleTMP;
-					fuzzDistances[i] = 1.0d;
+					zeroDistance = true;
 				}
 				else
-				{
+				{ 
 					distancesSq[i] = doubleTMP;
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
 			}
+			if(zeroDistance) continue;
 
-			// don't check for distance sum to be zero.. that would just be rediculus!!
-
+			// don't check for distance sum to be zero.. that would just be ridiculous!!
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				doubleTMP = fuzzDistances[i] / distanceSum;

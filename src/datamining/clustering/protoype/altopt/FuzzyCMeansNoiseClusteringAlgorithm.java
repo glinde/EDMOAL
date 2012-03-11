@@ -281,20 +281,18 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 		double[] distancesSq				= new double[this.getClusterCount()];
 		
 		double fuzzNoiseDist				= 0.0d;
-			
+		boolean zeroDistance = false;
+		
 						
 		for(j=0; j < this.getDataCount(); j++)
-		{	
-			
+		{				
+			zeroDistance = false;
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
-					doubleTMP = 0.0d;
-					distancesSq[i] = doubleTMP;
-					fuzzDistances[i] = 1.0d;
 				}
 				else
 				{
@@ -304,6 +302,7 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 					distanceSum += doubleTMP;
 				}
 			}
+			if(zeroDistance) continue;
 			fuzzNoiseDist = MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent);
 			distanceSum += fuzzNoiseDist;
 

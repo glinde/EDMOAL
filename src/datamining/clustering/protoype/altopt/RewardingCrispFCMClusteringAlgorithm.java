@@ -224,7 +224,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 
-					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
+					doubleTMP = membershipValues[i]*membershipValues[i];
 					membershipSum[i] += doubleTMP;
 
 					this.vs.copy(tmpX, this.data.get(j).x);
@@ -271,7 +271,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 		
-		int i, j; 
+		int i, j, k; 
 		// i: index for clusters
 		// j: index for data objects
 		// k: index for dimensions, others
@@ -283,8 +283,8 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 		double[] fuzzDistances					= new double[this.getClusterCount()];
 		double[] distancesSq					= new double[this.getClusterCount()];
 		double minDistValue = 0.0d;
-		
-		
+
+						
 		for(j=0; j < this.getDataCount(); j++)
 		{				
 			distanceSum = 0.0d;
@@ -296,6 +296,8 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				distancesSq[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
+			if(minDistValue <= 0.0d) continue;
+			
 			minDistValue *= this.distanceMultiplierConstant;
 			
 			for(i=0; i<this.getClusterCount(); i++)
@@ -303,7 +305,10 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				doubleTMP = distancesSq[i] - minDistValue;
 				if(doubleTMP <= 0.0d)
 				{
+					for(k=0; k<this.getClusterCount(); k++) fuzzDistances[k] = 0.0d;
 					fuzzDistances[i] = 1.0d;
+					distanceSum = 1.0d;
+					break;
 				}
 				else
 				{
@@ -312,14 +317,12 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 					distanceSum += doubleTMP;
 				}
 			}
-		
-			// don't check for distance sum to be zero.. that would just be rediculus!!
-		
+			
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				doubleTMP = fuzzDistances[i] / distanceSum;
 								
-				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (distancesSq[i] - minDistValue);
+				objectiveFunctionValue += doubleTMP*doubleTMP*distancesSq[i] - minDistValue*(doubleTMP - 0.5d)*(doubleTMP - 0.5d);
 			}
 		}
 		

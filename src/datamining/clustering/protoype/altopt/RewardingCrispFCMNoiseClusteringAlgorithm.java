@@ -291,6 +291,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				distancesSq[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
+			if(minDistValue <= 0.0d) continue;
 			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
 			minDistValue *= this.distanceMultiplierConstant;
 			
@@ -317,11 +318,11 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			{
 				doubleTMP = fuzzDistances[i] / distanceSum;
 								
-				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (distancesSq[i] - minDistValue);
+				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * distancesSq[i]  - minDistValue*(doubleTMP - 0.5d)*(doubleTMP - 0.5d);
 			}
 			doubleTMP = fuzzyNoiseDist / distanceSum;
 			
-			objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (this.noiseDistance*this.noiseDistance - minDistValue);
+			objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (this.noiseDistance*this.noiseDistance) - minDistValue*(doubleTMP - 0.5d)*(doubleTMP - 0.5d);
 		}
 		
 		return objectiveFunctionValue;

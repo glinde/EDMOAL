@@ -346,7 +346,7 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
 		
-		int i, j; 
+		int i, j, k; 
 		// i: index for clusters
 		// j: index for data objects
 		// k: index for dimensions, others
@@ -360,7 +360,10 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		double[] distancesToData					= new double[this.getDataCount()];
 		double[] dynamicDistanceCorrectionValues 	= new double[this.getClusterCount()];
 		double objectiveFunctionValue				= 0.0d;
-			
+		double[] membershipValues					= new double[this.getClusterCount()];
+
+		int[] zeroDistanceIndexList					= new int[this.getClusterCount()];
+		int zeroDistanceCount;
 
 		// calculate dynamic distance correction values 
 		for(i = 0; i < this.getClusterCount(); i++)
@@ -377,7 +380,8 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		// update membership values
 		for(j = 0; j < this.getDataCount(); j++)
 		{				
-			for(i=0; i<this.getClusterCount(); i++) distancesSq[i] = 0.0d;
+			for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
+			zeroDistanceCount = 0;
 			distanceSum = 0.0d;
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
@@ -387,7 +391,9 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				distancesSq[i] = doubleTMP;
 				if(doubleTMP <= 0.0d)
 				{
-					fuzzDistances[i] = 0.0;
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
 				}
 				else
 				{
@@ -397,10 +403,31 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				}
 			}
 
-			for(i=0; i<this.getClusterCount(); i++)
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
 			{
-				doubleTMP = fuzzDistances[i] / distanceSum;
-				objectiveFunctionValue +=  MyMath.pow(doubleTMP, this.fuzzifier) * distancesSq[i];
+				for(i = 0; i < this.getClusterCount(); i++)
+				{
+					membershipValues[i] = 0.0d;
+				}
+				doubleTMP = 1.0d / ((double)zeroDistanceCount);
+				for(k=0; k<zeroDistanceCount; k++)
+				{
+					membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
+				}
+			}
+			else
+			{
+				for(i = 0; i < this.getClusterCount(); i++)
+				{
+					doubleTMP = fuzzDistances[i] / distanceSum;
+					membershipValues[i] = doubleTMP;
+				}
+			}
+
+			for(i = 0; i < this.getClusterCount(); i++)
+			{
+				objectiveFunctionValue +=  MyMath.pow(membershipValues[i], this.fuzzifier) * distancesSq[i];
 			}
 		}
 		
