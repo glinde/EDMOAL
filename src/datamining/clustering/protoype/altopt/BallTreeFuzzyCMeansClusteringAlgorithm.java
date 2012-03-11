@@ -41,44 +41,102 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.xml.crypto.Data;
+
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import data.structures.balltree.CenteredBallTree;
 import data.structures.balltree.CenteredBallTreeNode;
 import data.structures.queries.SphereQueryProvider;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * This is an implementation of the standard Fuzzy c-Means clustering algorithm, except it uses a ball tree as data structure
+ * and the neighborhood information contained in the tree to accelerate the calculation process. The acceleration
+ * is accomplished by approximating chunks of the data by their center of mass. An additional parameter defines by what amount the
+ * membership values may be uncertain due to the approximation. The approximation is only used for the iteration of the
+ * algorithm, that is only for the optimization. Other fuctions like {@link #getFuzzyAssignmentsOf(data.set.IndexedDataObject)} do not
+ * use the approximation. During the iteration, the approximation is extremely efficient, and if the number of data objects is
+ * high enough, the execution time of the algorithm becomes independent on the number of data objects. A precision of 0.1 for membership values
+ * seems to be quite crude, but the results show that there is only little difference to the movement of the prototypes compared to
+ * the exact fuzzy c-means. There is one drawback however. The algorithm is performed recursively on the tree nodes. And for each
+ * recursion, it has to be checked if an additional recursion is necessary due to the fact that the membership value interval is small
+ * enough for a particular prototype. Calculating the membership value interval length for one prototype is in O(c) as the maximal and
+ * minimal theoretical membership value has to be calculated and this value is dindividual for each prototype. Therefore, to check whether
+ * or not to perform a recursion is in O(c^2). Also building the data structure takes O(n*log(n)).
+ * See the papers for more information on the algorithm and the theory connected to it. <br> 
  * 
  * Paper: Höppner, F. Speeding up fuzzy c-means: using a hierarchical data organisation to control the precision of membership calculation Fuzzy Sets and Systems, 2002, 128, 365 - 376
  * Paper: Winkler, R.; Klawonn, F.; Höppner, F. & Kruse, R. A. Laurent, M.-J. L. (Ed.) Scalable Fuzzy Algorithms for Data Management and Analysis: Methods and Design Fuzzy Cluster Analysis of Larger Data Sets IGI Global: Information Science Reference, 2010, 302-331
  *
+ * Of course, the membership matrix is not stored as this would demilish the advantage this algorithm provides w.r.t. the
+ * normal implementation of FCM. The effectiveness of this algorithm depends very strongly on the number of data objects
+ * and the number of clusters. for a small data set it is less effective than the standard FCM. For a large to huge data set, it
+ * is much much more effective.<br> 
+ *  
+ * The runtime complexity of this algorithm is divided into two steps, the runtime of building the data structure prior to the clustering 
+ * process and the clustering process it self. Building the data structure is in O(n*log(n)). The runtime of the algorithm depends on
+ * the number of data objects and whether or not the approximation can effectively kick in. For a small number of data objects,
+ * the algorithm is in O(t*n*c^2) and for a large number of data objects, the complexity is in O(t*N*c^2).
+ * With t being the number of iterations, n being the number of data objects, N being the number of nodes
+ * that have to be examined before the recursion is stopped and c being the number of clusters. For large n, N is constant and N<<n (yes,
+ * I know the notation of N<<n is strange, but since n is the number of data objects everywhere else, bear with me in this case.)
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c^2*(O(dist)+O(add)+O(mul))) and O(t*N*c^2*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ *
  * @author Roland Winkler
+ * 
+ * @see data.structures.balltree.CenteredBallTree
  */
 public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansClusteringAlgorithm<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= -1692163192270100227L;
 
+	/** The ball tree structure of the data set. */
 	protected CenteredBallTree<T> cBallTree;
 
+	/**
+	 * The length of the membership value interval that limits the imprecision of the calculation.
+	 * 
+	 *	Range of values: 0 <= <code>maximalMembershipIntervalLength</code> <= 1
+	 */
 	protected double maximalMembershipIntervalLength;
 	
 	
+	/** Internal variable, here as member to simplify the recursion. */
 	private double[] membershipValueSum;
+	/** Internal variable, here as member to simplify the recursion. */
 	private double[] membershipValues;
+	/** Internal variable, here as member to simplify the recursion. */
 	private double[] prototypeDistances;
+	/** Internal variable, here as member to simplify the recursion. */
 	private double[] prototypeDistancesPow;
+	/** Internal variable, here as member to simplify the recursion. */
 	private double[] intervalLength;
+	/** Internal variable, here as member to simplify the recursion. */
 	private int[]    calculationDepth;
+	/** Internal variable, here as member to simplify the recursion. */
 	private ArrayList<T> newPrototypePosition; 
-	
+
 	/**
+	 * Creates a new BallTreeFuzzyCMeansClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct. The CenteredBallTree is build automatically.
 	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public BallTreeFuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> dataSet, VectorSpace<T> vs, Metric<T> metric)
 	{
@@ -87,7 +145,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		this.cBallTree = new CenteredBallTree<T>(dataSet, this.vs, this.metric);
 		this.cBallTree.build();
 		
-		this.maximalMembershipIntervalLength = 0.0d;
+		this.maximalMembershipIntervalLength = 0.1d;
 		this.membershipValueSum = new double[this.prototypes.size()];
 		this.membershipValues =  new double[this.prototypes.size()];
 		this.prototypeDistances = new double[this.prototypes.size()];
@@ -99,72 +157,37 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		for(int i=0; i<this.getClusterCount(); i++) this.newPrototypePosition.add(this.vs.getNewAddNeutralElement()); 
 	}
 
-//	is inserted in recursiveClustering for variable sharing		
-//	/**
-//	 * @param node
-//	 * @param intervalLength
-//	 * @param calculationDepth
-//	 */
-//	protected void calculateMembershipIntervalLength(CenteredBallTreeNode<T> node)
-//	{
-//		double tmp = 0.0d;
-//		double min = 1.0d, max = 1.0d;
-//		int i=0, j=0;
-//		double exponent = 2.0d/(1.0d-this.fuzzifier);
-//		int distancesBelowRadius = 0;
-//		int lastDistBelowRadiusIndex = -1;
-//				
-//		for(i=0; i<this.prototypes.size(); i++)
-//		{
-//			if(this.prototypeDistances[i] <= node.getRadius())
-//			{
-//				distancesBelowRadius++;
-//				lastDistBelowRadiusIndex = i;
-//			}
-//		}
-//
-//		for(i=0; i<this.prototypes.size(); i++)
-//		{
-//			if(calculationDepth[i] < node.getDepth()) continue;
-//
-//			tmp = 1.0d/(this.prototypeDistances[i] + node.getRadius());
-//
-//			if (distancesBelowRadius > 1 || (distancesBelowRadius == 1 && lastDistBelowRadiusIndex != i))
-//			{
-//				min = 0.0d;
-//			}
-//			else
-//			{
-//				min = 1.0d;
-//				for(j=0; j<this.prototypes.size(); j++)
-//				{
-//					if(j==i) continue;
-//					min += MyMath.pow((this.prototypeDistances[j] - node.getRadius())*tmp, exponent);
-//				}
-//				
-//				min = 1.0d/min;
-//			}
-//
-//			if(this.prototypeDistances[i] <= node.getRadius())
-//			{
-//				max = 1.0d;
-//			}
-//			else
-//			{
-//				tmp = 1.0d/(this.prototypeDistances[i] - node.getRadius());
-//				max = 1.0d;
-//				for(j=0; j<this.prototypes.size(); j++)
-//				{
-//					if(j==i) continue;
-//					max += MyMath.pow((this.prototypeDistances[j] + node.getRadius())*tmp, exponent);
-//				}
-//				
-//				max = 1.0d/max;
-//			}
-//			
-//			this.intervalLength[i] = max - min;
-//		}
-//	}
+
+	/**
+	 * This constructor creates a new FuzzyCMeansClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first. The CenteredBallTree is build automatically.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
+	 */
+	public BallTreeFuzzyCMeansClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
+	{
+		super(c, useOnlyActivePrototypes);
+
+		this.cBallTree = new CenteredBallTree<T>(c.getDataSet(), this.vs, this.metric);
+		this.cBallTree.build();
+		
+		this.maximalMembershipIntervalLength = 0.1d;
+		this.membershipValueSum = new double[this.prototypes.size()];
+		this.membershipValues =  new double[this.prototypes.size()];
+		this.prototypeDistances = new double[this.prototypes.size()];
+		this.prototypeDistancesPow = new double[this.prototypes.size()];
+		this.intervalLength = new double[this.prototypes.size()];
+		this.calculationDepth = new int[this.prototypes.size()];
+		
+		this.newPrototypePosition = new ArrayList<T>(this.getClusterCount());
+		for(int i=0; i<this.getClusterCount(); i++) this.newPrototypePosition.add(this.vs.getNewAddNeutralElement()); 
+	}
 	
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#algorithmName()
@@ -172,7 +195,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	@Override
 	public String algorithmName()
 	{
-		return "";
+		return "Fuzzy c-Means Clustering Algorithm with Ball Tree Data Organization";
 	}
 
 
@@ -219,7 +242,11 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 
 
 	/**
-	 * @param node
+	 * Invokes the clustering for the specified node of the CenteredBallTree. All calculations w.r.t. this one node are done
+	 * and if any of the prototypes requires a more precise calculation, this function is invoced recursively using its
+	 * children.
+	 * 
+	 * @param node The node for which the calculation is done.
 	 */
 	protected void recursiveClustering(CenteredBallTreeNode<T> node)
 	{
@@ -438,10 +465,10 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	}
 
 
-	// TODO: override at lest some functions from the original fuzzy clustering algorithm to reflect the faster calculation
-	
 	/**
-	 * @return the maximalMembershipIntervalLength
+	 * Returns the maximal membership interval length.
+	 * 
+	 * @return the maximal membership interval length.
 	 */
 	public double getMaximalMembershipIntervalLength()
 	{
@@ -452,13 +479,23 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 	/**
 	 * @param maximalMembershipIntervalLength the maximalMembershipIntervalLength to set
 	 */
+	/**
+	 * Sets the maximal membership interval length. The range of the parameter is <code>0 <= maximalMembershipIntervalLength <= 1</code>.
+	 *  
+	 * @param maximalMembershipIntervalLength the maximal membership interval length to set.
+	 */
 	public void setMaximalMembershipIntervalLength(double maximalMembershipIntervalLength)
 	{
+		if(maximalMembershipIntervalLength < 0.0d || 1.0d < maximalMembershipIntervalLength)
+			throw new IllegalArgumentException("The maximal membership interval length must be larger than 0 and smaller than 1. Specified maximal membership interval length: " + maximalMembershipIntervalLength);
+		
 		this.maximalMembershipIntervalLength = maximalMembershipIntervalLength;
 	}
 
 
 	/**
+	 * returns te CenteredBallTree that is used in this clustering algorithm.
+	 * 
 	 * @return the cBallTree
 	 */
 	public CenteredBallTree<T> getCBallTree()
