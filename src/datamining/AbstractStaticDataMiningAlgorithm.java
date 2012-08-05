@@ -37,6 +37,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining;
 
+import data.set.AbstractStaticDataSetContainer;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
 
@@ -47,14 +48,11 @@ import data.set.IndexedDataSet;
  *
  * @author Roland Winkler
  */
-public abstract class AbstractStaticDataMiningAlgorithm<T> implements DataMiningAlgorithm<T>
-{
+public abstract class AbstractStaticDataMiningAlgorithm<T> extends AbstractStaticDataSetContainer<T> implements DataMiningAlgorithm<T>
+{	
 	/**  */
-	private static final long	serialVersionUID	= 1928116441776186541L;
-	
-	/** The data set. It is final because a changing data set reference produces more problems than uses. */
-	protected final IndexedDataSet<T> data;
-		
+	private static final long	serialVersionUID	= 3546778582879302179L;
+
 	/**
 	 * The standard constructor, taking the data set that is supposed to be analysed. Because
 	 * this is a static data mining algorithm, it requires the data set to be sealed.
@@ -65,9 +63,7 @@ public abstract class AbstractStaticDataMiningAlgorithm<T> implements DataMining
 	 */
 	public AbstractStaticDataMiningAlgorithm(IndexedDataSet<T> data) throws DataSetNotSealedException
 	{
-		if(!data.isSealed()) throw new DataSetNotSealedException("The data set is not sealed.");
-		
-		this.data = data;
+		super(data);
 	}
 	
 	/**
@@ -77,32 +73,6 @@ public abstract class AbstractStaticDataMiningAlgorithm<T> implements DataMining
 	 */
 	public AbstractStaticDataMiningAlgorithm(AbstractStaticDataMiningAlgorithm<T> c)
 	{
-		this.data					= c.data;
+		super(c);
 	}
-		
-	/* (non-Javadoc)
-	 * @see datamining.DataMiningAlgorithm#getDataCount()
-	 */
-	@Override
-	public int getDataCount()
-	{
-		return this.data.size();
-	}
-
-	/**
-	 * @TODO: remove.  
-	 */
-	public void clone(AbstractStaticDataMiningAlgorithm<T> clone)
-	{}
-	
-	/* (non-Javadoc)
-	 * @see datamining.DataMiningAlgorithm#getDataSet()
-	 */
-	@Override
-	public IndexedDataSet<T> getDataSet()
-	{
-		return this.data;
-	}
-	
-	
 }

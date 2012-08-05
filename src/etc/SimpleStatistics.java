@@ -239,7 +239,7 @@ public class SimpleStatistics implements Serializable
 	 * @param data The double values.
 	 * @return The mean and sample variance as array: double[mean, variance].
 	 */
-	public static double[] varianceMean(double[] data)
+	public static double[] mean_variance(double[] data)
 	{
 		double variance = 0.0d;
 		double mean = SimpleStatistics.mean(data);
@@ -249,7 +249,7 @@ public class SimpleStatistics implements Serializable
 			variance += (data[i]-mean)*(data[i]-mean);
 		}
 		
-		variance/=(double)data.length;
+		variance/=(double)(data.length-1);
 		
 		return new double[]{mean, variance};
 	}

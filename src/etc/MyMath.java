@@ -74,44 +74,58 @@ public class MyMath implements Serializable
      * @return  the value <code>a<sup>n</sup></code>.
      * 
      * @see java.lang.Math#pow(double, double)
-	 */
+	 */	
 	public static double pow(double a, int n)
-	{	
-		double b = 1.0d, c = 1.0d;
-		
-		if(n<0) return 1.0d/MyMath.pow(a, -n);
-		
-		if(n <= 20)
+	{
+		if(n<0)
 		{
-			switch(n)
-			{
-				case 0: return 1.0d;
-				case 1: return a;
-				case 2: return a*a;
-				case 3: return a*a*a;
-				case 4: b=a*a; return b*b;
-				case 5: b=a*a; return b*b*a;
-				case 6: b=a*a; return b*b*b;
-				case 7: b=a*a; return b*b*b*a;
-				case 8: b=a*a; b=b*b; return b*b;
-				case 9: b=a*a*a; return b*b*b;
-				case 10: b=a*a; c=b*b; return c*c*b;
-				case 11: b=a*a; c=b*b; return c*c*b*a;
-				case 12: b=a*a; b=b*b*b; return b*b;
-				case 13: b=a*a; b=b*b*b; return b*b*a;
-				case 14: b=a*a; c=b*b*b; return c*c*b;
-				case 15: b=a*a*a; c=b*b; return c*c*b;
-				case 16: b=a*a; b=b*b; b=b*b; return b*b;
-				case 17: b=a*a; b=b*b; b=b*b; return b*b*a;
-				case 18: b=a*a*a; b=b*b; return b*b*b;
-				case 19: b=a*a*a; b=b*b; return b*b*b*a;
-				case 20: b=a*a; c=b*b; c=c*c*b; return c*c;
-				default: ;
-			}
+			a = 1.0d/a;
+			n = -n;
+		}
+		double res = 1.0d;
+		
+		while(n>0)
+		{
+			if(n%2 == 1) res *= a;
+			
+			a *= a;
+			n >>= 1;
 		}
 		
-		return Math.pow(a, n);
+		return res;
 	}
+//	public static double pow(double a, int n)
+//	{	
+//		double b = 1.0d, c = 1.0d;
+//		
+//		if(n<0) return 1.0d/MyMath.pow(a, -n);
+//		
+//		switch(n)
+//		{
+//			case 0: return 1.0d;
+//			case 1: return a;
+//			case 2: return a*a;
+//			case 3: return a*a*a;
+//			case 4: b=a*a; return b*b;
+//			case 5: b=a*a; return b*b*a;
+//			case 6: b=a*a; return b*b*b;
+//			case 7: b=a*a; return b*b*b*a;
+//			case 8: b=a*a; b=b*b; return b*b;
+//			case 9: b=a*a*a; return b*b*b;
+//			case 10: b=a*a; c=b*b; return c*c*b;
+//			case 11: b=a*a; c=b*b; return c*c*b*a;
+//			case 12: b=a*a; b=b*b*b; return b*b;
+//			case 13: b=a*a; b=b*b*b; return b*b*a;
+//			case 14: b=a*a; c=b*b*b; return c*c*b;
+//			case 15: b=a*a*a; c=b*b; return c*c*b;
+//			case 16: b=a*a; b=b*b; b=b*b; return b*b;
+//			case 17: b=a*a; b=b*b; b=b*b; return b*b*a;
+//			case 18: b=a*a*a; b=b*b; return b*b*b;
+//			case 19: b=a*a*a; b=b*b; return b*b*b*a;
+//			case 20: b=a*a; c=b*b; c=c*c*b; return c*c;
+//			default: return Math.pow(a, n);
+//		}
+//	}
 
 	/**
 	 * The power function <code>a<sup>n</sup></code> as implemented in {@link java.lang.Math}, is very time

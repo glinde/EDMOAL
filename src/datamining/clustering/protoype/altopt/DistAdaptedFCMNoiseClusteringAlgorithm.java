@@ -123,7 +123,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 	 * 
 	 * @param data The data set that should be clustered.
 	 * @param vs The vector space that is used to calculate the prototype positions.
-	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
+	 * @param parameterMetric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
 	public DistAdaptedFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{

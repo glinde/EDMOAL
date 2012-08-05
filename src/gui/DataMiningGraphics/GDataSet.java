@@ -117,10 +117,11 @@ public class GDataSet extends DrawableObject implements Serializable
 		Polygon surroundingPoly;
 		double[] tmp;
 		double[] point;
-		ArrayList<double[]> dataObjectList = new ArrayList<double[]>(this.dataSubsetList.length);
+//		ArrayList<double[]> dataObjectList = new ArrayList<double[]>(this.dataSubsetList.length);
 		
 		if(this.dataSubsetPresentation)
 		{
+			ArrayList<double[]> dataObjectList = new ArrayList<double[]>(this.dataSubsetList.length);
 			for(int l=0; l<this.dataSubsetList.length; l++)
 			{
 				dataObjectList.add(this.dataObjects.get(this.dataSubsetList[l]).x);
