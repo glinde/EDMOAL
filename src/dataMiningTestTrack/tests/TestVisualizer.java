@@ -40,6 +40,7 @@ package dataMiningTestTrack.tests;
 import gui.ColorList;
 import gui.Screen;
 import gui.ScreenViewer;
+import gui.DataMiningGraphics.GCentroid;
 import gui.DataMiningGraphics.GCentroidClusteringAlgorithm;
 import gui.DataMiningGraphics.GClusteredDataSet;
 import gui.DataMiningGraphics.GDataSet;
@@ -59,6 +60,7 @@ import data.set.IndexedDataObject;
 import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
+import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
 
 /**
  * A class to provide basic functions for visualisation and defines some layout constants.
@@ -249,7 +251,42 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
+	
+	/**
+	 * Creates a visualisation of the specified gradient algorithm and the way of its centroid.
+	 * 
+	 * @param gradientAlgo The algorithm that is to be visualised.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
+	public void showSingleCentroidGradientAlgorithm(SingleCentroidGradientOptimizationAlgorithm<double[]> gradientAlgo, String title, String filename)
+	{
+		ScreenViewer sv  = new ScreenViewer();
+		GDataSet gCluster = new GDataSet();
 		
+		gCluster.setDataObjects(gradientAlgo.getDataSet());
+		gCluster.getScheme().setColor(0, ColorList.BLACK);
+		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
+		
+		GCentroid gCentroid = new GCentroid();
+		gCentroid.setPrototype(gradientAlgo.getCentroid());
+		
+		sv.screen.setFileName(filename);
+//		sv.setPreferredSize(new Dimension(1200, 800));
+//		sv.setSize(new Dimension(1200, 800));
+		sv.screen.addDrawableObject(gCluster);
+		sv.screen.addDrawableObject(gCentroid);
+		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
+//		sv.screen.zoomToDisplay(data);
+		sv.screen.setScreenToDisplayAllIndexed(gradientAlgo.getDataSet());
+		sv.repaint();
+		sv.setTitle(filename);
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
+	
 	/**
 	 * Visualises the specified data set. Currently, only the first two dimensions of
 	 * the data vectors are presented. For visualising other dimensions, please change

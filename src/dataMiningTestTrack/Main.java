@@ -42,6 +42,8 @@ import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
 import dataMiningTestTrack.tests.DataStructureSpeedTest;
 import dataMiningTestTrack.tests.DataStructureVisualTest;
+import dataMiningTestTrack.tests.GradientAlgorithmVisualTest;
+import etc.MyMath;
 
 /**
  * Since the EDMOAL project is just an API, a main class would not be necessary to provide.
@@ -66,7 +68,8 @@ public class Main
 //		Main.dataStructureVisualTest();
 //		Main.dataStructureSpeedTest();
 //		Main.clusterAlgorithmVisualTest();
-		Main.clusterAlgorithmVisualSpeedTest();
+//		Main.clusterAlgorithmVisualSpeedTest();
+		Main.gradientAlgorithmVisualTest();
 		
 	}
 	
@@ -166,5 +169,24 @@ public class Main
 		clusterTest.testBallTreeFuzzyCMeans();
 //		clusterTest.testExpectationMaximization();
 //		clusterTest.testDBScan();
+	}
+
+	/**
+	 * Performs tests of the clustering algorithms, using synthetic data sets.
+	 * The result is visualised so that the result of the algorithm is easily
+	 * interpretable. The point of these tests is, to give the user some
+	 * feeling of how the algorithms behave and to decide whether or not they
+	 * might be useful for him.
+	 */
+	public static void gradientAlgorithmVisualTest()
+	{
+		int dim = 2, number = 3000, clusterCount = 2;
+		
+		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount);
+
+//		gradientTest.showDataSet();
+		gradientTest.leastSquaresTest();
+		
+//		MyMath.pow(1.25d, 14);
 	}
 }
