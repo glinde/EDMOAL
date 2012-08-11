@@ -30,65 +30,61 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.gradient;
+package datamining.gradient.parameter;
 
-import data.algebra.Metric;
-import data.algebra.VectorSpace;
-import datamining.DataMiningAlgorithm;
-import datamining.IterativeObjectiveFunctionOptimization;
-import datamining.ParameterOptimization;
-import datamining.gradient.functions.GradientFunction;
+import java.util.List;
+
+import data.algebra.Norm;
+import data.algebra.ScalarProduct;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public interface GradientOptimization<D, P> extends DataMiningAlgorithm<D>, ParameterOptimization<P>, IterativeObjectiveFunctionOptimization
+public class CLPNorm<T> implements Norm<CentroidListParameter<T>>
 {
-	/**
-	 * @return
-	 */
-	public VectorSpace<P> getParameterVectorSpace();
+	/** A norm of the base object type */
+	protected Norm<T> elementNorm;
 	
-	/**
-	 * @return the parameterMetric
-	 */
-	public Metric<P> getParameterMetric();
+	/** A norm to how to connect the individual centroids together. */
+	protected Norm<double[]> sumNorm;
 	
-	
-	/**
-	 * @return the learningFactor
-	 */
-	public double getLearningFactor();
+	/** The number of elements in the list this vector space. */
+	protected int centroidCount;
 
 	/**
-	 * @param learningFactor the learningFactor to set
+	 * @param norm
+	 * @param centroidCount
 	 */
-	public void setLearningFactor(double learningFactor);
+	public CLPNorm(Norm<T> elementNorm, Norm<double[]> sumNorm, int centroidCount)
+	{
+		this.elementNorm = elementNorm;
+		this.sumNorm  = sumNorm;
+		this.centroidCount = centroidCount;
+	}
 	
-	/**
-	 * @return the objectiveFunction
+	
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#length(java.lang.Object)
 	 */
-	public GradientFunction<D, P> getObjectiveFunction();
+	@Override
+	public double length(CentroidListParameter<T> x)
+	{
+		double[] length = new double[this.centroidCount];
+		
+		for(int i=0; i<this.centroidCount; i++) length[i] = this.elementNorm.length(x.getCentroid(i).getPosition());
+		
+		return this.sumNorm.length(length);
+	}
 
-	/**
-	 * Returns the parameter that specifies whether this is a gradient ascending or a gradient descending algorithm.<br>
-	 * 
-	/** If true: this is a gradient ascending algorithm. (parameter maximization) <br>
-	 *  If false: this is a gradient descending algorithm. (parameter minimization)
-	 * 
-	 * @return the ascending/descending parameter.
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#lengthSq(java.lang.Object)
 	 */
-	public boolean isAscOrDesc();
-
-	/**
-	 * Sets the parameter that specifies whether this is a gradient ascending or a gradient descending algorithm.<br>
-	 * 
-	/** If true: this is a gradient ascending algorithm. (parameter maximization) <br>
-	 *  If false: this is a gradient descending algorithm. (parameter minimization)
-	 * 
-	 * @param descOrAsc the ascending/descending parameter to set.
-	 */
-	public void setAscOrDesc(boolean ascOrDesc);
+	@Override
+	public double lengthSq(CentroidListParameter<T> x)
+	{
+		double length = this.length(x);
+		return length*length;
+	}
 }

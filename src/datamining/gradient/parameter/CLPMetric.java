@@ -30,65 +30,61 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.gradient;
+package datamining.gradient.parameter;
+
+import java.util.List;
 
 import data.algebra.Metric;
-import data.algebra.VectorSpace;
-import datamining.DataMiningAlgorithm;
-import datamining.IterativeObjectiveFunctionOptimization;
-import datamining.ParameterOptimization;
-import datamining.gradient.functions.GradientFunction;
+import data.algebra.Norm;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public interface GradientOptimization<D, P> extends DataMiningAlgorithm<D>, ParameterOptimization<P>, IterativeObjectiveFunctionOptimization
+public class CLPMetric<T> implements Metric<CentroidListParameter<T>>
 {
-	/**
-	 * @return
-	 */
-	public VectorSpace<P> getParameterVectorSpace();
+	/** A norm of the base object type */
+	protected Metric<T> metric;
 	
-	/**
-	 * @return the parameterMetric
-	 */
-	public Metric<P> getParameterMetric();
+	/** A norm to how to connect the individual centroids together. */
+	protected Norm<double[]> sumNorm;
 	
-	
-	/**
-	 * @return the learningFactor
-	 */
-	public double getLearningFactor();
+	/** The number of elements in the list this vector space. */
+	protected int centroidCount;
 
 	/**
-	 * @param learningFactor the learningFactor to set
+	 * @param norm
+	 * @param centroidCount
 	 */
-	public void setLearningFactor(double learningFactor);
+	public CLPMetric(Metric<T> metric, Norm<double[]> sumNorm, int centroidCount)
+	{
+		this.metric = metric;
+		this.sumNorm  = sumNorm;
+		this.centroidCount = centroidCount;
+	}
 	
-	/**
-	 * @return the objectiveFunction
+	
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distance(java.lang.Object)
 	 */
-	public GradientFunction<D, P> getObjectiveFunction();
+	@Override
+	public double distance(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	{
+		double[] dist = new double[this.centroidCount];
+		
+		for(int i=0; i<this.centroidCount; i++) dist[i] = this.metric.distance(x.getCentroid(i).getPosition(), y.getCentroid(i).getPosition());
+		
+		return this.sumNorm.length(dist);
+	}
 
-	/**
-	 * Returns the parameter that specifies whether this is a gradient ascending or a gradient descending algorithm.<br>
-	 * 
-	/** If true: this is a gradient ascending algorithm. (parameter maximization) <br>
-	 *  If false: this is a gradient descending algorithm. (parameter minimization)
-	 * 
-	 * @return the ascending/descending parameter.
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distanceSq(java.lang.Object)
 	 */
-	public boolean isAscOrDesc();
-
-	/**
-	 * Sets the parameter that specifies whether this is a gradient ascending or a gradient descending algorithm.<br>
-	 * 
-	/** If true: this is a gradient ascending algorithm. (parameter maximization) <br>
-	 *  If false: this is a gradient descending algorithm. (parameter minimization)
-	 * 
-	 * @param descOrAsc the ascending/descending parameter to set.
-	 */
-	public void setAscOrDesc(boolean ascOrDesc);
+	@Override
+	public double distanceSq(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	{
+		double dist = this.distance(x, y);		
+		return dist*dist;
+	}
 }
