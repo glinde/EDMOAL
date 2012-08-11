@@ -52,8 +52,7 @@ import datamining.gradient.parameter.CentroidListParameter;
 public class CentroidGradientOptimizationAlgorithm<D> extends AbstractGradientOptimizationAlgorithm<D, CentroidListParameter<D>>
 {
 	protected CentroidListParameter<D> centroidList;
-	
-	
+		
 	/**
 	 * @param c
 	 */
