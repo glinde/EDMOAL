@@ -140,7 +140,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		DALeastSquaresObjectiveFunction lsqOF = new DALeastSquaresObjectiveFunction(this.dataSet.first().x.length);
 		SingleCentroidGradientOptimizationAlgorithm<double[]> gradientoptimization = new SingleCentroidGradientOptimizationAlgorithm<double[]>(this.dataSet, lsqOF.getVs(), lsqOF.getVs(), lsqOF);
 		gradientoptimization.setAscOrDesc(false);
-		gradientoptimization.initializeWith(this.initialPositons.get(0));
+		gradientoptimization.initializeWithParameter(this.initialPositons.get(0));
 		gradientoptimization.setLearningFactor(0.25d);
 		gradientoptimization.apply(50);
 		

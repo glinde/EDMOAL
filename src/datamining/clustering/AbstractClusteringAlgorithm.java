@@ -87,10 +87,12 @@ public abstract class AbstractClusteringAlgorithm<T> extends AbstractStaticDataM
 		this.metric = c.metric;
 	}
 
-	/* (non-Javadoc)
-	 * @see datamining.clustering.ClusteringAlgorithm#getMetric()
+	/**
+	 * Returns the metric that is required to measure the distance among data objects or arbitrary locations
+	 * and data objects.
+	 * 
+	 * @return the metric.
 	 */
-	@Override
 	public Metric<T> getMetric()
 	{
 		return this.metric;

@@ -43,5 +43,5 @@ public interface ParameterOptimization<P>
 	
 	public void updateParameter(P parameter);
 	
-	public void initializeWith(P initialParameter);
+	public void initializeWithParameter(P initialParameter);
 }

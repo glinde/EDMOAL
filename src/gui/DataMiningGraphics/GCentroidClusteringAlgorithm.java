@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
 
 /**
@@ -60,7 +61,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 
 	protected ArrayList<GCentroid> gCentroids;
 		
-	protected PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> clusteringAlgorithm;
+	protected PrototypeClusteringAlgorithm<double[], ? extends Prototype<double[]>> clusteringAlgorithm;
 
 	public GCentroidClusteringAlgorithm(Collection<Scheme> clusterSchemes)
 	{
@@ -103,7 +104,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 		this(GCentroidClusteringAlgorithm.makePrototypeScemes(clusterCount));
 	}
 	
-	public GCentroidClusteringAlgorithm(PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> ca)
+	public GCentroidClusteringAlgorithm(PrototypeClusteringAlgorithm<double[], ? extends Prototype<double[]>> ca)
 	{
 		this(ca.getClusterCount());		
 		

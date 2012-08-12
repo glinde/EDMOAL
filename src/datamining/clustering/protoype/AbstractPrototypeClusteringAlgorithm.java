@@ -179,11 +179,12 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 			}
 		}
 	}
-		
-	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initializeWithPrototypes(java.util.Collection)
+
+	/**
+	 * Initialises the clustering algorithm with the specified prototypes.
+	 * 
+	 * @param initialPrototypes The prototypes for initialising the clustering algorithm.
 	 */
-	@Override
 	public void initializeWithPrototypes(Collection<S> initialPrototypes)
 	{
 		this.prototypes.clear();		
@@ -191,11 +192,17 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		for(int i=0; i<this.prototypes.size(); i++) this.prototypes.get(i).setClusterIndex(i);
 		this.initialized = true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initialize(java.lang.Object)
+
+	/**
+	 * Initialises the clustering algorithm and puts prototypes at the specified positions.
+	 * This requires the clustering algorithm to inherit its clustering procedure with its
+	 * standard prototype.<br>
+	 * 
+	 * the number of positions in the specified collection determines the number of prototypes initialised:
+	 * for each position, one prototype is initialised.
+	 * 
+	 * @param initialPrototypePositions The positions at which the prototypes are allowed to be initialised.
 	 */
-	@Override
 	public abstract void initializeWithPositions(Collection<T> initialPrototypePositions);
 
 	/* (non-Javadoc)
@@ -331,12 +338,11 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		return inactive;
 	}
 
-	
-	
-	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#getVectorSpace()
+	/**
+	 * Returns the vector space the clustering algorithm uses to calculate prototype positions.
+	 * 
+	 * @return The vector space.
 	 */
-	@Override
 	public VectorSpace<T> getVectorSpace()
 	{
 		return this.vs;

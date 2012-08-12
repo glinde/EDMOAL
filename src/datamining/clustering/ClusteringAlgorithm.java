@@ -84,11 +84,11 @@ public interface ClusteringAlgorithm<T> extends DataMiningAlgorithm<T>
 	public int getInactiveClusterCount();
 	
 	
-	/**
-	 * Returns the metric that is required to measure the distance among data objects or arbitrary locations
-	 * and data objects.
-	 * 
-	 * @return the metric.
-	 */
-	public Metric<T> getMetric();
+//	/**
+//	 * Returns the metric that is required to measure the distance among data objects or arbitrary locations
+//	 * and data objects.
+//	 * 
+//	 * @return the metric.
+//	 */
+//	public Metric<T> getMetric();
 }
