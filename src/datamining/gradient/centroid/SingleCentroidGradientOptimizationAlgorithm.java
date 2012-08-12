@@ -33,6 +33,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.gradient.centroid;
 
+import java.util.ArrayList;
+
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
@@ -40,13 +42,14 @@ import data.set.IndexedDataSet;
 import datamining.clustering.protoype.Centroid;
 import datamining.gradient.AbstractGradientOptimizationAlgorithm;
 import datamining.gradient.functions.GradientFunction;
+import datamining.resultProviders.PrototypeProvider;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGradientOptimizationAlgorithm<D, D>
+public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGradientOptimizationAlgorithm<D, D> implements PrototypeProvider<D, Centroid<D>>
 {
 	/**
 	 * Using the centroid class here to monitor the movement of the data object like parameter.
@@ -85,6 +88,7 @@ public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGrad
 	public void initializeWithParameter(D initialParameter)
 	{
 		this.parameterCentroid.initializeWithPosition(initialParameter);
+		this.parameterVS.copy(this.parameter, initialParameter); 
 		this.initialized = true;
 	}
 
@@ -102,6 +106,7 @@ public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGrad
 	public void updateParameter(D newParameter)
 	{
 		this.parameterCentroid.moveTo(newParameter);
+		this.parameterVS.copy(this.parameter, newParameter); 
 	}
 
 	
@@ -120,5 +125,25 @@ public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGrad
 	public Centroid<D> getCentroid()
 	{
 		return this.parameterCentroid;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getPrototypes()
+	 */
+	@Override
+	public ArrayList<Centroid<D>> getPrototypes()
+	{
+		ArrayList<Centroid<D>> list = new ArrayList<Centroid<D>>(1);
+		list.add(this.parameterCentroid);
+		return list;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getActivePrototypes()
+	 */
+	@Override
+	public ArrayList<Centroid<D>> getActivePrototypes()
+	{
+		return this.getPrototypes();
 	}
 }

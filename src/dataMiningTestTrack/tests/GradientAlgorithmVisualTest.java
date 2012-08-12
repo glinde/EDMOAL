@@ -37,15 +37,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import data.algebra.EuclideanVectorSpace;
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
+import data.objects.doubleArray.DAMaximumMetric;
+import data.objects.doubleArray.DAMaximumNorm;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
 import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
+import datamining.gradient.centroid.Temporal_FuzzyClusterProvidingPGOA;
 import datamining.gradient.functions.DALeastSquaresObjectiveFunction;
+import datamining.gradient.functions.clustering.FuzzyCMeansObjectiveFunction;
+import datamining.gradient.parameter.PositionListParameter;
+import datamining.gradient.parameter.PositionListParameterMetric;
+import datamining.gradient.parameter.PositionListParameterVectorSpace;
 import etc.DataGenerator;
 
 /**
@@ -147,6 +155,28 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		
 		this.showSingleCentroidGradientAlgorithm(gradientoptimization, gradientoptimization.algorithmName() + " - " + lsqOF.getName(), "LeastSquaresTest");
 	}
+
 	
+	public void fcmGradientTest()
+	{
+		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
+		PositionListParameterVectorSpace<double[]> parameterVS = new PositionListParameterVectorSpace<>(evs, this.clusterCount);
+		DAMaximumNorm maximumNorm = new DAMaximumNorm();
+		PositionListParameterMetric<double[]> parameterMetric = new PositionListParameterMetric<double[]>(evs, maximumNorm, this.clusterCount);
+		
+		FuzzyCMeansObjectiveFunction<double[]> fcmFunction = new FuzzyCMeansObjectiveFunction<double[]>(this.dataSet, evs, evs);
+		ArrayList<Centroid<double[]>> centroids = new ArrayList<Centroid<double[]>>(this.clusterCount);
+		for(int i=0; i<this.clusterCount; i++) centroids.add(new Centroid<double[]>(evs, this.initialPositons.get(i)));
+		
+		Temporal_FuzzyClusterProvidingPGOA<double[]> algo = new Temporal_FuzzyClusterProvidingPGOA<double[]>(this.dataSet, parameterVS, parameterMetric, fcmFunction, centroids);
+		PositionListParameter<double[]> parameter = new PositionListParameter<double[]>(this.initialPositons);
+		
+		algo.setAscOrDesc(false);
+		algo.initializeWithParameter(parameter);
+		algo.setLearningFactor(1.0d);
+		algo.apply(50);
+		
+		this.showClusteringAlgorithm(algo, algo.algorithmName(), "FCM Gradient Test");
+	}
 	
 }

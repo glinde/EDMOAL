@@ -180,12 +180,13 @@ public class Main
 	 */
 	public static void gradientAlgorithmVisualTest()
 	{
-		int dim = 2, number = 3000, clusterCount = 2;
+		int dim = 2, number = 3000, clusterCount = 3;
 		
 		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount);
 
 //		gradientTest.showDataSet();
-		gradientTest.leastSquaresTest();
+//		gradientTest.leastSquaresTest();
+		gradientTest.fcmGradientTest();
 		
 //		MyMath.pow(1.25d, 14);
 	}

@@ -63,11 +63,10 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 	 * @param objectiveFunction
 	 * @throws DataSetNotSealedException
 	 */
-	public PrototypeGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<PLP> vs, Metric<PLP> parameterMetric, GradientFunction<D, PLP> objectiveFunction) throws DataSetNotSealedException
+	public PrototypeGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<PLP> parameterVS, Metric<PLP> parameterMetric, GradientFunction<D, PLP> objectiveFunction, ArrayList<PT> prototypes) throws DataSetNotSealedException
 	{
-		super(data, vs, parameterMetric, objectiveFunction);
-		
-		this.prototypes = new ArrayList<PT>();
+		super(data, parameterVS, parameterMetric, objectiveFunction);	
+		this.prototypes = new ArrayList<PT>(prototypes);
 	}
 
 	/* (non-Javadoc)
@@ -104,7 +103,7 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 	public void initializeWithParameter(PLP initialParameter)
 	{
 		this.parameter = this.parameterVS.copyNew(initialParameter);
-		for(int i=0; i<this.prototypes.size(); i++) this.prototypes.get(i).initializeWithPosition(this.parameter.getPosition(i));
+		for(int i=0; i<this.parameter.getPositionCount(); i++) this.prototypes.get(i).initializeWithPosition(this.parameter.getPosition(i));
 	}
 
 	/* (non-Javadoc)

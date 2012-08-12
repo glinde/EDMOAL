@@ -109,12 +109,12 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	 * 
 	 * @throws DataSetNotSealedException if the data set is not sealed.
 	 */
-	public AbstractGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<P> vs, Metric<P> parameterMetric, GradientFunction<D,P> objectiveFunction) throws DataSetNotSealedException
+	public AbstractGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<P> parameterVS, Metric<P> parameterMetric, GradientFunction<D,P> objectiveFunction) throws DataSetNotSealedException
 	{
 		super(data);
-		this.parameter = vs.getNewAddNeutralElement();
+		this.parameter = parameterVS.getNewAddNeutralElement();
 		this.learningFactor = 1.0d;
-		this.parameterVS = vs;
+		this.parameterVS = parameterVS;
 		this.parameterMetric = parameterMetric;
 		this.objectiveFunction = objectiveFunction;
 		this.initialized = false;
