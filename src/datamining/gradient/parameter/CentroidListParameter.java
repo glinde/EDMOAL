@@ -92,4 +92,12 @@ public class CentroidListParameter<D>
 	{
 		return this.centroids.get(i);
 	}
+	
+	/**
+	 * @return
+	 */
+	public int getCentroidCount()
+	{
+		return this.centroids.size();
+	}
 }

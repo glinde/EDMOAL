@@ -77,7 +77,7 @@ public class DALeastSquaresObjectiveFunction implements GradientFunction<double[
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.gradient.GradientFunction#gradient(java.lang.Object)
+	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
 	public double[] gradient(IndexedDataSet<double[]> dataSet, double[] parameter)
@@ -95,6 +95,25 @@ public class DALeastSquaresObjectiveFunction implements GradientFunction<double[
 		this.vs.mul(y, 2.0d/dataSet.size());
 		
 		return y;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void gradient(IndexedDataSet<double[]> dataSet, double[] parameter, double[] gradient)
+	{
+		this.vs.resetToAddNeutralElement(gradient);
+		double[] tmp = this.vs.getNewAddNeutralElement();
+
+		for(int i=0; i<dataSet.size(); i++)
+		{
+			this.vs.copy(tmp, parameter);
+			this.vs.sub(tmp, dataSet.get(i).x);
+			this.vs.add(gradient, tmp);
+		}
+		
+		this.vs.mul(gradient, 2.0d/dataSet.size());
 	}
 
 	/**

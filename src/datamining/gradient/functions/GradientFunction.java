@@ -44,6 +44,8 @@ public interface GradientFunction<D, P>
 	public double functionValue(IndexedDataSet<D> dataSet, P parameter);
 	
 	public P gradient(IndexedDataSet<D> dataSet, P parameter);
+
+	public void gradient(IndexedDataSet<D> dataSet, P parameter, P gradient);
 	
 	public String getName();
 }

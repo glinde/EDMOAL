@@ -33,7 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.gradient.functions;
 
 import data.objects.doubleArray.DAEuclideanVectorSpace;
-import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
 import etc.SimpleStatistics;
 
@@ -64,7 +63,7 @@ public class RelativeVarianceOfDistancesObjectiveFunction implements GradientFun
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.gradient.GradientFunction#functionValue(java.lang.Object)
+	 * @see datamining.gradient.functions.GradientFunction#functionValue(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
 	public double functionValue(IndexedDataSet<double[]> dataSet, double[] parameter)
@@ -82,17 +81,20 @@ public class RelativeVarianceOfDistancesObjectiveFunction implements GradientFun
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.gradient.GradientFunction#gradient(java.lang.Object)
+	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
 	public double[] gradient(IndexedDataSet<double[]> dataSet, double[] parameter)
 	{
-		double[] y = this.vs.getNewAddNeutralElement();
-		
-		// TODO: complete function
-		
-		return y;
+		return null;
 	}
+	
+	/* (non-Javadoc)
+	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void gradient(IndexedDataSet<double[]> dataSet, double[] parameter, double[] gradient)
+	{}
 
 	/**
 	 * @return the vs
