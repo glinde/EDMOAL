@@ -42,7 +42,7 @@ import data.set.IndexedDataSet;
  * @author Roland Winkler
  * @param <D>
  */
-public class DALeastSquaresObjectiveFunction implements GradientFunction<double[], double[]>
+public class DALeastSquaresObjectiveFunction extends AbstractObjectiveFunction<double[], double[]>
 {
 	protected final DAEuclideanVectorSpace vs;
 	
@@ -51,6 +51,7 @@ public class DALeastSquaresObjectiveFunction implements GradientFunction<double[
 	 */
 	public DALeastSquaresObjectiveFunction(DALeastSquaresObjectiveFunction c)
 	{
+		super(c);
 		this.vs = c.vs;
 	}
 
@@ -58,20 +59,21 @@ public class DALeastSquaresObjectiveFunction implements GradientFunction<double[
 	 * @param data
 	 * @throws DataSetNotSealedException
 	 */
-	public DALeastSquaresObjectiveFunction(int dimension) throws DataSetNotSealedException
+	public DALeastSquaresObjectiveFunction(IndexedDataSet<double[]> dataSet) throws DataSetNotSealedException
 	{
-		this.vs = new DAEuclideanVectorSpace(dimension);
+		super(dataSet, new double[dataSet.first().x.length]);
+		this.vs = new DAEuclideanVectorSpace(dataSet.first().x.length);
 	}
 
-	public double functionValue(IndexedDataSet<double[]> dataSet, double[] parameter)
+	public double functionValue()
 	{
 		double result = 0.0d;
 		
-		for(int i=0; i<dataSet.size(); i++)
+		for(int i=0; i<this.getDataCount(); i++)
 		{
-			result += this.vs.distanceSq(dataSet.get(i).x, parameter);
+			result += this.vs.distanceSq(this.data.get(i).x, this.parameter);
 		}
-		result /= dataSet.size();
+		result /= this.getDataCount();
 		
 		return result;
 	}
@@ -80,40 +82,32 @@ public class DALeastSquaresObjectiveFunction implements GradientFunction<double[
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
-	public double[] gradient(IndexedDataSet<double[]> dataSet, double[] parameter)
+	public double[] gradient()
 	{
-		double[] y = this.vs.getNewAddNeutralElement();
-		double[] tmp = this.vs.getNewAddNeutralElement();
-
-		for(int i=0; i<dataSet.size(); i++)
-		{
-			this.vs.copy(tmp, parameter);
-			this.vs.sub(tmp, dataSet.get(i).x);
-			this.vs.add(y, tmp);
-		}
+		double[] grad = this.vs.getNewAddNeutralElement();
 		
-		this.vs.mul(y, 2.0d/dataSet.size());
+		this.gradient(grad);
 		
-		return y;
+		return grad;
 	}
 
 	/* (non-Javadoc)
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void gradient(IndexedDataSet<double[]> dataSet, double[] parameter, double[] gradient)
+	public void gradient(double[] gradient)
 	{
 		this.vs.resetToAddNeutralElement(gradient);
 		double[] tmp = this.vs.getNewAddNeutralElement();
 
-		for(int i=0; i<dataSet.size(); i++)
+		for(int i=0; i<this.getDataCount(); i++)
 		{
-			this.vs.copy(tmp, parameter);
-			this.vs.sub(tmp, dataSet.get(i).x);
+			this.vs.copy(tmp, this.parameter);
+			this.vs.sub(tmp, this.data.get(i).x);
 			this.vs.add(gradient, tmp);
 		}
 		
-		this.vs.mul(gradient, 2.0d/dataSet.size());
+		this.vs.mul(gradient, 2.0d/this.getDataCount());
 	}
 
 	/**

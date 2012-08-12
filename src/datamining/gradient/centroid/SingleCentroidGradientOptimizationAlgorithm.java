@@ -81,7 +81,7 @@ public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGrad
 	 * @see datamining.ParameterOptimization#initializeWith(java.lang.Object)
 	 */
 	@Override
-	public void initializeWith(D initialParameter)
+	public void initializeWithParameter(D initialParameter)
 	{
 		this.parameterCentroid.initializeWithPosition(initialParameter);
 		this.initialized = true;

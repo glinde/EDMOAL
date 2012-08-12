@@ -30,61 +30,54 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.gradient.parameter;
+package datamining.gradient.functions;
 
-import java.util.List;
-
-import data.algebra.Norm;
-import data.algebra.ScalarProduct;
+import data.set.AbstractStaticDataSetContainer;
+import data.set.IndexedDataSet;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public class CLPNorm<T> implements Norm<CentroidListParameter<T>>
+public abstract class AbstractObjectiveFunction<D, P> extends AbstractStaticDataSetContainer<D> implements GradientFunction<D, P>
 {
-	/** A norm of the base object type */
-	protected Norm<T> elementNorm;
+	/**
+	 * The Parameter that is used for current calculations.
+	 */
+	protected P parameter;
 	
-	/** A norm to how to connect the individual centroids together. */
-	protected Norm<double[]> sumNorm;
-	
-	/** The number of elements in the list this vector space. */
-	protected int centroidCount;
 
 	/**
-	 * @param norm
-	 * @param centroidCount
+	 * @param parameter
 	 */
-	public CLPNorm(Norm<T> elementNorm, Norm<double[]> sumNorm, int centroidCount)
+	public AbstractObjectiveFunction(AbstractObjectiveFunction<D, P> of)
 	{
-		this.elementNorm = elementNorm;
-		this.sumNorm  = sumNorm;
-		this.centroidCount = centroidCount;
+		super(of);
+		this.parameter = of.parameter;
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see data.algebra.Norm#length(java.lang.Object)
+	/**
+	 * @param parameter
 	 */
-	@Override
-	public double length(CentroidListParameter<T> x)
+	public AbstractObjectiveFunction(IndexedDataSet<D> dataSet, P parameter)
 	{
-		double[] length = new double[this.centroidCount];
-		
-		for(int i=0; i<this.centroidCount; i++) length[i] = this.elementNorm.length(x.getCentroid(i).getPosition());
-		
-		return this.sumNorm.length(length);
+		super(dataSet);
+		this.parameter = parameter;
 	}
 
-	/* (non-Javadoc)
-	 * @see data.algebra.Norm#lengthSq(java.lang.Object)
+	/**
+	 * @return the parameter
 	 */
-	@Override
-	public double lengthSq(CentroidListParameter<T> x)
+	public P getParameter()
 	{
-		double length = this.length(x);
-		return length*length;
+		return this.parameter;
+	}
+
+	/**
+	 * @param parameter the parameter to set
+	 */
+	public void setParameter(P parameter)
+	{
+		this.parameter = parameter;
 	}
 }

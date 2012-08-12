@@ -32,72 +32,59 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.gradient.parameter;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import data.algebra.VectorSpace;
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.Prototype;
+import data.algebra.Norm;
+import data.algebra.ScalarProduct;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public class CentroidListParameter<D>
+public class PositionListParameterNorm<T> implements Norm<PositionListParameter<T>>
 {
-	protected ArrayList<Centroid<D>> centroids;
+	/** A norm of the base object type */
+	protected Norm<T> elementNorm;
+	
+	/** A norm to how to connect the individual centroids together. */
+	protected Norm<double[]> sumNorm;
+	
+	/** The number of elements in the list this vector space. */
+	protected int centroidCount;
 
 	/**
-	 * @param prototypes
+	 * @param norm
+	 * @param centroidCount
 	 */
-	public CentroidListParameter(ArrayList<Centroid<D>> centroids)
+	public PositionListParameterNorm(Norm<T> elementNorm, Norm<double[]> sumNorm, int centroidCount)
 	{
-		this.centroids = centroids;
+		this.elementNorm = elementNorm;
+		this.sumNorm  = sumNorm;
+		this.centroidCount = centroidCount;
 	}
 	
-	/**
-	 * @param prototypes
+	
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#length(java.lang.Object)
 	 */
-	public CentroidListParameter(int number, VectorSpace<D> vs)
+	@Override
+	public double length(PositionListParameter<T> x)
 	{
-		this.centroids = new ArrayList<Centroid<D>>(number);
+		double[] length = new double[this.centroidCount];
 		
-		for(int i=0; i<number; i++)
-		{
-			this.centroids.add(new Centroid<D>(vs, vs.getNewAddNeutralElement()));
-		}
-	}
-	
-	public CentroidListParameter<D> clone()
-	{
-		ArrayList<Centroid<D>> cloneCentroids = new ArrayList<Centroid<D>>(this.centroids.size());
-		for(Centroid<D> centr:this.centroids) cloneCentroids.add(centr.clone());
+		for(int i=0; i<this.centroidCount; i++) length[i] = this.elementNorm.length(x.getPosition(i));
 		
-		return new CentroidListParameter<>(cloneCentroids);
+		return this.sumNorm.length(length);
 	}
 
-	/**
-	 * @return the centroids
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#lengthSq(java.lang.Object)
 	 */
-	public ArrayList<Centroid<D>> getCentroids()
+	@Override
+	public double lengthSq(PositionListParameter<T> x)
 	{
-		return this.centroids;
-	}
-
-	/**
-	 * @param i Index of the centroid to be returned
-	 * @return The centroid with index i.
-	 */
-	public Centroid<D> getCentroid(int i)
-	{
-		return this.centroids.get(i);
-	}
-	
-	/**
-	 * @return
-	 */
-	public int getCentroidCount()
-	{
-		return this.centroids.size();
+		double length = this.length(x);
+		return length*length;
 	}
 }

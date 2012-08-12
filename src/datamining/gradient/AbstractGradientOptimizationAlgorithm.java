@@ -49,7 +49,12 @@ import datamining.gradient.functions.GradientFunction;
  * @author Roland Winkler
  */
 public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends AbstractStaticDataMiningAlgorithm<D> implements GradientOptimization<D, P>
-{	
+{
+	/**
+	 *  The parameter that gets constantly updated during the optimization cycles.
+	 */
+	protected P parameter;
+	
 	/**
 	 * The learning factor influences the movement speed of the prototypes. When setting a prototype
 	 * to a new position, the difference vector from the current to the new position is multiplied
@@ -106,6 +111,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	public AbstractGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<P> vs, Metric<P> parameterMetric, GradientFunction<D,P> objectiveFunction) throws DataSetNotSealedException
 	{
 		super(data);
+		this.parameter = vs.getNewAddNeutralElement();
 		this.learningFactor = 1.0d;
 		this.parameterVS = vs;
 		this.parameterMetric = parameterMetric;
@@ -126,6 +132,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	public AbstractGradientOptimizationAlgorithm(AbstractGradientOptimizationAlgorithm<D, P> c)
 	{
 		super(c);
+		this.parameter = c.parameterVS.copyNew(c.parameter);
 		this.learningFactor = c.learningFactor;
 		this.parameterVS = c.parameterVS;
 		this.parameterMetric = c.parameterMetric;
@@ -133,8 +140,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 		this.initialized = c.initialized;
 		this.iterationCount = c.iterationCount;
 		this.monitorObjectiveFunctionValues = c.monitorObjectiveFunctionValues;
-		this.objectiveFunctionValues = new ArrayList<Double>(2*c.objectiveFunctionValues.size());
-		this.objectiveFunctionValues.addAll(c.objectiveFunctionValues);
+		this.objectiveFunctionValues = new ArrayList<Double>(c.objectiveFunctionValues);
 		this.epsilon = c.epsilon;
 		this.ascOrDesc = c.ascOrDesc;
 	}
@@ -145,14 +151,14 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	@Override
 	public void apply(int iterations)
 	{
-		P thisPara = null;
-		P nextPara = null;
+		P nextPara = this.parameterVS.getNewAddNeutralElement();
+		double distSq = Double.MAX_VALUE;
 		
 		for(int t=0; t<iterations; t++)
 		{
 			// get the gradient, takes also care of having a new instance of the parameter.
-			thisPara = this.getParameter();
-			nextPara = this.objectiveFunction.gradient(this.data, thisPara);
+			this.objectiveFunction.setParameter(this.parameter);
+			this.objectiveFunction.gradient(nextPara);
 			
 			// if this is an ascending algorithm, the scaled gradient is added to the current position.
 			// if this is a descending algorithm, the scaled gradient is substracted from the current position.
@@ -162,14 +168,19 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 			else this.parameterVS.mul(nextPara, -this.learningFactor);
 			
 			// adds the last parameter to the scaled gradient.
-			this.parameterVS.add(nextPara, thisPara);
+			this.parameterVS.add(nextPara, this.parameter);
 			
+			// calculate the difference between the old and new parameter
+			distSq = this.parameterMetric.distanceSq(this.parameter, nextPara);
+
 			// store the new parameter
 			this.updateParameter(nextPara);
-				
+			
 			// iteration complete
-			this.iterationComplete();			
-			if(this.parameterMetric.distanceSq(thisPara, nextPara) < this.epsilon*this.epsilon) break;
+			this.iterationComplete();
+			
+			// break if algorithm converged
+			if(distSq < this.epsilon*this.epsilon) break;
 		}
 	}
 
@@ -188,7 +199,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	@Override
 	public double getObjectiveFunctionValue()
 	{
-		return this.objectiveFunction.functionValue(this.data, this.getParameter());
+		return this.objectiveFunction.functionValue();
 	}
 	
 	/* (non-Javadoc)
@@ -341,14 +352,22 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 		this.ascOrDesc = ascOrDesc;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.ParameterOptimization#getParameter()
+	 */
+	public P getParameter()
+	{
+		return this.parameter;
+	}
+	
 	/**
 	 * @TODO: remove.  
 	 */
-	@SuppressWarnings("unchecked")
 	public void clone(AbstractGradientOptimizationAlgorithm<D, P> clone)
 	{
 		super.clone(clone);
 		
+		clone.parameter = this.parameterVS.copyNew(this.parameter);
 		clone.initialized = this.initialized;
 		clone.learningFactor = this.learningFactor;
 		clone.monitorObjectiveFunctionValues = this.monitorObjectiveFunctionValues;

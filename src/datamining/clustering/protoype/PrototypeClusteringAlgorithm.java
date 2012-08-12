@@ -42,6 +42,7 @@ import java.util.Collection;
 
 import data.algebra.VectorSpace;
 import datamining.clustering.ClusteringAlgorithm;
+import datamining.resultProviders.PrototypeProvider;
 
 /**
  * The interface for all prototype based clustering algorithms.

@@ -137,7 +137,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 	
 	public void leastSquaresTest()
 	{
-		DALeastSquaresObjectiveFunction lsqOF = new DALeastSquaresObjectiveFunction(this.dataSet.first().x.length);
+		DALeastSquaresObjectiveFunction lsqOF = new DALeastSquaresObjectiveFunction(this.dataSet);
 		SingleCentroidGradientOptimizationAlgorithm<double[]> gradientoptimization = new SingleCentroidGradientOptimizationAlgorithm<double[]>(this.dataSet, lsqOF.getVs(), lsqOF.getVs(), lsqOF);
 		gradientoptimization.setAscOrDesc(false);
 		gradientoptimization.initializeWithParameter(this.initialPositons.get(0));

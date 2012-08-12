@@ -30,26 +30,61 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.gradient.functions;
+package datamining.gradient.parameter;
 
-import data.set.IndexedDataSet;
+import java.util.List;
+
+import data.algebra.Metric;
+import data.algebra.Norm;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public interface GradientFunction<D, P>
+public class PositionListParameterMetric<T> implements Metric<PositionListParameter<T>>
 {
-	public double functionValue();
+	/** A norm of the base object type */
+	protected Metric<T> metric;
 	
-	public P gradient();
+	/** A norm to how to connect the individual positions together. */
+	protected Norm<double[]> sumNorm;
+	
+	/** The number of elements in the list this vector space. */
+	protected int centroidCount;
 
-	public void gradient(P gradient);
+	/**
+	 * @param norm
+	 * @param centroidCount
+	 */
+	public PositionListParameterMetric(Metric<T> metric, Norm<double[]> sumNorm, int centroidCount)
+	{
+		this.metric = metric;
+		this.sumNorm  = sumNorm;
+		this.centroidCount = centroidCount;
+	}
 	
-	public String getName();
 	
-	public void setParameter(P parameter);
-	
-	public P getParameter();
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distance(java.lang.Object)
+	 */
+	@Override
+	public double distance(PositionListParameter<T> x, PositionListParameter<T> y)
+	{
+		double[] dist = new double[this.centroidCount];
+		
+		for(int i=0; i<this.centroidCount; i++) dist[i] = this.metric.distance(x.getPosition(i), y.getPosition(i));
+		
+		return this.sumNorm.length(dist);
+	}
+
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distanceSq(java.lang.Object)
+	 */
+	@Override
+	public double distanceSq(PositionListParameter<T> x, PositionListParameter<T> y)
+	{
+		double dist = this.distance(x, y);		
+		return dist*dist;
+	}
 }

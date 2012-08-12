@@ -32,59 +32,75 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.gradient.parameter;
 
-import java.util.List;
+import java.util.ArrayList;
 
-import data.algebra.Metric;
-import data.algebra.Norm;
+import data.algebra.VectorSpace;
+import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.Prototype;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public class CLPMetric<T> implements Metric<CentroidListParameter<T>>
+public class PositionListParameter<D>
 {
-	/** A norm of the base object type */
-	protected Metric<T> metric;
-	
-	/** A norm to how to connect the individual centroids together. */
-	protected Norm<double[]> sumNorm;
-	
-	/** The number of elements in the list this vector space. */
-	protected int centroidCount;
+	protected ArrayList<D> positions;
 
 	/**
-	 * @param norm
-	 * @param centroidCount
+	 * @param prototypes
 	 */
-	public CLPMetric(Metric<T> metric, Norm<double[]> sumNorm, int centroidCount)
+	public PositionListParameter(ArrayList<D> positions)
 	{
-		this.metric = metric;
-		this.sumNorm  = sumNorm;
-		this.centroidCount = centroidCount;
+		this.positions = new ArrayList<D>(positions);
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see data.algebra.Metric#distance(java.lang.Object)
+	/**
+	 * @param prototypes
 	 */
-	@Override
-	public double distance(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public PositionListParameter(int number, VectorSpace<D> vs)
 	{
-		double[] dist = new double[this.centroidCount];
+		this.positions = new ArrayList<D>(number);
 		
-		for(int i=0; i<this.centroidCount; i++) dist[i] = this.metric.distance(x.getCentroid(i).getPosition(), y.getCentroid(i).getPosition());
+		for(int i=0; i<number; i++)
+		{
+			this.positions.add(vs.getNewAddNeutralElement());
+		}
+	}
+	
+	public PositionListParameter<D> clone(VectorSpace<D> vs)
+	{
+		ArrayList<D> clonePositions = new ArrayList<D>(this.positions.size());
+		for(D pos:this.positions)
+		{
+			clonePositions.add(vs.copyNew(pos));
+		}
 		
-		return this.sumNorm.length(dist);
+		return new PositionListParameter<D>(clonePositions);
 	}
 
-	/* (non-Javadoc)
-	 * @see data.algebra.Metric#distanceSq(java.lang.Object)
+	/**
+	 * @return the centroids
 	 */
-	@Override
-	public double distanceSq(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public ArrayList<D> getPositions()
 	{
-		double dist = this.distance(x, y);		
-		return dist*dist;
+		return this.positions;
+	}
+
+	/**
+	 * @param i Index of the centroid to be returned
+	 * @return The centroid with index i.
+	 */
+	public D getPosition(int i)
+	{
+		return this.positions.get(i);
+	}
+	
+	/**
+	 * @return
+	 */
+	public int getPositionCount()
+	{
+		return this.positions.size();
 	}
 }

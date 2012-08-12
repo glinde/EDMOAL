@@ -40,28 +40,20 @@ import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.Prototype;
 import datamining.gradient.AbstractGradientOptimizationAlgorithm;
 import datamining.gradient.functions.GradientFunction;
-import datamining.gradient.parameter.CentroidListParameter;
+import datamining.gradient.parameter.PositionListParameter;
+import datamining.resultProviders.PrototypeProvider;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public class CentroidGradientOptimizationAlgorithm<D> extends AbstractGradientOptimizationAlgorithm<D, CentroidListParameter<D>>
+public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, PLP extends PositionListParameter<D>> extends AbstractGradientOptimizationAlgorithm<D, PLP> implements PrototypeProvider<D, PT>
 {
-	protected CentroidListParameter<D> centroidList;
-		
-	/**
-	 * @param c
-	 */
-	public CentroidGradientOptimizationAlgorithm(CentroidGradientOptimizationAlgorithm<D> c)
-	{
-		super(c);
-		
-		this.centroidList = c.centroidList.clone();
-	}
+	protected ArrayList<PT> prototypes;
 
 	/**
 	 * @param data
@@ -70,9 +62,11 @@ public class CentroidGradientOptimizationAlgorithm<D> extends AbstractGradientOp
 	 * @param objectiveFunction
 	 * @throws DataSetNotSealedException
 	 */
-	public CentroidGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<CentroidListParameter<D>> vs, Metric<CentroidListParameter<D>> parameterMetric, GradientFunction<D, CentroidListParameter<D>> objectiveFunction) throws DataSetNotSealedException
+	public PrototypeGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<PLP> vs, Metric<PLP> parameterMetric, GradientFunction<D, PLP> objectiveFunction) throws DataSetNotSealedException
 	{
 		super(data, vs, parameterMetric, objectiveFunction);
+		
+		this.prototypes = new ArrayList<PT>();
 	}
 
 	/* (non-Javadoc)
@@ -81,44 +75,74 @@ public class CentroidGradientOptimizationAlgorithm<D> extends AbstractGradientOp
 	@Override
 	public String algorithmName()
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see datamining.ParameterOptimization#getParameter()
-	 */
-	@Override
-	public CentroidListParameter<D> getParameter()
-	{
-		return this.centroidList;
+		return "Gradient optimization with prototypes as parameters for: " + this.objectiveFunction.getName();
 	}
 
 	/* (non-Javadoc)
 	 * @see datamining.ParameterOptimization#updateParameter(java.lang.Object)
 	 */
 	@Override
-	public void updateParameter(CentroidListParameter<D> parameter)
+	public void updateParameter(PLP param)
 	{
-		if(parameter.getCentroids().size() != this.centroidList.getCentroids().size()) throw new IllegalArgumentException("Number of Parameters does not match number of Centroids. Parametersize: " + parameter.getCentroids().size() + " Centroids: " + this.centroidList.getCentroids().size());
+		if(param.getPositionCount() != this.prototypes.size()) throw new IllegalArgumentException("Number of Positions in Parameters does not match number of Prototypes. Parametersize: " + param.getPositionCount() + " Prototypes: " + this.prototypes.size());
 		
-		for(int i=0; i<this.centroidList.getCentroids().size(); i++) this.centroidList.getCentroid(i).moveTo(parameter.getCentroid(i).getPosition());
+		// replace the current parameter values with the new ones.
+		this.parameterVS.copy(this.parameter, param);
+		
+		// update the prototype positions, keeping their history etc.
+		for(int i=0; i<this.parameter.getPositionCount(); i++)
+		{
+			this.prototypes.get(i).moveTo(this.parameter.getPosition(i));
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see datamining.ParameterOptimization#initializeWith(java.lang.Object)
 	 */
 	@Override
-	public void initializeWith(CentroidListParameter<D> initialParameter)
+	public void initializeWithParameter(PLP initialParameter)
 	{
-		this.centroidList = initialParameter.clone();
+		this.parameter = this.parameterVS.copyNew(initialParameter);
+		for(int i=0; i<this.prototypes.size(); i++) this.prototypes.get(i).initializeWithPosition(this.parameter.getPosition(i));
 	}
 
-	/**
-	 * @return the centroids
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.PrototypeProvider#getPrototypes()
 	 */
-	public CentroidListParameter<D> getCentroidList()
+	@Override
+	public ArrayList<PT> getPrototypes()
 	{
-		return this.centroidList;
+		return this.prototypes;
+	}
+	
+	/**
+	 * @return
+	 */
+	public int getActivePrototypesCount()
+	{
+		int counter = 0;
+		
+		for(int i=0; i<this.prototypes.size(); i++)
+		{
+			if(this.prototypes.get(i).isActivated()) counter++;
+		}
+		
+		return counter;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.PrototypeProvider#getActivePrototypes()
+	 */
+	@Override
+	public ArrayList<PT> getActivePrototypes()
+	{
+		ArrayList<PT> activeProtos = new ArrayList<PT>(this.prototypes.size());
+		
+		for(PT proto:this.prototypes)
+		{
+			if(proto.isActivated()) activeProtos.add(proto);
+		}
+		
+		return activeProtos;
 	}
 }

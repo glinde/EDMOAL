@@ -30,26 +30,31 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.gradient.functions;
+package datamining.resultProviders;
 
-import data.set.IndexedDataSet;
+import java.util.ArrayList;
+
+import datamining.clustering.protoype.Prototype;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public interface GradientFunction<D, P>
+public interface PrototypeProvider<T, S extends Prototype<T>>
 {
-	public double functionValue();
-	
-	public P gradient();
 
-	public void gradient(P gradient);
+	/**
+	 * Returns the prototypes.
+	 * 
+	 * @return The prototypes.
+	 */
+	public ArrayList<S> getPrototypes();
 	
-	public String getName();
-	
-	public void setParameter(P parameter);
-	
-	public P getParameter();
+	/**
+	 * Returns all active prototypes.
+	 * 
+	 * @return All active prototypes.
+	 */
+	public ArrayList<S> getActivePrototypes();
 }

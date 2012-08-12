@@ -33,6 +33,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.gradient.functions;
 
 import data.objects.doubleArray.DAEuclideanVectorSpace;
+import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
 import etc.SimpleStatistics;
 
@@ -41,38 +42,39 @@ import etc.SimpleStatistics;
  *
  * @author Roland Winkler
  */
-public class RelativeVarianceOfDistancesObjectiveFunction implements GradientFunction<double[], double[]>
+public class RelativeVarianceOfDistancesObjectiveFunction extends AbstractObjectiveFunction<double[], double[]>
 {
 	protected final DAEuclideanVectorSpace vs;
-	
-	
+		
 	/**
 	 * @param c
 	 */
 	public RelativeVarianceOfDistancesObjectiveFunction(RelativeVarianceOfDistancesObjectiveFunction c)
 	{
+		super(c);
 		this.vs = c.vs;
 	}
 
 	/**
 	 * @param dimension
 	 */
-	public RelativeVarianceOfDistancesObjectiveFunction(int dimension)
+	public RelativeVarianceOfDistancesObjectiveFunction(IndexedDataSet<double[]> dataSet) throws DataSetNotSealedException
 	{		
-		this.vs = new DAEuclideanVectorSpace(dimension);
+		super(dataSet, new double[dataSet.first().x.length]);
+		this.vs = new DAEuclideanVectorSpace(dataSet.first().x.length);
 	}
 
 	/* (non-Javadoc)
 	 * @see datamining.gradient.functions.GradientFunction#functionValue(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
-	public double functionValue(IndexedDataSet<double[]> dataSet, double[] parameter)
+	public double functionValue()
 	{
-		double[] distances = new double[dataSet.size()];
+		double[] distances = new double[this.getDataCount()];
 		
-		for(int j=0; j<dataSet.size(); j++)
+		for(int j=0; j<this.getDataCount(); j++)
 		{
-			distances[j] = this.vs.distance(parameter, dataSet.get(j).x);
+			distances[j] = this.vs.distance(parameter, this.data.get(j).x);
 		}
 		
 		double[] meanVar = SimpleStatistics.mean_variance(distances);
@@ -84,16 +86,20 @@ public class RelativeVarianceOfDistancesObjectiveFunction implements GradientFun
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
-	public double[] gradient(IndexedDataSet<double[]> dataSet, double[] parameter)
+	public double[] gradient()
 	{
-		return null;
+		double[] grad = this.vs.getNewAddNeutralElement();
+		
+		this.gradient(grad);
+		
+		return grad;
 	}
 	
 	/* (non-Javadoc)
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void gradient(IndexedDataSet<double[]> dataSet, double[] parameter, double[] gradient)
+	public void gradient(double[] gradient)
 	{}
 
 	/**
@@ -110,7 +116,7 @@ public class RelativeVarianceOfDistancesObjectiveFunction implements GradientFun
 	@Override
 	public String getName()
 	{
-		return "Least Squares for Euclidean Real Vector Space";
+		return "Relative Variance Objective Function";
 	}
 
 }

@@ -45,7 +45,7 @@ import datamining.clustering.protoype.Prototype;
  *
  * @author Roland Winkler
  */
-public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>, Serializable
+public class PositionListParameterVectorSpace<T> implements VectorSpace<PositionListParameter<T>>, Serializable
 {
 	/** A vector space of the base object type */
 	protected VectorSpace<T> vs;
@@ -57,7 +57,7 @@ public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>,
 	 * @param vs
 	 * @param centroidCount
 	 */
-	public CLPVectorSpace(VectorSpace<T> vs, int centroidCount)
+	public PositionListParameterVectorSpace(VectorSpace<T> vs, int centroidCount)
 	{
 		this.vs = vs;
 		this.centroidCount = centroidCount;
@@ -67,45 +67,45 @@ public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>,
 	 * @see data.algebra.VectorSpace#getNewAddNeutralElement()
 	 */
 	@Override
-	public CentroidListParameter<T> getNewAddNeutralElement()
+	public PositionListParameter<T> getNewAddNeutralElement()
 	{
-		return new CentroidListParameter<T>(this.centroidCount, this.vs);
+		return new PositionListParameter<T>(this.centroidCount, this.vs);
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#resetToAddNeutralElement(java.lang.Object)
 	 */
 	@Override
-	public void resetToAddNeutralElement(CentroidListParameter<T> x)
+	public void resetToAddNeutralElement(PositionListParameter<T> x)
 	{
-		for(int i=0; i<this.centroidCount; i++) this.vs.resetToAddNeutralElement(x.getCentroid(i).getPosition());
+		for(int i=0; i<this.centroidCount; i++) this.vs.resetToAddNeutralElement(x.getPosition(i));
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#copy(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void copy(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public void copy(PositionListParameter<T> x, PositionListParameter<T> y)
 	{
-		for(int i=0; i<this.centroidCount; i++) this.vs.copy(x.getCentroid(i).getPosition(), y.getCentroid(i).getPosition());
+		for(int i=0; i<this.centroidCount; i++) this.vs.copy(x.getPosition(i), y.getPosition(i));
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#inv(java.lang.Object)
 	 */
 	@Override
-	public void inv(CentroidListParameter<T> x)
+	public void inv(PositionListParameter<T> x)
 	{
-		for(int i=0; i<this.centroidCount; i++) this.vs.inv(x.getCentroid(i).getPosition());		
+		for(int i=0; i<this.centroidCount; i++) this.vs.inv(x.getPosition(i));		
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#add(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void add(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public void add(PositionListParameter<T> x, PositionListParameter<T> y)
 	{
-		for(int i=0; i<this.centroidCount; i++) this.vs.add(x.getCentroid(i).getPosition(), y.getCentroid(i).getPosition());
+		for(int i=0; i<this.centroidCount; i++) this.vs.add(x.getPosition(i), y.getPosition(i));
 		
 	}
 
@@ -113,36 +113,36 @@ public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>,
 	 * @see data.algebra.VectorSpace#sub(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void sub(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public void sub(PositionListParameter<T> x, PositionListParameter<T> y)
 	{
-		for(int i=0; i<this.centroidCount; i++) this.vs.sub(x.getCentroid(i).getPosition(), y.getCentroid(i).getPosition());
+		for(int i=0; i<this.centroidCount; i++) this.vs.sub(x.getPosition(i), y.getPosition(i));
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#mul(java.lang.Object, double)
 	 */
 	@Override
-	public void mul(CentroidListParameter<T> x, double a)
+	public void mul(PositionListParameter<T> x, double a)
 	{
-		for(int i=0; i<this.centroidCount; i++) this.vs.mul(x.getCentroid(i).getPosition(), a);
+		for(int i=0; i<this.centroidCount; i++) this.vs.mul(x.getPosition(i), a);
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#copyNew(java.lang.Object)
 	 */
 	@Override
-	public CentroidListParameter<T> copyNew(CentroidListParameter<T> x)
+	public PositionListParameter<T> copyNew(PositionListParameter<T> x)
 	{
-		return x.clone();
+		return x.clone(this.vs);
 	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.VectorSpace#invNew(java.lang.Object)
 	 */
 	@Override
-	public CentroidListParameter<T> invNew(CentroidListParameter<T> x)
+	public PositionListParameter<T> invNew(PositionListParameter<T> x)
 	{
-		CentroidListParameter<T> newP = x.clone();		
+		PositionListParameter<T> newP = x.clone(this.vs);		
 		this.inv(newP);
 		
 		return newP;
@@ -152,9 +152,9 @@ public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>,
 	 * @see data.algebra.VectorSpace#addNew(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public CentroidListParameter<T> addNew(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public PositionListParameter<T> addNew(PositionListParameter<T> x, PositionListParameter<T> y)
 	{
-		CentroidListParameter<T> newP = x.clone();		
+		PositionListParameter<T> newP = x.clone(this.vs);		
 		this.add(newP, y);
 		
 		return newP;
@@ -164,9 +164,9 @@ public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>,
 	 * @see data.algebra.VectorSpace#subNew(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public CentroidListParameter<T> subNew(CentroidListParameter<T> x, CentroidListParameter<T> y)
+	public PositionListParameter<T> subNew(PositionListParameter<T> x, PositionListParameter<T> y)
 	{
-		CentroidListParameter<T> newP = x.clone();		
+		PositionListParameter<T> newP = x.clone(this.vs);		
 		this.add(newP, y);
 		
 		return newP;
@@ -176,9 +176,9 @@ public class CLPVectorSpace<T> implements VectorSpace<CentroidListParameter<T>>,
 	 * @see data.algebra.VectorSpace#mulNew(java.lang.Object, double)
 	 */
 	@Override
-	public CentroidListParameter<T> mulNew(CentroidListParameter<T> x, double a)
+	public PositionListParameter<T> mulNew(PositionListParameter<T> x, double a)
 	{
-		CentroidListParameter<T> newP = x.clone();		
+		PositionListParameter<T> newP = x.clone(this.vs);		
 		this.mul(newP, a);
 		
 		return newP;
