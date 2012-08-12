@@ -4,6 +4,7 @@ Copyright (c) 2012, The EDMOAL Project
 	Roland Winkler
 	Richard-Wagner Str. 42
 	10585 Berlin, Germany
+	roland.winkler@gmail.com
  
 All rights reserved.
 
