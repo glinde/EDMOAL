@@ -46,8 +46,8 @@ import data.set.IndexedDataSet;
 import data.structures.balltree.BallTree;
 import data.structures.queries.SphereQueryProvider;
 import datamining.clustering.AbstractClusteringAlgorithm;
-import datamining.clustering.CrispClusteringAlgorithm;
-import datamining.clustering.CrispNoiseClusteringAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.CrispNoiseClusteringProvider;
 
 /**
  * The DBScan algorithm, implemented using a ball tree. This is one of the best and fastest clustering algorithms
@@ -73,7 +73,7 @@ import datamining.clustering.CrispNoiseClusteringAlgorithm;
  * 
  * @author Roland Winkler
  */
-public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispClusteringAlgorithm<T>, CrispNoiseClusteringAlgorithm<T>
+public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispNoiseClusteringProvider<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= 8539759213273998996L;
@@ -301,7 +301,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.CrispClusterResultAlgorithm#getCrispIndicesResult()
+	 * @see datamining.CrispNoiseClusteringProvider#getCrispIndicesResult()
 	 */
 	@Override
 	public int[] getAllCrispClusterAssignments()
@@ -311,7 +311,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 		for(int j=0; j<this.getDataCount(); j++)
 		{
 			crispResult[j] = this.clusterIDs[this.data.get(j).getID()];
-			crispResult[j] = (crispResult[j] == DBScan.DBSCAN_NOISE_ID || crispResult[j] == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringAlgorithm.UNASSIGNED_INDEX : crispResult[j];
+			crispResult[j] = (crispResult[j] == DBScan.DBSCAN_NOISE_ID || crispResult[j] == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringProvider.UNASSIGNED_INDEX : crispResult[j];
 		}
 		
 		return crispResult;
@@ -319,7 +319,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#getCrispAssignment(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#getCrispAssignment(data.set.IndexedDataObject)
 	 */
 	@Override
 	public int getCrispClusterAssignmentOf(IndexedDataObject<T> obj)
@@ -327,14 +327,14 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 		int assignment = this.clusterIDs[obj.getID()];
 		
 		// either the obj is unassigned or it is noise, in both cases, the assignment index is -1
-		assignment = (assignment == DBScan.DBSCAN_NOISE_ID || assignment == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringAlgorithm.UNASSIGNED_INDEX : assignment;
+		assignment = (assignment == DBScan.DBSCAN_NOISE_ID || assignment == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringProvider.UNASSIGNED_INDEX : assignment;
 		
 		return assignment;
 	}
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#isCrispClusterAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#isCrispClusterAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isCrispAssigned(IndexedDataObject<T> obj)
@@ -344,7 +344,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispNoiseClusteringAlgorithm#getCrispNoiseAssignments()
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#getCrispNoiseAssignments()
 	 */
 	@Override
 	public boolean[] getCrispNoiseAssignments()
@@ -361,7 +361,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispNoiseClusteringAlgorithm#isCrispNoiseAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#isCrispNoiseAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isCrispNoiseAssigned(IndexedDataObject<T> obj)

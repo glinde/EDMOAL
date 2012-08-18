@@ -222,7 +222,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "HCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "HCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -251,7 +251,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 	
@@ -281,7 +281,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -310,7 +310,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -340,7 +340,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -370,7 +370,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -401,7 +401,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -431,7 +431,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "VPFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "VPFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -462,7 +462,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -492,7 +492,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -523,7 +523,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -553,7 +553,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -585,7 +585,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		System.out.println("done. ("+time+" ms)");
 		
 //		for(SphericalNormalDistributionPrototype d:clusterAlgo.getActivePrototypes()) System.out.println(d.getClusterIndex() + ": " + d.getVariance());
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -613,6 +613,6 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 }

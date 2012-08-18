@@ -48,7 +48,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.geom.Point2D;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,9 +55,11 @@ import java.util.Collection;
 import java.util.List;
 
 import data.set.IndexedDataObject;
+import data.set.IndexedDataSet;
 import datamining.clustering.ClusteringAlgorithm;
-import datamining.clustering.CrispClusteringAlgorithm;
-import datamining.clustering.FuzzyClusteringAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
+import datamining.resultProviders.ResultProvider;
 import etc.DataManipulator;
 import etc.MyMath;
 
@@ -153,27 +154,37 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	}
 	
 	
-	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca)
+	public GClusteredDataSet(IndexedDataSet<double[]> data, ResultProvider<double[]> rp, int clusterCount)
 	{
-		this(ca.getClusterCount());
+		this(clusterCount);
 
-		this.dataSet.addAll(ca.getDataSet());
+		this.dataSet.addAll(data);
 		
-		this.updateClusterAssignments(ca);
+		this.updateClusterAssignments(rp);
+	}
+	
+	
+	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca, ResultProvider<double[]> rp)
+	{
+		this(ca.getDataSet(), rp, ca.getClusterCount());
 	}
 
-	
-	
-	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca, int[] dataSubsetList)
-	{
-		this(GClusteredDataSet.makeClusterScemes(ca.getClusterCount()));
 
-		this.dataSet.addAll(ca.getDataSet());
+	public GClusteredDataSet(IndexedDataSet<double[]> data, ResultProvider<double[]> rp, int[] dataSubsetList, int clusterCount)
+	{
+		this(GClusteredDataSet.makeClusterScemes(clusterCount));
+
+		this.dataSet.addAll(data);
 		
 		this.dataSubsetPresentation = true;
 		this.dataSubsetList = dataSubsetList;
 		
-		this.updateClusterAssignments(ca);
+		this.updateClusterAssignments(rp);
+	}
+	
+	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca, ResultProvider<double[]> rp, int[] dataSubsetList)
+	{
+		this(ca.getDataSet(), rp, dataSubsetList, ca.getClusterCount());
 	}
 	
 	protected void recalculateConvexHulls()
@@ -576,9 +587,9 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	}
 	
 	/**
-	 * @param ca
+	 * @param rp
 	 */
-	public void updateClusterAssignments(ClusteringAlgorithm<double[]> ca)
+	public void updateClusterAssignments(ResultProvider<double[]> rp)
 	{
 		int j, l;
 		this.fuzzyAssignmentsAvailable = false;
@@ -589,23 +600,23 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 		{
 			this.crispClusterAssignments = new int[this.dataSubsetList.length];
 			
-			if(ca instanceof FuzzyClusteringAlgorithm)
+			if(rp instanceof FuzzyClusteringProvider)
 			{
 				this.fuzzyAssignmentsAvailable = true;
 				for(l=0; l<this.dataSubsetList.length; l++)
 				{
 					j = this.dataSubsetList[l];
-					this.fuzzyMemberships.add(((FuzzyClusteringAlgorithm<double[]>)ca).getFuzzyAssignmentsOf(this.dataSet.get(j)));
+					this.fuzzyMemberships.add(((FuzzyClusteringProvider<double[]>)rp).getFuzzyAssignmentsOf(this.dataSet.get(j)));
 				}
 			}
 			
-			if(ca instanceof CrispClusteringAlgorithm)
+			if(rp instanceof CrispClusteringProvider)
 			{
 				this.crispAssignmentsAvailable = true;
 				for(l=0; l<this.dataSubsetList.length; l++)
 				{
 					j = this.dataSubsetList[l];
-					this.crispClusterAssignments[l] = ((CrispClusteringAlgorithm<double[]>)ca).getCrispClusterAssignmentOf(this.dataSet.get(j));
+					this.crispClusterAssignments[l] = ((CrispClusteringProvider<double[]>)rp).getCrispClusterAssignmentOf(this.dataSet.get(j));
 				}
 			}
 		}
@@ -613,16 +624,16 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 		{
 			this.crispClusterAssignments = new int[this.dataSet.size()];
 			
-			if(ca instanceof FuzzyClusteringAlgorithm)
+			if(rp instanceof FuzzyClusteringProvider)
 			{
 				this.fuzzyAssignmentsAvailable = true;
-				((FuzzyClusteringAlgorithm<?>)ca).getAllFuzzyClusterAssignments(this.fuzzyMemberships);
+				((FuzzyClusteringProvider<?>)rp).getAllFuzzyClusterAssignments(this.fuzzyMemberships);
 			}
 			
-			if(ca instanceof CrispClusteringAlgorithm)
+			if(rp instanceof CrispClusteringProvider)
 			{
 				this.crispAssignmentsAvailable = true;
-				this.crispClusterAssignments = ((CrispClusteringAlgorithm<?>)ca).getAllCrispClusterAssignments();
+				this.crispClusterAssignments = ((CrispClusteringProvider<?>)rp).getAllCrispClusterAssignments();
 			}
 		}
 

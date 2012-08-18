@@ -44,11 +44,11 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.CrispClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.CrispClusteringProvider;
 
 /**
  * The hard c-means clustering algorithm is maybe one of the first clustering algorithms that have been invented.
@@ -59,7 +59,7 @@ import datamining.clustering.protoype.Centroid;
  * for this particular implementation, an array of integer values contain the clustering result.
  * Each element of the array corresponds to the data object with the same index and
  * the value of the element is the cluster the data object is associated to. Before initializing
- * the algorithm, all data objects remain unclustered (cluster index {@link CrispClusteringAlgorithm#UNASSIGNED_INDEX}).<br>
+ * the algorithm, all data objects remain unclustered (cluster index {@link CrispClusteringProvider#UNASSIGNED_INDEX}).<br>
  * 
  * The runtime complexity of this algorithm is in O(t*n*c),
  * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
@@ -72,7 +72,7 @@ import datamining.clustering.protoype.Centroid;
  * 
  * @author Roland Winkler
  */
-public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements CrispClusteringAlgorithm<T>
+public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements CrispClusteringProvider<T>
 {		
 	/**  */
 	private static final long	serialVersionUID	= -2518725991257149820L;
@@ -86,7 +86,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	
 	/**
 	 * Creates a new HardCMeansClusteringAlgorithm with the specified data set, vector space and metric.
-	 * All data objects are set to {@link CrispClusteringAlgorithm#UNASSIGNED_INDEX}. No prototypes
+	 * All data objects are set to {@link CrispClusteringProvider#UNASSIGNED_INDEX}. No prototypes
 	 * are initialized so far.
 	 * 
 	 * @param data The data set that should be clustered.
@@ -98,7 +98,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 		super(data, vs, metric);
 
 		this.clusteringResult = new int[this.data.size()];
-		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = CrispClusteringAlgorithm.UNASSIGNED_INDEX;
+		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = CrispClusteringProvider.UNASSIGNED_INDEX;
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 		super(c, useOnlyActivePrototypes);
 		
 		this.clusteringResult = new int[this.data.size()];
-		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = CrispClusteringAlgorithm.UNASSIGNED_INDEX;
+		for(int j=0; j<this.getDataCount(); j++) this.clusteringResult[j] = CrispClusteringProvider.UNASSIGNED_INDEX;
 	}
 
 	/* (non-Javadoc)
@@ -291,7 +291,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusteringAlgorithm#getCrispClusterAssignmentOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispClusteringProvider#getCrispClusterAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public int getCrispClusterAssignmentOf(IndexedDataObject<T> obj)
@@ -302,7 +302,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusteringAlgorithm#getAllCrispClusterAssignments()
+	 * @see datamining.clustering.CrispClusteringProvider#getAllCrispClusterAssignments()
 	 */
 	@Override
 	public int[] getAllCrispClusterAssignments()
@@ -313,7 +313,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusteringAlgorithm#isCrispAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispClusteringProvider#isCrispAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isCrispAssigned(IndexedDataObject<T> obj)

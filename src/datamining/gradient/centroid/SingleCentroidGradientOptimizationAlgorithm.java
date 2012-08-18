@@ -146,4 +146,22 @@ public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGrad
 	{
 		return this.getPrototypes();
 	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getPrototypeCount()
+	 */
+	@Override
+	public int getPrototypeCount()
+	{
+		return 1;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getActivePrototypeCount()
+	 */
+	@Override
+	public int getActivePrototypesCount()
+	{
+		return 1;
+	}
 }

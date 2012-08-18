@@ -114,21 +114,6 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 	{
 		return this.prototypes;
 	}
-	
-	/**
-	 * @return
-	 */
-	public int getActivePrototypesCount()
-	{
-		int counter = 0;
-		
-		for(int i=0; i<this.prototypes.size(); i++)
-		{
-			if(this.prototypes.get(i).isActivated()) counter++;
-		}
-		
-		return counter;
-	}
 
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.PrototypeProvider#getActivePrototypes()
@@ -141,6 +126,31 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 		for(PT proto:this.prototypes)
 		{
 			if(proto.isActivated()) activeProtos.add(proto);
+		}
+		
+		return activeProtos;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getPrototypeCount()
+	 */
+	@Override
+	public int getPrototypeCount()
+	{
+		return prototypes.size();
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getActivePrototypeCount()
+	 */
+	@Override
+	public int getActivePrototypesCount()
+	{
+		int activeProtos = 0;
+		
+		for(PT proto:this.prototypes)
+		{
+			if(proto.isActivated()) activeProtos++;
 		}
 		
 		return activeProtos;

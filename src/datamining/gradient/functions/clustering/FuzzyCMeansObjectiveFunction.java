@@ -58,7 +58,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	 * value is 1, the algorithm is identical to crisp clustering and for values going to infinity, it is complete soft clustering.
 	 * A useful value is around 2.<br>
 	 *
-	 *	Range of values: <code>fuzzifier</code> > 1
+	 * Range of values: <code>fuzzifier</code> > 1
 	 */
 	protected double fuzzifier;
 	

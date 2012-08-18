@@ -50,7 +50,7 @@ import data.set.IndexedDataObject;
  * 
  * @author Roland Winkler
  */
-public interface FuzzyClusteringProvider<T>
+public interface FuzzyClusteringProvider<T> extends ResultProvider<T>
 {
 	/**
 	 * Returns the list of fuzzy membership values of the specified data object to all clusters.

@@ -46,6 +46,9 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
+import datamining.resultProviders.CrispNoiseClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 
 /**
  * This class provides a collection of standard cluster validation indices.
@@ -400,9 +403,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param dist The distance metric.
 	 * @return The Xie - Beni index for the specified clustering result.
 	 */
-	public double xieBeniIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> double xieBeniIndex(CA fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
-		if(fuzzyAlgorithm instanceof CrispNoiseClusteringAlgorithm || fuzzyAlgorithm instanceof FuzzyNoiseClusteringAlgorithm)
+		if(fuzzyAlgorithm instanceof CrispNoiseClusteringProvider || fuzzyAlgorithm instanceof FuzzyNoiseClusteringProvider)
 		{
 			System.err.println("The Xie-Beni-Index is not valid for noise clustering");
 			return 0.0d;
@@ -473,9 +476,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param dist The distance metric.
 	 * @return The Davies - Bouldin index for the specified clustering result.
 	 */
-	public double daviesBouldinIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> double daviesBouldinIndex(CA fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
-		if(fuzzyAlgorithm instanceof CrispNoiseClusteringAlgorithm || fuzzyAlgorithm instanceof FuzzyNoiseClusteringAlgorithm)
+		if(fuzzyAlgorithm instanceof CrispNoiseClusteringProvider || fuzzyAlgorithm instanceof FuzzyNoiseClusteringProvider)
 		{
 			System.err.println("The Davies-Bouldin-Index is not valid for noise clustering");
 			return 0.0d;
@@ -544,9 +547,9 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param dist The distance metric.
 	 * @return The Bezdec separation index (fuzzy Dunn separation index) for the specified clustering result.
 	 */
-	public double bezdecSeperationIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> double bezdecSeperationIndex(CA fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
-		if(fuzzyAlgorithm instanceof CrispNoiseClusteringAlgorithm || fuzzyAlgorithm instanceof FuzzyNoiseClusteringAlgorithm)
+		if(fuzzyAlgorithm instanceof CrispNoiseClusteringProvider || fuzzyAlgorithm instanceof FuzzyNoiseClusteringProvider)
 		{
 			System.err.println("The Bezdec Seperation Index is not valid for noise clustering");
 			return 0.0d;
@@ -604,7 +607,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
 	 * @return The partition coefficient of the specified clustering result.
 	 */
-	public double partitionEntropy(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> double partitionEntropy(CA fuzzyAlgorithm)
 	{
 		double sum = 0.0d;
 		int i;		
@@ -635,7 +638,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
 	 * @return The partition coefficient of the specified clustering result.
 	 */
-	public double partitionCoefficient(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> double partitionCoefficient(CA fuzzyAlgorithm)
 	{
 		
 		double sum = 0.0d;
@@ -664,7 +667,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
 	 * @return The partition coefficient of the specified clustering result.
 	 */
-	public double nonFuzzynessIndex(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> double nonFuzzynessIndex(CA fuzzyAlgorithm)
 	{
 		return 1.0d - (((double)fuzzyAlgorithm.getClusterCount())/(((double)fuzzyAlgorithm.getClusterCount()) - 1.0d))*(1.0d - this.partitionCoefficient(fuzzyAlgorithm));
 	}
@@ -679,7 +682,7 @@ public class ClusterAnalyser<T>  implements Serializable
 	 * @param dist The distance metric.
 	 * @return The string holding the report.
 	 */
-	public String clusterResultProperties(FuzzyClusteringAlgorithm<T> fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
+	public <CA extends FuzzyClusteringProvider<T> & ClusteringAlgorithm<T>> String clusterResultProperties(CA fuzzyAlgorithm, VectorSpace<T> vs, Metric<T> dist)
 	{
 		StringBuffer sb = new StringBuffer();
 		StringBuffer nameB = new StringBuffer();

@@ -46,10 +46,10 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
+import datamining.resultProviders.FuzzyClusteringProvider;
 
 /**
  * This is an implementation of the expectation maximization algorithm for a mixture of (hyper-) spherical normal distributions.
@@ -82,7 +82,7 @@ import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
  * 
  * @author Roland Winkler
  */
-public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractPrototypeClusteringAlgorithm<double[], SphericalNormalDistributionPrototype> implements Serializable, FuzzyClusteringAlgorithm<double[]>
+public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractPrototypeClusteringAlgorithm<double[], SphericalNormalDistributionPrototype> implements Serializable, FuzzyClusteringProvider<double[]>
 {	
 	/**  */
 	private static final long	serialVersionUID	= -8858858125481849303L;
@@ -403,7 +403,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<double[]> obj)
@@ -415,7 +415,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]> assignmentList)
@@ -429,7 +429,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<double[]> obj)
@@ -438,7 +438,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentSums()
 	 */
 	@Override
 	public double[] getFuzzyAssignmentSums()

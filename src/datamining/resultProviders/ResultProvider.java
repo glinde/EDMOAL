@@ -33,45 +33,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.resultProviders;
 
-import java.util.ArrayList;
-
-import datamining.DataMiningAlgorithm;
-import datamining.clustering.protoype.Prototype;
-
 /**
- * TODO Class Description
+ * Dummy Interface for OOP
  *
  * @author Roland Winkler
  */
-public interface PrototypeProvider<T, S extends Prototype<T>> extends DataMiningAlgorithm<T>
-{
-
-	/**
-	 * Returns the number of prototypes.
-	 * 
-	 * @return The number of prototypes.
-	 */
-	public int getPrototypeCount();
-
-	/**
-	 * Returns the number of active prototypes.
-	 * 
-	 * @return The number of active prototypes.
-	 */
-	public int getActivePrototypesCount();		
-	
-	
-	/**
-	 * Returns the prototypes.
-	 * 
-	 * @return The prototypes.
-	 */
-	public ArrayList<S> getPrototypes();
-	
-	/**
-	 * Returns all active prototypes.
-	 * 
-	 * @return All active prototypes.
-	 */
-	public ArrayList<S> getActivePrototypes();
-}
+public interface ResultProvider<T>
+{}

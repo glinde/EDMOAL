@@ -45,6 +45,8 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import datamining.IterativeObjectiveFunctionOptimization;
 import datamining.clustering.AbstractClusteringAlgorithm;
+import datamining.clustering.ClusteringAlgorithm;
+import datamining.resultProviders.PrototypeProvider;
 
 /**
  * An abstract class for all prototype based clustering algorithms, without specifying the class of the prototype.
@@ -70,7 +72,7 @@ import datamining.clustering.AbstractClusteringAlgorithm;
  * 
  * @author Roland Winkler
  */
-public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends AbstractClusteringAlgorithm<T> implements PrototypeClusteringAlgorithm<T, S>, IterativeObjectiveFunctionOptimization
+public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends AbstractClusteringAlgorithm<T> implements PrototypeProvider<T, S>, IterativeObjectiveFunctionOptimization
 {
 	/**  */
 	private static final long	serialVersionUID	= -7799213874962389902L;
@@ -382,6 +384,33 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	public int getClusterCount()
 	{
 		return this.prototypes.size();
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getPrototypeCount()
+	 */
+	@Override
+	public int getPrototypeCount()
+	{
+		return this.prototypes.size();
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getActivePrototypesCount()
+	 */
+	@Override
+	public int getActivePrototypesCount()
+	{
+		int active=0;
+		
+		for(Prototype<T> p:this.prototypes)
+		{
+			if(p.isActivated()) active++;
+		}
+		
+		return active;
 	}
 
 	/**

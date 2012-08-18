@@ -45,11 +45,11 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyClusteringProvider;
 
 /**
  * The fuzzy c-means clustering algorithm with polynomial fuzzifier function is an extension of FCM.
@@ -78,7 +78,7 @@ import datamining.clustering.protoype.Centroid;
  * 
  * @author Roland Winkler
  */
-public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringAlgorithm<T>
+public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= 3347388178304679371L;
@@ -418,7 +418,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -511,7 +511,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]> assignmentList)
@@ -608,7 +608,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentSums()
 	 */
 	@Override
 	public double[] getFuzzyAssignmentSums()
@@ -709,7 +709,7 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)

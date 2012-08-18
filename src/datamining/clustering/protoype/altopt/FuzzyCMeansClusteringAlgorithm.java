@@ -45,11 +45,11 @@ import data.algebra.EuclideanVectorSpace;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyClusteringProvider;
 import etc.MyMath;
 
 /**
@@ -74,7 +74,7 @@ import etc.MyMath;
  *
  * @author Roland Winkler
  */
-public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringAlgorithm<T>
+public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= -1260886261257302868L;
@@ -319,7 +319,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentSums()
 	 */
 	@Override
 	public double[] getFuzzyAssignmentSums()
@@ -381,7 +381,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]>  assignmentList)
@@ -453,7 +453,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
@@ -518,7 +518,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)

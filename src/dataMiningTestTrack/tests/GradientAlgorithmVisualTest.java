@@ -34,21 +34,16 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack.tests;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
-import data.algebra.EuclideanVectorSpace;
-import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
-import data.objects.doubleArray.DAMaximumMetric;
 import data.objects.doubleArray.DAMaximumNorm;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
+import datamining.gradient.centroid.PrototypeGradientOptimizationAlgorithm;
 import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
-import datamining.gradient.centroid.Temporal_FuzzyClusterProvidingPGOA;
 import datamining.gradient.functions.DALeastSquaresObjectiveFunction;
 import datamining.gradient.functions.clustering.FuzzyCMeansObjectiveFunction;
 import datamining.gradient.parameter.PositionListParameter;
@@ -168,7 +163,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		ArrayList<Centroid<double[]>> centroids = new ArrayList<Centroid<double[]>>(this.clusterCount);
 		for(int i=0; i<this.clusterCount; i++) centroids.add(new Centroid<double[]>(evs, this.initialPositons.get(i)));
 		
-		Temporal_FuzzyClusterProvidingPGOA<double[]> algo = new Temporal_FuzzyClusterProvidingPGOA<double[]>(this.dataSet, parameterVS, parameterMetric, fcmFunction, centroids);
+		PrototypeGradientOptimizationAlgorithm<double[], Centroid<double[]>, PositionListParameter<double[]>> algo = new PrototypeGradientOptimizationAlgorithm<double[], Centroid<double[]>, PositionListParameter<double[]>>(this.dataSet, parameterVS, parameterMetric, fcmFunction, centroids);
 		PositionListParameter<double[]> parameter = new PositionListParameter<double[]>(this.initialPositons);
 		
 		algo.setAscOrDesc(false);
@@ -176,7 +171,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(1.0d);
 		algo.apply(50);
 		
-		this.showClusteringAlgorithm(algo, algo.algorithmName(), "FCM Gradient Test");
+		this.showDataMiningAlgorithm(algo, fcmFunction, algo.algorithmName(), "FCM Gradient Test");
 	}
 	
 }

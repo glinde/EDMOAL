@@ -57,10 +57,14 @@ import java.util.Collection;
 import javax.swing.JFrame;
 
 import data.set.IndexedDataObject;
+import datamining.DataMiningAlgorithm;
 import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
 import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
+import datamining.resultProviders.PrototypeProvider;
+import datamining.resultProviders.ResultProvider;
 
 /**
  * A class to provide basic functions for visualisation and defines some layout constants.
@@ -165,7 +169,7 @@ public abstract class TestVisualizer implements Serializable
 	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
 	 */
 	@SuppressWarnings("unchecked")
-	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, String title, String filename)
+	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, ResultProvider<double[]> resultProvider, String title, String filename)
 	{
 		GClusteredDataSet gClusteredDS;
 		ScreenViewer sv;
@@ -174,17 +178,17 @@ public abstract class TestVisualizer implements Serializable
 		{
 			try
 			{
-				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo);
+				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo, resultProvider);
 			}
 			catch(ClassCastException e)
 			{
-				gClusteredDS = new GClusteredDataSet(clusterAlgo);
+				gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider);
 			}
 			
 		}
 		else
 		{
-			gClusteredDS = new GClusteredDataSet(clusterAlgo);
+			gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider);
 		}
 
 		gClusteredDS.setDrawMembershipLevels(true);
@@ -202,7 +206,101 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
-	
+
+	/**
+	 * Creates a visualisation of the specified data mining algorithm and its results.
+	 * The visualisation is automatically adopted to the type of the algorithm.
+	 * 
+	 * @param dmAlgo The algorithm that is to be visualised.
+	 * @param resultProvider The result of the data mining.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 * @param dataObjectSubsectionIndexes
+	 */
+	@SuppressWarnings("unchecked")
+	public void showDataMiningAlgorithm(DataMiningAlgorithm<double[]> dmAlgo, ResultProvider<double[]> resultProvider, int[] dataObjectSubsectionIndexes, String title, String filename)
+	{
+		GClusteredDataSet gClusteredDS = null;
+		ScreenViewer sv;
+		
+		if(dmAlgo instanceof PrototypeProvider && dmAlgo instanceof ClusteringAlgorithm)
+		{
+
+			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Prototype<double[]>>)dmAlgo, resultProvider, dataObjectSubsectionIndexes);
+
+		}
+		else if(dmAlgo instanceof ClusteringAlgorithm)
+		{
+			gClusteredDS = new GClusteredDataSet((ClusteringAlgorithm<double[]>)dmAlgo, resultProvider, dataObjectSubsectionIndexes);
+		}
+		else
+		{
+			return;
+		}
+
+		gClusteredDS.setDrawMembershipLevels(true);
+		
+		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+
+		sv = new ScreenViewer();
+		sv.screen.setFileName(filename);
+		sv.screen.setBackground(Color.WHITE);
+		sv.screen.addDrawableObject(gClusteredDS);
+		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
+		sv.setTitle(title);
+		sv.repaint();
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
+
+	/**
+	 * Creates a visualisation of the specified data mining algorithm and its results.
+	 * The visualisation is automatically adopted to the type of the algorithm.
+	 * 
+	 * @param dmAlgo The algorithm that is to be visualised.
+	 * @param resultProvider The result of the data mining.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 * @param dataObjectSubsectionIndexes
+	 */
+	@SuppressWarnings("unchecked")
+	public void showDataMiningAlgorithm(DataMiningAlgorithm<double[]> dmAlgo, ResultProvider<double[]> resultProvider, String title, String filename)
+	{
+		GClusteredDataSet gClusteredDS = null;
+		ScreenViewer sv;
+		
+		if(dmAlgo instanceof PrototypeProvider)
+		{
+
+			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Prototype<double[]>>)dmAlgo, resultProvider);
+
+		}
+		else if(dmAlgo instanceof ClusteringAlgorithm)
+		{
+			gClusteredDS = new GClusteredDataSet((ClusteringAlgorithm<double[]>)dmAlgo, resultProvider);
+		}
+		else
+		{
+			return;
+		}
+
+		gClusteredDS.setDrawMembershipLevels(true);
+		
+		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+
+		sv = new ScreenViewer();
+		sv.screen.setFileName(filename);
+		sv.screen.setBackground(Color.WHITE);
+		sv.screen.addDrawableObject(gClusteredDS);
+		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
+		sv.setTitle(title);
+		sv.repaint();
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
+
 
 	/**
 	 * Creates a visualisation of the specified clustering algorithm and its results.
@@ -214,26 +312,18 @@ public abstract class TestVisualizer implements Serializable
 	 * @param dataObjectSubsectionIndexes
 	 */
 	@SuppressWarnings("unchecked")
-	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, int[] dataObjectSubsectionIndexes, String title, String filename)
+	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, ResultProvider<double[]> resultProvider, int[] dataObjectSubsectionIndexes, String title, String filename)
 	{
 		GClusteredDataSet gClusteredDS;
 		ScreenViewer sv;
 		
 		if(clusterAlgo instanceof PrototypeClusteringAlgorithm)
 		{
-			try
-			{
-				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo, dataObjectSubsectionIndexes);
-			}
-			catch(ClassCastException e)
-			{
-				gClusteredDS = new GClusteredDataSet(clusterAlgo, dataObjectSubsectionIndexes);
-			}
-			
+			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo, resultProvider, dataObjectSubsectionIndexes);
 		}
 		else
 		{
-			gClusteredDS = new GClusteredDataSet(clusterAlgo, dataObjectSubsectionIndexes);
+			gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider, dataObjectSubsectionIndexes);
 		}
 
 		gClusteredDS.setDrawMembershipLevels(true);

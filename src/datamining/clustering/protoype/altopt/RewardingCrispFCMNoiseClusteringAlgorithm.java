@@ -44,11 +44,10 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyClusteringAlgorithm;
-import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 import etc.MyMath;
 
 /**
@@ -89,7 +88,7 @@ import etc.MyMath;
  * 
  * @author Roland Winkler
  */
-public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrispFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringAlgorithm<T>, FuzzyClusteringAlgorithm<T>
+public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrispFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>
 {	
 	/**  */
 	private static final long	serialVersionUID	= 6531335434133789423L;
@@ -583,7 +582,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignments()
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignments()
 	 */
 	@Override
 	public double[] getFuzzyNoiseAssignments()
@@ -649,7 +648,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)

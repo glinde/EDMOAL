@@ -45,10 +45,10 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 
 /**
  * This is an implementation of the fuzzy c-means clustering algorithm with additional noise cluster and with a polynomial fuzzifier function.
@@ -88,7 +88,7 @@ import datamining.clustering.protoype.Centroid;
  * 
  * @author Roland Winkler
  */
-public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringAlgorithm<T>
+public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>
 {	
 	/**  */
 	private static final long	serialVersionUID	= -4173377426715965448L;
@@ -705,7 +705,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignments()
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignments()
 	 */
 	@Override
 	public double[] getFuzzyNoiseAssignments()
@@ -788,7 +788,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)

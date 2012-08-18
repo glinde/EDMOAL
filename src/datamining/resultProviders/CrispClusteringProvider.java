@@ -48,7 +48,7 @@ import data.set.IndexedDataSet;
  *
  * @author Roland Winkler
  */
-public interface CrispClusteringProvider<T>
+public interface CrispClusteringProvider<T> extends ResultProvider<T>
 {
 	/** 
 	 * if a data object is not assigned its cluster assignment index must be equal to
