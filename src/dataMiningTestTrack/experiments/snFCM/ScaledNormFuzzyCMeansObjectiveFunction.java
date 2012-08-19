@@ -31,16 +31,14 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.gradient.functions.clustering;
+package dataMiningTestTrack.experiments.snFCM;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import data.algebra.Metric;
-import data.algebra.VectorSpace;
+import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.gradient.functions.AbstractObjectiveFunction;
 import datamining.gradient.parameter.PositionListParameter;
 import datamining.resultProviders.FuzzyClusteringProvider;
@@ -51,7 +49,7 @@ import etc.MyMath;
  *
  * @author Roland Winkler
  */
-public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T, PositionListParameter<T>> implements FuzzyClusteringProvider<T>
+public class ScaledNormFuzzyCMeansObjectiveFunction extends AbstractObjectiveFunction<double[], PositionListParameter<double[]>> implements FuzzyClusteringProvider<double[]>
 {
 	/**
 	 * The fuzzifier. It specifies how soft the membership values are going to be calculated. if the
@@ -61,27 +59,30 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	 * Range of values: <code>fuzzifier</code> > 1
 	 */
 	protected double fuzzifier;
-	
+
+	/**
+	 * The the metric that is used here can hold a parameter<br>
+	 *
+	 * Range of values: <code>normExponent</code> >= 1
+	 */
+	protected double normExponent;	
+		
 	/**
 	 * A metric for measuring the distance between objects of type <code>T</code>, that can be data objects
 	 * or other locations in the feature space.
 	 */
-	protected final Metric<T> metric;
+	protected final DAScaledNormMetric metric;
 
-	/** The vector space that is used for prototype position calculations. */
-	protected final VectorSpace<T> vs;
-	
-	public FuzzyCMeansObjectiveFunction(IndexedDataSet<T> dataSet, Metric<T> metric, VectorSpace<T> vs)
-	{
-		this(dataSet, 2.0d, metric, vs);
-	}
-	
-	public FuzzyCMeansObjectiveFunction(IndexedDataSet<T> dataSet, double fuzzifier, Metric<T> metric, VectorSpace<T> vs)
+	/**
+	 * @param dataSet
+	 * @param normExponent
+	 */
+	public ScaledNormFuzzyCMeansObjectiveFunction(IndexedDataSet<double[]> dataSet, double normExponent)
 	{
 		super(dataSet, null);
-		this.fuzzifier = fuzzifier;
-		this.metric = metric;
-		this.vs = vs;
+		this.fuzzifier = 2.0d;
+		this.normExponent = normExponent;
+		this.metric = new DAScaledNormMetric(normExponent);
 	}
 
 	/* (non-Javadoc)
@@ -100,7 +101,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
 		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
 		double[] fuzzDistances					= new double[this.parameter.getPositionCount()];
-		double[] distancesSq					= new double[this.parameter.getPositionCount()];
+		double[] distances						= new double[this.parameter.getPositionCount()];
 		boolean zeroDistance = false;
 		
 						
@@ -110,14 +111,14 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 			distanceSum = 0.0d;
 			for(i=0; i<this.parameter.getPositionCount(); i++)
 			{
-				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.parameter.getPosition(i));
+				doubleTMP = this.metric.distance(this.data.get(j).x, this.parameter.getPosition(i));
 				if(doubleTMP <= 0.0d)
 				{
 					zeroDistance = true;
 				}
 				else
 				{ 
-					distancesSq[i] = doubleTMP;
+					distances[i] = doubleTMP;
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
@@ -130,11 +131,11 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 			{
 				doubleTMP = fuzzDistances[i] / distanceSum;
 								
-				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * distancesSq[i];
+				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * distances[i];
 			}
 		}
 	
-		return objectiveFunctionValue * this.parameter.getPositionCount()/this.getDataCount();
+		return objectiveFunctionValue* this.parameter.getPositionCount()/this.getDataCount();
 	}
 
 
@@ -142,9 +143,9 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object)
 	 */
 	@Override
-	public PositionListParameter<T> gradient()
+	public PositionListParameter<double[]> gradient()
 	{
-		PositionListParameter<T> grad = this.parameter.clone(this.vs);
+		PositionListParameter<double[]> grad = this.parameter.clone(new DAEuclideanVectorSpace(this.data.first().x.length));
 		this.gradient(grad);
 		return grad;
 	}
@@ -154,39 +155,49 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void gradient(PositionListParameter<T> gradient)
+	public void gradient(PositionListParameter<double[]> gradient)
 	{		
 		int i, j, k; 
 		// i: index for clusters
 		// j: index for data objects
 		// k: index for dimensions, others
-		// t: index for iterations	
+		
+		// the dimension of the data set
+		int dim = this.data.first().x.length;
 				
+		// some variables
 		double distanceExponent = 1.0d / (1.0d - this.fuzzifier);	// to reduce the usage of divisions
-		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
-		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double distanceSum = 0.0d; 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses		
+		
+		// calculate membership values w.r.t. one data object at a time
 		double[] fuzzDistances				= new double[this.parameter.getPositionCount()];
 		double[] membershipValues			= new double[this.parameter.getPositionCount()];
-		double linearFactor					= 2.0d*this.parameter.getPositionCount()/this.getDataCount();
-		T tmpX								= this.vs.getNewAddNeutralElement();
+		double fuzzMembershipValue			= 0.0d;
 		
+		// scaler for indipendence of data objects and prototypes
+		double linearFactor					= ((double)this.parameter.getPositionCount())/this.getDataCount();
+		
+		// corner case handling of zero distances
 		int[] zeroDistanceIndexList			= new int[this.parameter.getPositionCount()];
 		int zeroDistanceCount;
 		
+		// reset
 		for(i = 0; i < this.parameter.getPositionCount(); i++)
 		{
-			this.vs.resetToAddNeutralElement(gradient.getPosition(i));
+			for(k=0; k<dim; k++) gradient.getPosition(i)[k] = 0.0d;
 		}
 		
+		// loop over every data object
 		for(j = 0; j < this.getDataCount(); j++)
 		{
-			// membership values
+			// calculate membership values
 			for(i=0; i<this.parameter.getPositionCount(); i++) zeroDistanceIndexList[i] = -1;
 			zeroDistanceCount = 0;
 			distanceSum = 0.0d;
 			for(i = 0; i <this.parameter.getPositionCount(); i++)
 			{
-				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.parameter.getPosition(i));
+				doubleTMP = this.metric.distance(this.data.get(j).x, this.parameter.getPosition(i));
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -216,21 +227,29 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 			}
 			else
 			{
+				doubleTMP = 1.0d / distanceSum;
 				for(i = 0; i < this.parameter.getPositionCount(); i++)
 				{
-					doubleTMP = fuzzDistances[i] / distanceSum;
-					membershipValues[i] = doubleTMP;
+					membershipValues[i] = fuzzDistances[i] * doubleTMP;
 				}
 			}
 			
+			// calculate gradient
 			for(i = 0; i < this.parameter.getPositionCount(); i++)
 			{
-				doubleTMP = linearFactor*MyMath.pow(membershipValues[i], this.fuzzifier);
-
-				this.vs.copy(tmpX, this.parameter.getPosition(i));
-				this.vs.sub(tmpX, this.data.get(j).x);
-				this.vs.mul(tmpX, doubleTMP);
-				this.vs.add(gradient.getPosition(i), tmpX);
+				// membership value is equal for all dimensions
+				fuzzMembershipValue = MyMath.pow(membershipValues[i], this.fuzzifier);
+				
+				for(k=0; k<dim; k++)
+				{
+					// denominator: den = ((y-x)^p - 1)^2
+					doubleTMP = MyMath.pow(this.parameter.getPosition(i)[k] - this.data.get(i).x[k], this.normExponent);
+					doubleTMP -= 1.0d;
+					doubleTMP *= doubleTMP;
+					
+					// nominator: c/n * u_ij^w * p*(y-x)^(p-1) / ((y-x)^p - 1)^2
+					gradient.getPosition(i)[k] += linearFactor*this.normExponent*fuzzMembershipValue * MyMath.pow(this.parameter.getPosition(i)[k] - this.data.get(j).x[k], this.normExponent-1.0d) / doubleTMP;
+				}
 			}
 		}
 	}
@@ -241,7 +260,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	@Override
 	public String getName()
 	{
-		return "Fuzzy c-Means Clustering Objective Function";
+		return "Scaled Norm Fuzzy c-Means Clustering Objective Function";
 	}
 
 	/**
@@ -264,7 +283,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	 * @see datamining.gradient.functions.clustering.FuzzyClusteringProvider#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
-	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
+	public double[] getFuzzyAssignmentsOf(IndexedDataObject<double[]> obj)
 	{
 		if(this.parameter == null) throw new IllegalStateException("Parameter is null.");
 
@@ -284,7 +303,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 		distanceSum = 0.0d;
 		for(i=0; i<this.parameter.getPositionCount(); i++)
 		{
-			doubleTMP = this.metric.distanceSq(obj.x, this.parameter.getPosition(i));
+			doubleTMP = this.metric.distance(obj.x, this.parameter.getPosition(i));
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -321,7 +340,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 			}
 		}
 		
-		return membershipValues;
+		return membershipValues ;
 	}
 
 	/* (non-Javadoc)
@@ -353,7 +372,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 			distanceSum = 0.0d;
 			for(i=0; i<this.parameter.getPositionCount(); i++)
 			{
-				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.parameter.getPosition(i));
+				doubleTMP = this.metric.distance(this.data.get(j).x, this.parameter.getPosition(i));
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -400,7 +419,7 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 	 * @see datamining.gradient.functions.clustering.FuzzyClusteringProvider#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
-	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
+	public boolean isFuzzyAssigned(IndexedDataObject<double[]> obj)
 	{
 		return this.parameter != null;
 	}

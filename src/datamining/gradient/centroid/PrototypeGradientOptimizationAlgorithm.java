@@ -40,11 +40,14 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
+import dataMiningTestTrack.experiments.snFCM.ScaledNormFuzzyCMeansObjectiveFunction;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
 import datamining.gradient.AbstractGradientOptimizationAlgorithm;
 import datamining.gradient.functions.GradientFunction;
 import datamining.gradient.parameter.PositionListParameter;
+import datamining.gradient.parameter.PositionListParameterMetric;
+import datamining.gradient.parameter.PositionListParameterVectorSpace;
 import datamining.resultProviders.PrototypeProvider;
 
 /**
@@ -94,6 +97,8 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 		{
 			this.prototypes.get(i).moveTo(this.parameter.getPosition(i));
 		}
+		
+		this.learningFactor *= 0.9d;
 	}
 
 	/* (non-Javadoc)

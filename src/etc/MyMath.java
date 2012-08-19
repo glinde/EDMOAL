@@ -94,38 +94,6 @@ public class MyMath implements Serializable
 		
 		return res;
 	}
-//	public static double pow(double a, int n)
-//	{	
-//		double b = 1.0d, c = 1.0d;
-//		
-//		if(n<0) return 1.0d/MyMath.pow(a, -n);
-//		
-//		switch(n)
-//		{
-//			case 0: return 1.0d;
-//			case 1: return a;
-//			case 2: return a*a;
-//			case 3: return a*a*a;
-//			case 4: b=a*a; return b*b;
-//			case 5: b=a*a; return b*b*a;
-//			case 6: b=a*a; return b*b*b;
-//			case 7: b=a*a; return b*b*b*a;
-//			case 8: b=a*a; b=b*b; return b*b;
-//			case 9: b=a*a*a; return b*b*b;
-//			case 10: b=a*a; c=b*b; return c*c*b;
-//			case 11: b=a*a; c=b*b; return c*c*b*a;
-//			case 12: b=a*a; b=b*b*b; return b*b;
-//			case 13: b=a*a; b=b*b*b; return b*b*a;
-//			case 14: b=a*a; c=b*b*b; return c*c*b;
-//			case 15: b=a*a*a; c=b*b; return c*c*b;
-//			case 16: b=a*a; b=b*b; b=b*b; return b*b;
-//			case 17: b=a*a; b=b*b; b=b*b; return b*b*a;
-//			case 18: b=a*a*a; b=b*b; return b*b*b;
-//			case 19: b=a*a*a; b=b*b; return b*b*b*a;
-//			case 20: b=a*a; c=b*b; c=c*c*b; return c*c;
-//			default: return Math.pow(a, n);
-//		}
-//	}
 
 	/**
 	 * The power function <code>a<sup>n</sup></code> as implemented in {@link java.lang.Math}, is very time
@@ -144,30 +112,25 @@ public class MyMath implements Serializable
 	 */
 	public static double pow(double a, double n)
 	{	
+		if(n < 0.0d) return 1.0d/MyMath.pow(a, -n);
+		if(Math.floor(n) == n) return MyMath.pow(a, (int)n); // optimization for double values that are equal to integers.
+		
 		double b=0.0d;
 		int m = (int)(8.0d*n);
-		if(n < 0.0d) return 1.0d/MyMath.pow(a, -n);
-		
+				
 		if(n<6.0d && 8.0d*n == (double)m)
 		{
 			switch(m)
 			{
-				case 0:  return 1.0d; 
 				case 1:  return Math.sqrt(Math.sqrt(Math.sqrt(a)));
 				case 2:  return Math.sqrt(Math.sqrt(a));
 				case 4:  return Math.sqrt(a);
-				case 8:  return a;
 				case 10: return a*Math.sqrt(Math.sqrt(a));
 				case 12: return a*Math.sqrt(a);
-				case 16: return a*a;
 				case 20: return a*a*Math.sqrt(a);
-				case 24: return a*a*a;
 				case 28: return a*a*a*Math.sqrt(a);	
-				case 32: {b=a*a; return b*b;}
 				case 36: {b=a*a; return b*b*Math.sqrt(a);}	
-				case 40: {b=a*a; return b*b*a;}
 				case 44: {b=a*a; return b*b*a*Math.sqrt(a);}
-				case 48: {b=a*a; return b*b*b;}		
 			}
 		}
 		
