@@ -141,6 +141,10 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		double[] membershipSum				= new double[this.getClusterCount()];
 		T tmpX								= this.vs.getNewAddNeutralElement();
 		double minDistValue					= 0.0d;
+		double membershipHalfSum			= 0.0d;
+		int minDistIndex					= 0;
+		double noiseMembershipValue			= 0.0d;
+		
 		
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
@@ -163,12 +167,17 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				zeroDistanceCount = 0;
 				distanceSum = 0.0d;
 				minDistValue = Double.MAX_VALUE;
+				minDistIndex = 0;
 
 				for(i=0; i<this.getClusterCount(); i++)
 				{
 					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					fuzzDistances[i] = doubleTMP;
-					if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+					if(minDistValue > doubleTMP)
+					{
+						minDistValue = doubleTMP;
+						minDistIndex = i;
+					}
 				}
 				if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
 				minDistValue *= this.distanceMultiplierConstant;
@@ -194,6 +203,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				// special case handling: if one (or more) prototype sits on top of a data object
 				if(zeroDistanceCount>0)
 				{
+					noiseMembershipValue = 0.0d;
 					for(i = 0; i < this.getClusterCount(); i++)
 					{
 						membershipValues[i] = 0.0d;
@@ -211,18 +221,29 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 						doubleTMP = fuzzDistances[i] / distanceSum;
 						membershipValues[i] = doubleTMP;
 					}
+					noiseMembershipValue = (this.noiseDistance*this.noiseDistance - minDistValue)/distanceSum;
 				}
 				
+				membershipHalfSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 
-					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
+					doubleTMP = membershipValues[i]*membershipValues[i];
+					membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
 					membershipSum[i] += doubleTMP;
 
 					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}				
+				membershipHalfSum += (noiseMembershipValue - 0.5d)*(noiseMembershipValue - 0.5d);
+				
+				// The additional term for prototype location calculation.
+				membershipHalfSum *= this.distanceMultiplierConstant;
+//				membershipSum[minDistIndex] -= membershipHalfSum;
+				this.vs.copy(tmpX, this.data.get(j).x);
+				this.vs.mul(tmpX, -membershipHalfSum);
+//				this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
 			}
 
 			// update prototype positions

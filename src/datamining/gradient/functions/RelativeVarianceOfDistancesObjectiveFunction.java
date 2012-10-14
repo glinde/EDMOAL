@@ -101,7 +101,49 @@ public class RelativeVarianceOfDistancesObjectiveFunction extends AbstractObject
 	 */
 	@Override
 	public void gradient(double[] gradient)
-	{}
+	{
+		double[] distances = new double[this.getDataCount()];
+		double[] distancesSq = new double[this.getDataCount()];
+		
+		for(int j=0; j<this.getDataCount(); j++)
+		{
+			distances[j] = this.vs.distanceSq(parameter, this.data.get(j).x);
+			distancesSq[j] = distances[j] * distances[j];
+		}
+		
+		
+		double mean = SimpleStatistics.mean(distances);
+		double meanSq = SimpleStatistics.mean(distancesSq);
+		
+		double factor = 4.0d/((this.getDataCount() - 1) * (mean*mean) * this.vs.getDimension());
+		double[] gradTMP = this.vs.getNewAddNeutralElement();
+		double[] gradTMP2 = this.vs.getNewAddNeutralElement();
+
+		for(int j=0; j<this.getDataCount(); j++)
+		{
+			this.vs.copy(gradTMP, this.parameter);
+			this.vs.sub(gradTMP, this.getDataSet().get(j).x);
+			this.vs.mul(gradTMP, distancesSq[j]);
+			
+			this.vs.add(gradTMP2, gradTMP);
+		}
+
+		this.vs.resetToAddNeutralElement(gradient);
+		this.vs.add(gradient, gradTMP2);
+		
+
+		for(int j=0; j<this.getDataCount(); j++)
+		{
+			this.vs.copy(gradTMP, this.parameter);
+			this.vs.sub(gradTMP, this.getDataSet().get(j).x);			
+			this.vs.add(gradTMP2, gradTMP);
+		}
+
+		this.vs.mul(gradTMP2, meanSq/mean);
+		this.vs.sub(gradient, gradTMP2);
+
+		this.vs.mul(gradient, factor);
+	}
 
 	/**
 	 * @return the vs

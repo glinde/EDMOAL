@@ -35,6 +35,7 @@ package datamining.gradient;
 
 import java.util.ArrayList;
 
+import data.algebra.BoundedAlgebraicStructure;
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
@@ -72,6 +73,9 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 
 	/** The objective function that is to be optimized. */
 	protected final GradientFunction<D, P> objectiveFunction;
+	
+	/** If this reference is not null, the parameter is bounded. */
+	protected final BoundedAlgebraicStructure<P> parameterBound;
 
 	/** 
 	 *  True if the prototypes have been initialised after object construction or a reset.
@@ -104,12 +108,22 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	 * this is a static data mining algorithm, it requires the data set to be sealed.
 	 * 
 	 * @param data The data set that is to be analyzed.
-	 * @param vs The vector space for the parameter.
-	 * @param oF The objective function to be optimized.
+	 * @param parameterVS The vector space for the parameter.
+	 * @param parameterMetric The metric to detect convergance of the parameter
+	 * @param objectiveFunction The objective function to be optimized.
+	 * @param parameterBound applies bounds on the values of the parameter. It might be null in which case no bounds are applied. 
 	 * 
 	 * @throws DataSetNotSealedException if the data set is not sealed.
 	 */
-	public AbstractGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<P> parameterVS, Metric<P> parameterMetric, GradientFunction<D,P> objectiveFunction) throws DataSetNotSealedException
+	/**
+	 * @param data
+	 * @param parameterVS
+	 * @param parameterMetric
+	 * @param objectiveFunction
+	 * @param parameterBound
+	 * @throws DataSetNotSealedException
+	 */
+	public AbstractGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<P> parameterVS, Metric<P> parameterMetric, GradientFunction<D,P> objectiveFunction, BoundedAlgebraicStructure<P> parameterBound) throws DataSetNotSealedException
 	{
 		super(data);
 		this.parameter = parameterVS.getNewAddNeutralElement();
@@ -117,6 +131,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 		this.parameterVS = parameterVS;
 		this.parameterMetric = parameterMetric;
 		this.objectiveFunction = objectiveFunction;
+		this.parameterBound = parameterBound;
 		this.initialized = false;
 		this.iterationCount = 0;
 		this.monitorObjectiveFunctionValues = false;
@@ -138,6 +153,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 		this.parameterVS = c.parameterVS;
 		this.parameterMetric = c.parameterMetric;
 		this.objectiveFunction = c.objectiveFunction;
+		this.parameterBound = c.parameterBound;
 		this.initialized = c.initialized;
 		this.iterationCount = c.iterationCount;
 		this.monitorObjectiveFunctionValues = c.monitorObjectiveFunctionValues;
@@ -155,8 +171,12 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 		P nextPara = this.parameterVS.getNewAddNeutralElement();
 		double distSq = Double.MAX_VALUE;
 		
+		System.out.print(this.algorithmName() + ": ");
+		
 		for(int t=0; t<iterations; t++)
 		{
+			System.out.print(".");
+						
 			// get the gradient, takes also care of having a new instance of the parameter.
 			this.objectiveFunction.setParameter(this.parameter);
 			this.objectiveFunction.gradient(nextPara);
@@ -174,6 +194,9 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 			// calculate the difference between the old and new parameter
 			distSq = this.parameterMetric.distanceSq(this.parameter, nextPara);
 
+			// ensure bounds of the next parameter
+			if(this.parameterBound != null) this.parameterBound.ensureBounds(nextPara);
+			
 			// store the new parameter
 			this.updateParameter(nextPara);
 			
@@ -183,6 +206,8 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 			// break if algorithm converged
 			if(distSq < this.epsilon*this.epsilon) break;
 		}
+		
+		System.out.println(" finished.");
 	}
 
 	/* (non-Javadoc)

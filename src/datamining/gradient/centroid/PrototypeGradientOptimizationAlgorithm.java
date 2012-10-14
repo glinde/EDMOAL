@@ -36,6 +36,7 @@ package datamining.gradient.centroid;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.algebra.BoundedAlgebraicStructure;
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
@@ -66,9 +67,9 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 	 * @param objectiveFunction
 	 * @throws DataSetNotSealedException
 	 */
-	public PrototypeGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<PLP> parameterVS, Metric<PLP> parameterMetric, GradientFunction<D, PLP> objectiveFunction, ArrayList<PT> prototypes) throws DataSetNotSealedException
+	public PrototypeGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<PLP> parameterVS, Metric<PLP> parameterMetric, GradientFunction<D, PLP> objectiveFunction, ArrayList<PT> prototypes, BoundedAlgebraicStructure<PLP> parameterBound) throws DataSetNotSealedException
 	{
-		super(data, parameterVS, parameterMetric, objectiveFunction);	
+		super(data, parameterVS, parameterMetric, objectiveFunction, parameterBound);	
 		this.prototypes = new ArrayList<PT>(prototypes);
 	}
 
@@ -84,6 +85,7 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 	/* (non-Javadoc)
 	 * @see datamining.ParameterOptimization#updateParameter(java.lang.Object)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void updateParameter(PLP param)
 	{
@@ -91,7 +93,7 @@ public class PrototypeGradientOptimizationAlgorithm<D, PT extends Prototype<D>, 
 		
 		// replace the current parameter values with the new ones.
 		this.parameterVS.copy(this.parameter, param);
-		
+				
 		// update the prototype positions, keeping their history etc.
 		for(int i=0; i<this.parameter.getPositionCount(); i++)
 		{

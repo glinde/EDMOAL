@@ -242,12 +242,12 @@ public class ScaledNormFuzzyCMeansObjectiveFunction extends AbstractObjectiveFun
 				
 				for(k=0; k<dim; k++)
 				{
-					// denominator: den = ((y-x)^p - 1)^2
+					// denominator: ((y-x)^p - 1)^2
 					doubleTMP = MyMath.pow(this.parameter.getPosition(i)[k] - this.data.get(i).x[k], this.normExponent);
 					doubleTMP -= 1.0d;
 					doubleTMP *= doubleTMP;
 					
-					// nominator: c/n * u_ij^w * p*(y-x)^(p-1) / ((y-x)^p - 1)^2
+					// nominator/denominator: c/n * u_ij^w * p*(y-x)^(p-1) / ((y-x)^p - 1)^2
 					gradient.getPosition(i)[k] += linearFactor*this.normExponent*fuzzMembershipValue * MyMath.pow(this.parameter.getPosition(i)[k] - this.data.get(j).x[k], this.normExponent-1.0d) / doubleTMP;
 				}
 			}

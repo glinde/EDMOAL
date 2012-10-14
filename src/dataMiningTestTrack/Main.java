@@ -68,8 +68,8 @@ public class Main
 //		Main.dataStructureVisualTest();
 //		Main.dataStructureSpeedTest();
 //		Main.clusterAlgorithmVisualTest();
-//		Main.clusterAlgorithmVisualSpeedTest();
-		Main.gradientAlgorithmVisualTest();
+		Main.clusterAlgorithmVisualSpeedTest();
+//		Main.gradientAlgorithmVisualTest();
 		
 	}
 	
@@ -116,13 +116,13 @@ public class Main
 	 */
 	public static void clusterAlgorithmVisualTest()
 	{
-		int dim = 3, number = 3000, clusterCount = 2*dim-1;
+		int dim = 20, number = 15000, clusterCount = 30;
 		
 		ClusterAlgorithmVisualTest clusterTest = new ClusterAlgorithmVisualTest(dim, number, clusterCount);
 //		clusterTest.showDataSet();
 //		clusterTest.showClusteredDataSet();
 //		clusterTest.testHardCMeans();
-//		clusterTest.testFuzzyCMeans();
+		clusterTest.testFuzzyCMeans();
 //		clusterTest.testFuzzyCMeansNoise();
 //		clusterTest.testPolynomialFuzzyCMeans();
 //		clusterTest.testPolynomialFuzzyCMeansNoise();
@@ -132,7 +132,7 @@ public class Main
 //		clusterTest.testVoronoiPartitionFCMNoise(); 
 //		clusterTest.testDistAdaptedFCM(); 
 //		clusterTest.testDistAdaptedFCMNoise();
-		clusterTest.testBallTreeFuzzyCMeans();
+//		clusterTest.testBallTreeFuzzyCMeans();
 //		clusterTest.testExpectationMaximization();
 //		clusterTest.testDBScan();
 	}
@@ -149,7 +149,7 @@ public class Main
 	 */
 	public static void clusterAlgorithmVisualSpeedTest()
 	{
-		int dim = 2, number = 1000000, clusterCount = 5, visibleDataCount = 10000;
+		int dim = 20, number = 50000, clusterCount = 30, visibleDataCount = 10000;
 
 		ClusterAlgorithmVisualSpeedTest clusterTest = new ClusterAlgorithmVisualSpeedTest(dim, number, clusterCount, visibleDataCount);		
 		
@@ -160,13 +160,13 @@ public class Main
 //		clusterTest.testFuzzyCMeansNoise();
 //		clusterTest.testPolynomialFuzzyCMeans();
 //		clusterTest.testPolynomialFuzzyCMeansNoise();
-//		clusterTest.testRewardingCrispFCM();		
-//		clusterTest.testRewardingCrispFCMNoise();
+		clusterTest.testRewardingCrispFCM();		
+		clusterTest.testRewardingCrispFCMNoise();
 //		clusterTest.testVoronoiPartitionFCM();		
 //		clusterTest.testVoronoiPartitionFCMNoise(); 
 //		clusterTest.testDistAdaptedFCM(); 
 //		clusterTest.testDistAdaptedFCMNoise();
-		clusterTest.testBallTreeFuzzyCMeans();
+//		clusterTest.testBallTreeFuzzyCMeans();
 //		clusterTest.testExpectationMaximization();
 //		clusterTest.testDBScan();
 	}
@@ -180,15 +180,30 @@ public class Main
 	 */
 	public static void gradientAlgorithmVisualTest()
 	{
-		int dim = 2, number = 5000, clusterCount = 3;
+		int dim = 2, number = 1500, clusterCount = 3;
 		
-		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount);
-		gradientTest.printPNG = true;
+		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount, 0.1d);
+		gradientTest.printPNG = false;
 
-//		gradientTest.showDataSet();
+		gradientTest.showDataSet(true);
 //		gradientTest.leastSquaresTest();
 //		gradientTest.fcmGradientTest();
-		gradientTest.snfcmGradientTest();
+//		gradientTest.snfcmGradientTest();
+		gradientTest.testRewardingCrispFCM();		
+//		gradientTest.testRewardingCrispFCMNoise();
+//		gradientTest.snfcmGradientTest(1.2d, 0.5d);
+//		gradientTest.snfcmGradientTest(1.2d, 1.0d);
+//		gradientTest.snfcmGradientTest(1.2d, 1.5d);
+//		gradientTest.snfcmGradientTest(1.2d, 2.0d);
+//		gradientTest.snfcmGradientTest(1.25d, 0.5d);
+//		gradientTest.snfcmGradientTest(1.25d, 1.0d);
+//		gradientTest.snfcmGradientTest(1.25d, 1.5d);
+//		gradientTest.snfcmGradientTest(1.25d, 2.0d);
+//		gradientTest.snfcmGradientTest(1.3d, 0.5d);
+//		gradientTest.snfcmGradientTest(1.3d, 1.0d);
+//		gradientTest.snfcmGradientTest(1.3d, 1.5d);
+//		gradientTest.snfcmGradientTest(1.3d, 2.0d);
+//		gradientTest.relativeVarianceGradientTest();
 		
 //		MyMath.pow(1.25d, 14);
 	}

@@ -225,7 +225,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	{
 		FuzzyCMeansClusteringAlgorithm<double[]> clusterAlgo = new FuzzyCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setFuzzifier(2.0d);
+		clusterAlgo.setFuzzifier(1.5d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");

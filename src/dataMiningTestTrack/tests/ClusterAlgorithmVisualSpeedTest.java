@@ -157,7 +157,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		// add clusters
 		for(int i=0; i<this.clusterCount; i++)
 		{
-			data.addAll(dg.gaussPoints(seeds.get(i), 0.1*dg.generatorRand.nextDouble(), (9*dataObjectCount)/(10*this.clusterCount)));
+			data.addAll(dg.gaussPoints(seeds.get(i), 0.02*dg.generatorRand.nextDouble()+0.01d, (9*dataObjectCount)/(10*this.clusterCount)));
 		}
 		
 		// add noise
@@ -357,7 +357,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		RewardingCrispFCMClusteringAlgorithm<double[]> clusterAlgo = new RewardingCrispFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setDistanceMultiplierConstant(0.7d);
+		clusterAlgo.setDistanceMultiplierConstant(0.9d);
 		clusterAlgo.setEpsilon(0.001d);
 		
 		time += System.currentTimeMillis();
@@ -370,7 +370,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataMiningAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -387,8 +387,8 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		RewardingCrispFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new RewardingCrispFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setDistanceMultiplierConstant(0.7d);
-		clusterAlgo.setNoiseDistance(0.3d);
+		clusterAlgo.setDistanceMultiplierConstant(0.9d);
+		clusterAlgo.setNoiseDistance(1.0d);
 		clusterAlgo.setEpsilon(0.001d);
 		
 		time += System.currentTimeMillis();
@@ -401,7 +401,7 @@ public class ClusterAlgorithmVisualSpeedTest extends TestVisualizer implements S
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataMiningAlgorithm(clusterAlgo, clusterAlgo, this.indexesOfVisibleDataObjects, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 

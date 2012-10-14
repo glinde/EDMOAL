@@ -151,6 +151,8 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 		double[] membershipSum				= new double[this.getClusterCount()];
 		T tmpX								= this.vs.getNewAddNeutralElement();
 		double minDistValue					= 0.0d;
+		int minDistIndex					= 0;
+		double membershipHalfSum			= 0.0d;
 		
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
@@ -173,12 +175,17 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				zeroDistanceCount = 0;
 				distanceSum = 0.0d;
 				minDistValue = Double.MAX_VALUE;
+				minDistIndex = 0;
 
 				for(i=0; i<this.getClusterCount(); i++)
 				{
 					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					fuzzDistances[i] = doubleTMP;
-					if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+					if(minDistValue > doubleTMP)
+					{
+						minDistValue = doubleTMP;
+						minDistIndex = i;
+					}
 				}
 				minDistValue *= this.distanceMultiplierConstant;
 				
@@ -220,17 +227,28 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 						membershipValues[i] = doubleTMP;
 					}
 				}
-				
+
+				membershipHalfSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 
 					doubleTMP = membershipValues[i]*membershipValues[i];
+					membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
 					membershipSum[i] += doubleTMP;
 
 					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
-				}				
+					
+				}
+				
+				// The additional term for prototype location calculation.
+				membershipHalfSum *= this.distanceMultiplierConstant;
+//				membershipSum[minDistIndex] -= membershipHalfSum;
+				this.vs.copy(tmpX, this.data.get(j).x);
+				this.vs.mul(tmpX, -membershipHalfSum);
+//				this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
+				
 			}
 
 			// update prototype positions

@@ -203,6 +203,7 @@ public abstract class TestVisualizer implements Serializable
 		sv.setTitle(title);
 		sv.repaint();
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		sv.setLocation(1920, 0);
 		
 		this.print(sv.screen, filename);
 	}
@@ -296,6 +297,7 @@ public abstract class TestVisualizer implements Serializable
 		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
 		sv.setTitle(title);
 		sv.repaint();
+		sv.setLocation(1920, 0);
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		this.print(sv.screen, filename);
@@ -366,7 +368,7 @@ public abstract class TestVisualizer implements Serializable
 //		sv.setSize(new Dimension(1200, 800));
 		sv.screen.addDrawableObject(gCluster);
 		sv.screen.addDrawableObject(gCentroid);
-		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.addDrawableObject(new GScale());
 //		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
 //		sv.screen.zoomToDisplay(data);
 		sv.screen.setScreenToDisplayAllIndexed(gradientAlgo.getDataSet());
@@ -459,7 +461,7 @@ public abstract class TestVisualizer implements Serializable
 		ScreenViewer sv;
 		
 		gClusteredDS = new GClusteredDataSet(clusterCount);
-		gClusteredDS.setDrawMembershipLevels(true);
+		gClusteredDS.setDrawMembershipLevels(false);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
 		gClusteredDS.setFuzzyColoring(false);
 		gClusteredDS.setDataSet(dataSet);

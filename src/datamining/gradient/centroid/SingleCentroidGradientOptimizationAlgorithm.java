@@ -35,6 +35,7 @@ package datamining.gradient.centroid;
 
 import java.util.ArrayList;
 
+import data.algebra.BoundedAlgebraicStructure;
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
@@ -74,9 +75,9 @@ public class SingleCentroidGradientOptimizationAlgorithm<D> extends AbstractGrad
 	 * @param oF
 	 * @throws DataSetNotSealedException
 	 */
-	public SingleCentroidGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<D> vs, Metric<D> metric, GradientFunction<D, D> objectiveFunction) throws DataSetNotSealedException
+	public SingleCentroidGradientOptimizationAlgorithm(IndexedDataSet<D> data, VectorSpace<D> vs, Metric<D> metric, GradientFunction<D, D> objectiveFunction, BoundedAlgebraicStructure<D> parameterBound) throws DataSetNotSealedException
 	{
-		super(data, vs, metric, objectiveFunction);
+		super(data, vs, metric, objectiveFunction, parameterBound);
 		
 		this.parameterCentroid = new Centroid<D>(vs);
 	}
