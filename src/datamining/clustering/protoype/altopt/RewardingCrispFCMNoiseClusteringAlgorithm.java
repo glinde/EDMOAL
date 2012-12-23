@@ -229,21 +229,24 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				{
 
 					doubleTMP = membershipValues[i]*membershipValues[i];
-					membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
+					if(this.useHalfSumOptimization) membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
 					membershipSum[i] += doubleTMP;
 
 					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}				
-				membershipHalfSum += (noiseMembershipValue - 0.5d)*(noiseMembershipValue - 0.5d);
+				if(this.useHalfSumOptimization) membershipHalfSum += (noiseMembershipValue - 0.5d)*(noiseMembershipValue - 0.5d);
 				
 				// The additional term for prototype location calculation.
-				membershipHalfSum *= this.distanceMultiplierConstant;
-//				membershipSum[minDistIndex] -= membershipHalfSum;
-				this.vs.copy(tmpX, this.data.get(j).x);
-				this.vs.mul(tmpX, -membershipHalfSum);
-//				this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
+				if(this.useHalfSumOptimization) 
+				{
+					membershipHalfSum *= this.distanceMultiplierConstant;
+					membershipSum[minDistIndex] -= membershipHalfSum;
+					this.vs.copy(tmpX, this.data.get(j).x);
+					this.vs.mul(tmpX, -membershipHalfSum);
+					this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
+				}
 			}
 
 			// update prototype positions

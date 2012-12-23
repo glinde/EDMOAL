@@ -457,8 +457,8 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		
 		
 		algo.setAscOrDesc(true);
-		algo.initializeWithParameter(this.seeds.get(0));
-		algo.setLearningFactor(0.1d);
+		algo.initializeWithParameter(this.initialPositons.get(0));
+		algo.setLearningFactor(0.01d);
 		algo.apply(50);
 		
 		this.showSingleCentroidGradientAlgorithm(algo, algo.algorithmName(), "RelVarGradientTest");

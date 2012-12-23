@@ -86,6 +86,12 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	private static final long	serialVersionUID	= -5623960399726400874L;
 	/**  */
 	protected double distanceMultiplierConstant;
+	
+	/** If this value is false, the algorithm is performed as the class description text.
+	 * If this valie is true, an alternative update algorithm is used.
+	 * See subsection 4.1.4 Rewarding Crisp Memberships Fuzzy c-Means in my (Roland Winkler)
+	 * phd thesis. */
+	protected boolean useHalfSumOptimization;
 
 	/**
 	 * Creates a new RewardingCrispFCMClusteringAlgorithm with the specified data set, vector space and metric.
@@ -103,6 +109,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 		super(data, vs, metric);
 		
 		this.distanceMultiplierConstant = 0.5d;
+		this.useHalfSumOptimization = false;
 	}
 
 
@@ -123,6 +130,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 		super(c, useOnlyActivePrototypes);
 
 		this.distanceMultiplierConstant = 0.5d;
+		this.useHalfSumOptimization = false;
 	}
 	
 	
@@ -233,7 +241,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				{
 
 					doubleTMP = membershipValues[i]*membershipValues[i];
-					membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
+					if(this.useHalfSumOptimization) membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
 					membershipSum[i] += doubleTMP;
 
 					this.vs.copy(tmpX, this.data.get(j).x);
@@ -243,12 +251,14 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				}
 				
 				// The additional term for prototype location calculation.
-				membershipHalfSum *= this.distanceMultiplierConstant;
-//				membershipSum[minDistIndex] -= membershipHalfSum;
-				this.vs.copy(tmpX, this.data.get(j).x);
-				this.vs.mul(tmpX, -membershipHalfSum);
-//				this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
-				
+				if(this.useHalfSumOptimization)
+				{
+					membershipHalfSum *= this.distanceMultiplierConstant;
+					membershipSum[minDistIndex] -= membershipHalfSum;
+					this.vs.copy(tmpX, this.data.get(j).x);
+					this.vs.mul(tmpX, -membershipHalfSum);
+					this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
+				}				
 			}
 
 			// update prototype positions
@@ -608,4 +618,24 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	{
 		return "Rewarding Crisp Memberships FcM";
 	}
+
+
+	/**
+	 * @return the useHalfSumOptimization
+	 */
+	public boolean isUseHalfSumOptimization()
+	{
+		return this.useHalfSumOptimization;
+	}
+
+
+	/**
+	 * @param useHalfSumOptimization the useHalfSumOptimization to set
+	 */
+	public void setUseHalfSumOptimization(boolean useHalfSumOptimization)
+	{
+		this.useHalfSumOptimization = useHalfSumOptimization;
+	}
+	
+	
 }

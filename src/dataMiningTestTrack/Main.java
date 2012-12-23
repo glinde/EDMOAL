@@ -43,6 +43,7 @@ import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
 import dataMiningTestTrack.tests.DataStructureSpeedTest;
 import dataMiningTestTrack.tests.DataStructureVisualTest;
 import dataMiningTestTrack.tests.GradientAlgorithmVisualTest;
+import dataMiningTestTrack.tests.SymmetricalDataAlgorithmVisualTest;
 import etc.MyMath;
 
 /**
@@ -68,8 +69,9 @@ public class Main
 //		Main.dataStructureVisualTest();
 //		Main.dataStructureSpeedTest();
 //		Main.clusterAlgorithmVisualTest();
-		Main.clusterAlgorithmVisualSpeedTest();
-//		Main.gradientAlgorithmVisualTest();
+//		Main.clusterAlgorithmVisualSpeedTest();
+		Main.gradientAlgorithmVisualTest();
+//		Main.symmetricalGgradientAlgorithmVisualTest();
 		
 	}
 	
@@ -180,16 +182,16 @@ public class Main
 	 */
 	public static void gradientAlgorithmVisualTest()
 	{
-		int dim = 2, number = 1500, clusterCount = 3;
+		int dim = 2, number = 1500, clusterCount = 4;
 		
-		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount, 0.1d);
+		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount, 0.0d);
 		gradientTest.printPNG = false;
 
 		gradientTest.showDataSet(true);
 //		gradientTest.leastSquaresTest();
 //		gradientTest.fcmGradientTest();
 //		gradientTest.snfcmGradientTest();
-		gradientTest.testRewardingCrispFCM();		
+//		gradientTest.testRewardingCrispFCM();		
 //		gradientTest.testRewardingCrispFCMNoise();
 //		gradientTest.snfcmGradientTest(1.2d, 0.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.0d);
@@ -203,7 +205,44 @@ public class Main
 //		gradientTest.snfcmGradientTest(1.3d, 1.0d);
 //		gradientTest.snfcmGradientTest(1.3d, 1.5d);
 //		gradientTest.snfcmGradientTest(1.3d, 2.0d);
-//		gradientTest.relativeVarianceGradientTest();
+		gradientTest.relativeVarianceGradientTest();
+		
+//		MyMath.pow(1.25d, 14);
+	}
+	
+	/**
+	 * Performs tests of the clustering algorithms, using synthetic, highly symmetrical data sets.
+	 * The result is visualised so that the result of the algorithm is easily interpretable.
+	 * The point of these tests is, to give the user some feeling of how the algorithms behave
+	 * and to decide whether or not they might be useful for him.
+	 */
+	public static void symmetricalGgradientAlgorithmVisualTest()
+	{
+		int cluster = 5, dim = 2, dataObjectsPerCluster = 100, noisePoints = 100;
+		
+		SymmetricalDataAlgorithmVisualTest gradientTest = new SymmetricalDataAlgorithmVisualTest();
+		gradientTest.gen2DCircleClusterPoints(cluster, 0.01d, dataObjectsPerCluster, noisePoints);
+		gradientTest.printPNG = false;
+
+		gradientTest.showDataSet(true);
+//		gradientTest.leastSquaresTest();
+//		gradientTest.fcmGradientTest();
+//		gradientTest.snfcmGradientTest();
+//		gradientTest.testRewardingCrispFCM();		
+//		gradientTest.testRewardingCrispFCMNoise();
+//		gradientTest.snfcmGradientTest(1.2d, 0.5d);
+//		gradientTest.snfcmGradientTest(1.2d, 1.0d);
+//		gradientTest.snfcmGradientTest(1.2d, 1.5d);
+//		gradientTest.snfcmGradientTest(1.2d, 2.0d);
+//		gradientTest.snfcmGradientTest(1.25d, 0.5d);
+//		gradientTest.snfcmGradientTest(1.25d, 1.0d);
+//		gradientTest.snfcmGradientTest(1.25d, 1.5d);
+//		gradientTest.snfcmGradientTest(1.25d, 2.0d);
+//		gradientTest.snfcmGradientTest(1.3d, 0.5d);
+//		gradientTest.snfcmGradientTest(1.3d, 1.0d);
+//		gradientTest.snfcmGradientTest(1.3d, 1.5d);
+//		gradientTest.snfcmGradientTest(1.3d, 2.0d);
+		gradientTest.relativeVarianceGradientTest();
 		
 //		MyMath.pow(1.25d, 14);
 	}

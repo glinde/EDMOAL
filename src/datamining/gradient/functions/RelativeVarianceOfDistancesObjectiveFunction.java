@@ -35,6 +35,7 @@ package datamining.gradient.functions;
 
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.DataSetNotSealedException;
+import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import etc.SimpleStatistics;
 
@@ -99,49 +100,91 @@ public class RelativeVarianceOfDistancesObjectiveFunction extends AbstractObject
 	/* (non-Javadoc)
 	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
 	 */
+//	@Override
+//	public void gradient(double[] gradient)
+//	{
+//		double[] distances = new double[this.getDataCount()];
+//		double[] distancesSq = new double[this.getDataCount()];
+//		
+//		for(int j=0; j<this.getDataCount(); j++)
+//		{
+//			distances[j] = this.vs.distanceSq(parameter, this.data.get(j).x);
+//			distancesSq[j] = distances[j] * distances[j];
+//		}
+//		
+//		
+//		double mean = SimpleStatistics.mean(distances);
+//		double meanSq = SimpleStatistics.mean(distancesSq);
+//		
+//		double factor = 4.0d/((this.getDataCount() - 1) * (mean*mean) * this.vs.getDimension());
+//		double[] gradTMP = this.vs.getNewAddNeutralElement();
+//		double[] gradTMP2 = this.vs.getNewAddNeutralElement();
+//
+//		for(int j=0; j<this.getDataCount(); j++)
+//		{
+//			this.vs.copy(gradTMP, this.parameter);
+//			this.vs.sub(gradTMP, this.getDataSet().get(j).x);
+//			this.vs.mul(gradTMP, distancesSq[j]);
+//			
+//			this.vs.add(gradTMP2, gradTMP);
+//		}
+//
+//		this.vs.resetToAddNeutralElement(gradient);
+//		this.vs.add(gradient, gradTMP2);
+//		
+//
+//		for(int j=0; j<this.getDataCount(); j++)
+//		{
+//			this.vs.copy(gradTMP, this.parameter);
+//			this.vs.sub(gradTMP, this.getDataSet().get(j).x);			
+//			this.vs.add(gradTMP2, gradTMP);
+//		}
+//
+//		this.vs.mul(gradTMP2, meanSq/mean);
+//		this.vs.sub(gradient, gradTMP2);
+//
+//		this.vs.mul(gradient, factor);
+//	}
+	
+	/* (non-Javadoc)
+	 * @see datamining.gradient.functions.GradientFunction#gradient(data.set.IndexedDataSet, java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	public void gradient(double[] gradient)
 	{
-		double[] distances = new double[this.getDataCount()];
 		double[] distancesSq = new double[this.getDataCount()];
+		double sumSq = 0.0d;
+		double sumQu = 0.0d;
 		
 		for(int j=0; j<this.getDataCount(); j++)
 		{
-			distances[j] = this.vs.distanceSq(parameter, this.data.get(j).x);
-			distancesSq[j] = distances[j] * distances[j];
-		}
-		
-		
-		double mean = SimpleStatistics.mean(distances);
-		double meanSq = SimpleStatistics.mean(distancesSq);
-		
-		double factor = 4.0d/((this.getDataCount() - 1) * (mean*mean) * this.vs.getDimension());
-		double[] gradTMP = this.vs.getNewAddNeutralElement();
-		double[] gradTMP2 = this.vs.getNewAddNeutralElement();
+			distancesSq[j] = this.vs.distanceSq(this.parameter, this.data.get(j).x);		
+			sumSq += distancesSq[j]; 
+			sumQu += distancesSq[j]*distancesSq[j];
+		}		
+				
+		double factor = 4.0d*this.getDataCount();
+		double[] tmp = this.vs.getNewAddNeutralElement();
+		double[] tmpA = this.vs.getNewAddNeutralElement();
+		double[] tmpB = this.vs.getNewAddNeutralElement();
 
 		for(int j=0; j<this.getDataCount(); j++)
 		{
-			this.vs.copy(gradTMP, this.parameter);
-			this.vs.sub(gradTMP, this.getDataSet().get(j).x);
-			this.vs.mul(gradTMP, distancesSq[j]);
+			this.vs.copy(tmp, this.parameter);
+			this.vs.sub(tmp, this.getDataSet().get(j).x);
+			this.vs.mul(tmp, distancesSq[j]);
+			this.vs.add(tmpA, tmp);
 			
-			this.vs.add(gradTMP2, gradTMP);
+			this.vs.copy(tmp, this.parameter);
+			this.vs.sub(tmp, this.getDataSet().get(j).x);
+			this.vs.add(tmpB, tmp);
 		}
 
-		this.vs.resetToAddNeutralElement(gradient);
-		this.vs.add(gradient, gradTMP2);
-		
-
-		for(int j=0; j<this.getDataCount(); j++)
-		{
-			this.vs.copy(gradTMP, this.parameter);
-			this.vs.sub(gradTMP, this.getDataSet().get(j).x);			
-			this.vs.add(gradTMP2, gradTMP);
-		}
-
-		this.vs.mul(gradTMP2, meanSq/mean);
-		this.vs.sub(gradient, gradTMP2);
-
+		this.vs.mul(tmpA, 1.0d/(sumSq*sumSq));
+		this.vs.mul(tmpB, sumQu/(sumSq*sumSq*sumSq));
+				
+		this.vs.copy(gradient, tmpA);
+		this.vs.sub(gradient, tmpB);
 		this.vs.mul(gradient, factor);
 	}
 
