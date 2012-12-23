@@ -1,1 +1,9 @@
 bin
+*.jpg
+*.pdf
+*.png
+*.svg
+jpg
+pdf
+png
+svg
