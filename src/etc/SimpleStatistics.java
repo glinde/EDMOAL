@@ -264,32 +264,32 @@ public class SimpleStatistics implements Serializable
 	public static ArrayList<double[]> boundingBoxCornersIndexed(Collection<IndexedDataObject<double[]>> list)
 	{
 		ArrayList<double[]> corners = new ArrayList<double[]>();
-		double[] upperLeft = null;
-		double[] lowerRight = null;
+		double[] lowerLeft = null;
+		double[] upperRight = null;
 		
 		for(IndexedDataObject<double[]> x:list)
 		{
-			if(upperLeft == null)
+			if(lowerLeft == null)
 			{
-				upperLeft = new double[x.x.length];
-				lowerRight = new double[x.x.length];
+				lowerLeft = new double[x.x.length];
+				upperRight = new double[x.x.length];
 				
 				for(int k=0; k<x.x.length; k++)
 				{
-					upperLeft[k] = -Double.MAX_VALUE;
-					lowerRight[k] = Double.MAX_VALUE;
+					lowerLeft[k]  =  Double.MAX_VALUE;
+					upperRight[k] = -Double.MAX_VALUE;
 				}
 			}
 			
 			for(int k=0; k<x.x.length; k++)
 			{
-				if(upperLeft[k] < x.x[k]) upperLeft[k] = x.x[k];
-				if(lowerRight[k] > x.x[k]) lowerRight[k] = x.x[k];
+				if(lowerLeft[k] > x.x[k]) lowerLeft[k] = x.x[k];
+				if(upperRight[k] < x.x[k]) upperRight[k] = x.x[k];
 			}
 		}
 		
-		corners.add(upperLeft);
-		corners.add(lowerRight);
+		corners.add(lowerLeft);
+		corners.add(upperRight);
 		
 		return corners;
 	}
@@ -304,32 +304,32 @@ public class SimpleStatistics implements Serializable
 	public static ArrayList<double[]> boundingBoxCorners(Collection<double[]> list)
 	{
 		ArrayList<double[]> corners = new ArrayList<double[]>();
-		double[] upperLeft = null;
-		double[] lowerRight = null;
+		double[] lowerLeft = null;
+		double[] upperRight = null;
 		
 		for(double[] x:list)
 		{
-			if(upperLeft == null)
+			if(lowerLeft == null)
 			{
-				upperLeft = new double[x.length];
-				lowerRight = new double[x.length];
+				lowerLeft = new double[x.length];
+				upperRight = new double[x.length];
 				
 				for(int k=0; k<x.length; k++)
 				{
-					upperLeft[k] = -Double.MAX_VALUE;
-					lowerRight[k] = Double.MAX_VALUE;
+					lowerLeft[k]  =  Double.MAX_VALUE;
+					upperRight[k] = -Double.MAX_VALUE;
 				}
 			}
 			
 			for(int k=0; k<x.length; k++)
 			{
-				if(upperLeft[k] < x[k]) upperLeft[k] = x[k];
-				if(lowerRight[k] > x[k]) lowerRight[k] = x[k];
+				if(lowerLeft[k] > x[k]) lowerLeft[k] = x[k];
+				if(upperRight[k] < x[k]) upperRight[k] = x[k];
 			}
 		}
 		
-		corners.add(upperLeft);
-		corners.add(lowerRight);
+		corners.add(lowerLeft);
+		corners.add(upperRight);
 		
 		return corners;
 	}
