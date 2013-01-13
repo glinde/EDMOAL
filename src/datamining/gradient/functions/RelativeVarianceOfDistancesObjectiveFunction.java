@@ -76,7 +76,7 @@ public class RelativeVarianceOfDistancesObjectiveFunction extends AbstractObject
 		
 		for(int j=0; j<this.getDataCount(); j++)
 		{
-			distances[j] = this.vs.distance(parameter, this.data.get(j).x);
+			distances[j] = this.vs.distanceSq(this.parameter, this.data.get(j).x);
 		}
 		
 		double[] meanVar = SimpleStatistics.mean_variance(distances);
