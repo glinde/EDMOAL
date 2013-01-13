@@ -309,7 +309,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 	public void fcmGradientTest()
 	{
 		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
-		PositionListParameterVectorSpace<double[]> parameterVS = new PositionListParameterVectorSpace<>(evs, this.clusterCount);
+		PositionListParameterVectorSpace<double[]> parameterVS = new PositionListParameterVectorSpace<double[]>(evs, this.clusterCount);
 		DAMaximumNorm maximumNorm = new DAMaximumNorm();
 		PositionListParameterMetric<double[]> parameterMetric = new PositionListParameterMetric<double[]>(evs, maximumNorm, this.clusterCount);
 		
