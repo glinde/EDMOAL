@@ -44,6 +44,7 @@ import gui.DataMiningGraphics.GCentroid;
 import gui.DataMiningGraphics.GCentroidClusteringAlgorithm;
 import gui.DataMiningGraphics.GClusteredDataSet;
 import gui.DataMiningGraphics.GDataSet;
+import gui.generalGraphics.GImage;
 import gui.generalGraphics.GScale;
 import io.BatikExport;
 
@@ -56,6 +57,8 @@ import java.util.Collection;
 
 import javax.swing.JFrame;
 
+import data.objects.matrix.DoubleMatrix;
+import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataObject;
 import datamining.DataMiningAlgorithm;
 import datamining.clustering.ClusteringAlgorithm;
@@ -378,6 +381,45 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
+
+	/**
+	 * Creates a visualisation of the specified gradient algorithm and the way of its centroid.
+	 * 
+	 * @param gradientAlgo The algorithm that is to be visualised.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
+	public void showSingleCentroidGradientAlgorithmImaged(SingleCentroidGradientOptimizationAlgorithm<double[]> gradientAlgo, FeatureSpaceSampling2D matrix, String title, String filename)
+	{
+		ScreenViewer sv  = new ScreenViewer();
+		GDataSet gCluster = new GDataSet();
+		
+		gCluster.setDataObjects(gradientAlgo.getDataSet());
+		gCluster.getScheme().setColor(0, ColorList.BLACK);
+		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
+		
+		GCentroid gCentroid = new GCentroid();
+		gCentroid.setPrototype(gradientAlgo.getCentroid());
+		
+		GImage image = new GImage(null, matrix);
+//		image.generateTestImage(0.0d, 0.0d, 100, 100, 100);
+		
+		sv.screen.setFileName(filename);
+//		sv.setPreferredSize(new Dimension(1200, 800));
+//		sv.setSize(new Dimension(1200, 800));
+		sv.screen.addDrawableObject(image);
+		sv.screen.addDrawableObject(gCluster);
+		sv.screen.addDrawableObject(gCentroid);
+//		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
+//		sv.screen.zoomToDisplay(data);
+		sv.screen.setScreenToDisplayAllIndexed(gradientAlgo.getDataSet());
+		sv.repaint();
+		sv.setTitle(filename);
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
 	
 	/**
 	 * Visualises the specified data set. Currently, only the first two dimensions of
@@ -482,6 +524,8 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
+	
+	
 	
 	/**
 	 * Prints the specified screen to the hard disk. Note, that the

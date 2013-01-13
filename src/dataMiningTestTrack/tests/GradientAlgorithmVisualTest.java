@@ -40,6 +40,7 @@ import java.util.Collections;
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.objects.doubleArray.DAMaximumNorm;
+import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import dataMiningTestTrack.experiments.snFCM.DAPositionListParameterBound;
@@ -58,6 +59,7 @@ import datamining.gradient.parameter.PositionListParameter;
 import datamining.gradient.parameter.PositionListParameterMetric;
 import datamining.gradient.parameter.PositionListParameterVectorSpace;
 import etc.DataGenerator;
+import etc.SimpleStatistics;
 
 /**
  * TODO Class Description
@@ -458,10 +460,53 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		
 		algo.setAscOrDesc(true);
 		algo.initializeWithParameter(this.initialPositons.get(0));
-		algo.setLearningFactor(0.01d);
+		algo.setLearningFactor(0.1d);
 		algo.apply(50);
 		
 		this.showSingleCentroidGradientAlgorithm(algo, algo.algorithmName(), "RelVarGradientTest");
+		
+		// image overlay calculation
+		
+		double scale = 0.01d;
+		double[] parameter = new double[2];
+		double value;
+		double min = Double.MAX_VALUE, max = 0.0d;
+		double[] llC = new double[2];
+		double[] urC = new double[2];
+		
+		ArrayList<double[]> boundingBox = SimpleStatistics.boundingBoxCornersIndexed(this.dataSet);
+		llC[0] = (boundingBox.get(0)[0]-(boundingBox.get(1)[0] - boundingBox.get(0)[0])*0.5d);  
+		llC[1] = (boundingBox.get(0)[1]-(boundingBox.get(1)[1] - boundingBox.get(0)[1])*0.5d);  
+		urC[0] = (boundingBox.get(1)[0]+(boundingBox.get(1)[0] - boundingBox.get(0)[0])*0.5d);  
+		urC[1] = (boundingBox.get(1)[1]+(boundingBox.get(1)[0] - boundingBox.get(0)[0])*0.5d);  
+		
+		FeatureSpaceSampling2D featureSampling = new FeatureSpaceSampling2D((int)((urC[0] - llC[0])/scale), (int)((urC[1] - llC[1])/scale));
+		for(int x=0; x<featureSampling.sizeX(); x++)
+		{
+			for(int y=0; y<featureSampling.sizeY(); y++)
+			{
+				parameter[0] = ((double)x)*scale + llC[0] + 0.5d * scale;
+				parameter[1] = ((double)y)*scale + llC[1] + 0.5d * scale;
+				relVarFunction.setParameter(parameter);
+				value = relVarFunction.functionValue();
+				min = (value < min)? value : min;
+				max = (value > max)? value : max;
+				featureSampling.set(x, y, value);
+			}	
+		}
+		for(int x=0; x<featureSampling.sizeX(); x++)
+		{
+			for(int y=0; y<featureSampling.sizeY(); y++)
+			{
+				value = featureSampling.get(x, y);
+				featureSampling.set(x, y, (value - min)/(max - min));
+			}	
+		}
+		
+		featureSampling.setLowerLeftCorner(llC);
+		featureSampling.setUpperRightCorner(urC);
+		
+		this.showSingleCentroidGradientAlgorithmImaged(algo, featureSampling, algo.algorithmName(), "RelVarGradientTest");
 	}
 //
 //	

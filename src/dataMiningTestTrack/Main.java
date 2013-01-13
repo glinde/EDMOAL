@@ -182,7 +182,7 @@ public class Main
 	 */
 	public static void gradientAlgorithmVisualTest()
 	{
-		int dim = 2, number = 1500, clusterCount = 4;
+		int dim = 2, number = 1500, clusterCount = 3;
 		
 		GradientAlgorithmVisualTest gradientTest = new GradientAlgorithmVisualTest(dim, number, clusterCount, 0.0d);
 		gradientTest.printPNG = false;

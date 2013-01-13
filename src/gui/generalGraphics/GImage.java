@@ -45,6 +45,11 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
+import com.sun.xml.internal.ws.api.FeatureConstructor;
+
+import data.objects.matrix.DoubleMatrix;
+import data.objects.matrix.FeatureSpaceSampling2D;
+
 /**
  * TODO Class Description
  *
@@ -57,15 +62,25 @@ public class GImage extends DrawableObject implements Serializable
 
 	protected Image img;
 	
-	protected double[] upperLeftCorner;
-	protected double[] lowerRightCorner;
+	protected double[] lowerLeftCorner;
+	protected double[] upperRightCorner;
 	
 	/**
 	 * @param parent
 	 */
 	public GImage(DrawableObject parent)
 	{
-		this(null, new double[]{0.0d, 1.0d}, new double[]{1.0d, 0.0d}, parent);
+		this(null, new double[]{0.0d, 0.0d}, new double[]{1.0d, 1.0d}, parent);
+	}
+	
+	/**
+	 * @param parent
+	 */
+	public GImage(DrawableObject parent, FeatureSpaceSampling2D featureSampling)
+	{
+		this(null, featureSampling.getLowerLeftCorner(), featureSampling.getUpperRightCorner(), parent);
+		
+		this.setImageData(featureSampling, 0x00FF00, 0xFF0000);
 	}
 
 	/**
@@ -80,16 +95,16 @@ public class GImage extends DrawableObject implements Serializable
 	
 	/**
 	 * @param img
-	 * @param upperLeftCorner
-	 * @param lowerRightCorner
+	 * @param lowerLeftCorner
+	 * @param upperRightCorner
 	 */
-	public GImage(Image img, double[] upperLeftCorner, double[] lowerRightCorner, DrawableObject parent)
+	public GImage(Image img, double[] lowerLeftCorner, double[] upperRightCorner, DrawableObject parent)
 	{
 		super(parent);
 		
 		this.img = img;
-		this.upperLeftCorner = upperLeftCorner;
-		this.lowerRightCorner = lowerRightCorner;
+		this.lowerLeftCorner = lowerLeftCorner;
+		this.upperRightCorner = upperRightCorner;
 	}
 
 	/* (non-Javadoc)
@@ -100,8 +115,8 @@ public class GImage extends DrawableObject implements Serializable
 	{
 		double[] ulC, lrC;
 		
-		ulC = translator.translate(this.projection.project(this.upperLeftCorner, null));
-		lrC = translator.translate(this.projection.project(this.lowerRightCorner, null));
+		ulC = translator.translate(this.projection.project(this.lowerLeftCorner, null));
+		lrC = translator.translate(this.projection.project(this.upperRightCorner, null));
 		
 		g2.drawImage(this.img, (int)ulC[0], (int)ulC[1], (int)(lrC[0]-ulC[0]), (int)(lrC[1]-ulC[1]), null);
 	}
@@ -129,37 +144,6 @@ public class GImage extends DrawableObject implements Serializable
 		this.img = img;
 	}
 
-	/**
-	 * @return the upperLeftCorner
-	 */
-	public double[] getUpperLeftCorner()
-	{
-		return this.upperLeftCorner;
-	}
-
-	/**
-	 * @param upperLeftCorner the upperLeftCorner to set
-	 */
-	public void setUpperLeftCorner(double[] upperLeftCorner)
-	{
-		this.upperLeftCorner = upperLeftCorner;
-	}
-
-	/**
-	 * @return the lowerRightCorner
-	 */
-	public double[] getLowerRightCorner()
-	{
-		return this.lowerRightCorner;
-	}
-
-	/**
-	 * @param lowerRightCorner the lowerRightCorner to set
-	 */
-	public void setLowerRightCorner(double[] lowerRightCorner)
-	{
-		this.lowerRightCorner = lowerRightCorner;
-	}
 	
 	public void generateTestImage(double x, double y, double pixPerUnit, int width, int height)
 	{
@@ -175,8 +159,66 @@ public class GImage extends DrawableObject implements Serializable
 			}
 		}
 		
-		this.upperLeftCorner = new double[]{x, y};
-		this.lowerRightCorner = new double[]{x+width/pixPerUnit, y+height/pixPerUnit};
+		this.lowerLeftCorner = new double[]{x, y};
+		this.upperRightCorner = new double[]{x+width/pixPerUnit, y+height/pixPerUnit};
 		this.img = bfImage;
 	}
+	
+	public void setImageData(DoubleMatrix matrix, int rgbMin, int rgbMax)
+	{
+		BufferedImage bfImage = new BufferedImage(matrix.sizeX(), matrix.sizeY(), BufferedImage.TYPE_INT_RGB);
+		
+		double value;
+		int red=0, green=0, blue=0;
+		
+		for(int x=0; x<matrix.sizeX(); x++)
+		{
+			for(int y=0; y<matrix.sizeY(); y++)
+			{
+				value = matrix.get(x, y);
+				
+				red   = (int)(value*((rgbMax & 0x00FF0000)>>>16) + (1.0d - value)*((rgbMin & 0x00FF0000)>>>16))<<16 & 0xFF0000;
+				green = (int)(value*((rgbMax & 0x0000FF00)>>>8)	 + (1.0d - value)*((rgbMin & 0x0000FF00)>>>8))<<8 & 0x00FF00;
+				blue  = (int)(value*((rgbMax & 0x000000FF))		 + (1.0d - value)*((rgbMin & 0x000000FF))) & 0x0000FF;
+				
+				bfImage.setRGB(x, y, red+green+blue);
+			}
+		}
+		
+		this.img = bfImage;
+	}
+
+	/**
+	 * @return the lowerLeftCorner
+	 */
+	public double[] getLowerLeftCorner()
+	{
+		return this.lowerLeftCorner;
+	}
+
+	/**
+	 * @param lowerLeftCorner the lowerLeftCorner to set
+	 */
+	public void setLowerLeftCorner(double[] lowerLeftCorner)
+	{
+		this.lowerLeftCorner = lowerLeftCorner;
+	}
+
+	/**
+	 * @return the upperRightCorner
+	 */
+	public double[] getUpperRightCorner()
+	{
+		return this.upperRightCorner;
+	}
+
+	/**
+	 * @param upperRightCorner the upperRightCorner to set
+	 */
+	public void setUpperRightCorner(double[] upperRightCorner)
+	{
+		this.upperRightCorner = upperRightCorner;
+	}
+	
+	
 }
