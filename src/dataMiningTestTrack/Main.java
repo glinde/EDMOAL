@@ -40,6 +40,7 @@ package dataMiningTestTrack;
 import data.structures.balltree.BallTree;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
+import dataMiningTestTrack.tests.DataGenerationAlgorithmTest;
 import dataMiningTestTrack.tests.DataStructureSpeedTest;
 import dataMiningTestTrack.tests.DataStructureVisualTest;
 import dataMiningTestTrack.tests.GradientAlgorithmVisualTest;
@@ -70,8 +71,9 @@ public class Main
 //		Main.dataStructureSpeedTest();
 //		Main.clusterAlgorithmVisualTest();
 //		Main.clusterAlgorithmVisualSpeedTest();
-		Main.gradientAlgorithmVisualTest();
+//		Main.gradientAlgorithmVisualTest();
 //		Main.symmetricalGgradientAlgorithmVisualTest();
+		Main.dataGenerationAlgorithmTest();
 		
 	}
 	
@@ -245,5 +247,12 @@ public class Main
 		gradientTest.relativeVarianceGradientTest();
 		
 //		MyMath.pow(1.25d, 14);
+	}
+	
+	public static void dataGenerationAlgorithmTest()
+	{
+		DataGenerationAlgorithmTest test = new DataGenerationAlgorithmTest(2, 10000, 3);
+		
+		test.mixtureOfGaussiansTest();
 	}
 }

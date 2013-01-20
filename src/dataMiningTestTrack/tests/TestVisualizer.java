@@ -389,17 +389,15 @@ public abstract class TestVisualizer implements Serializable
 	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
 	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
 	 */
-	public void showSingleCentroidGradientAlgorithmImaged(SingleCentroidGradientOptimizationAlgorithm<double[]> gradientAlgo, FeatureSpaceSampling2D matrix, String title, String filename)
+	public void showDataSetImaged(Collection<IndexedDataObject<double[]>> dataSet, FeatureSpaceSampling2D matrix, String title, String filename)
 	{
 		ScreenViewer sv  = new ScreenViewer();
 		GDataSet gCluster = new GDataSet();
 		
-		gCluster.setDataObjects(gradientAlgo.getDataSet());
+		gCluster.setDataObjects(dataSet);
 		gCluster.getScheme().setColor(0, ColorList.BLACK);
 		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
 		
-		GCentroid gCentroid = new GCentroid();
-		gCentroid.setPrototype(gradientAlgo.getCentroid());
 		
 		GImage image = new GImage(null, matrix);
 //		image.generateTestImage(0.0d, 0.0d, 100, 100, 100);
@@ -409,11 +407,10 @@ public abstract class TestVisualizer implements Serializable
 //		sv.setSize(new Dimension(1200, 800));
 		sv.screen.addDrawableObject(image);
 		sv.screen.addDrawableObject(gCluster);
-		sv.screen.addDrawableObject(gCentroid);
 //		sv.screen.addDrawableObject(new GScale());
 //		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
 //		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(gradientAlgo.getDataSet());
+		sv.screen.setScreenToDisplayAllIndexed(dataSet);
 		sv.repaint();
 		sv.setTitle(filename);
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

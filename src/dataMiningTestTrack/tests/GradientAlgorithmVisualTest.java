@@ -506,7 +506,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		featureSampling.setLowerLeftCorner(llC);
 		featureSampling.setUpperRightCorner(urC);
 		
-		this.showSingleCentroidGradientAlgorithmImaged(algo, featureSampling, algo.algorithmName(), "RelVarGradientTest");
+		this.showDataSetImaged(algo.getDataSet(), featureSampling, algo.algorithmName(), "RelVarGradientTest");
 	}
 //
 //	
