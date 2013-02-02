@@ -45,6 +45,8 @@ public interface DataGenerator<T>
 {
 	public ArrayList<T> generateDataObjects(int number);
 	
+	public T nextRandomObject();
+	
 	public void setRand(Random rand);
 
 	public Random getRand();

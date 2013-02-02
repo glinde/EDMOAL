@@ -33,20 +33,58 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package generation.data;
 
+import java.util.ArrayList;
 import java.util.Random;
+
+import data.set.IndexedDataObject;
+import data.set.IndexedDataSet;
 
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public abstract class AbstractDataGenerator<T> implements DataGenerator<T>
+public abstract class AbstractDataGenerator<T> implements DataGenerator<T>, DataSetGenerator<T>
 {
 	protected Random rand;
 	
 	public AbstractDataGenerator()
 	{
 		this.rand = GlobalRandomSource.rand;
+	}
+	
+	/* (non-Javadoc)
+	 * @see generation.data.DataGenerator#generateDataObjects(int)
+	 */
+	@Override
+	public ArrayList<T> generateDataObjects(int number)
+	{
+		ArrayList<T> data = new ArrayList<T>(number);
+		for(int i=0; i<number; i++)
+		{
+			data.add(this.nextRandomObject());
+		}
+		
+		return data;
+	}
+	
+	/* (non-Javadoc)
+	 * @see generation.data.DataSetGenerator#generateDataSet(int)
+	 */
+	@Override
+	public IndexedDataSet<T> generateDataSet(int number)
+	{
+		ArrayList<T> data = this.generateDataObjects(number);		
+		IndexedDataSet<T> set = new IndexedDataSet<T>(number);
+		
+		for(T d:data)
+		{
+			set.add(new IndexedDataObject<T>(d));
+		}
+		
+		set.seal();
+		
+		return set;
 	}
 
 	/**

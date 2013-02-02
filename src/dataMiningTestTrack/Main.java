@@ -251,8 +251,9 @@ public class Main
 	
 	public static void dataGenerationAlgorithmTest()
 	{
-		DataGenerationAlgorithmTest test = new DataGenerationAlgorithmTest(2, 10000, 3);
+		DataGenerationAlgorithmTest test = new DataGenerationAlgorithmTest(2, 10000, 3, 0.2);
 		
 		test.mixtureOfGaussiansTest();
+//		test.variousDistributionTest();
 	}
 }

@@ -31,11 +31,8 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package generation.set;
+package generation.data;
 
-import java.util.ArrayList;
-
-import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 
 /**
@@ -43,24 +40,7 @@ import data.set.IndexedDataSet;
  *
  * @author Roland Winkler
  */
-public abstract class AbstractDataSetGenerator<T>
+public interface DataSetGenerator<T>
 {
-	protected IndexedDataSet<T> dataSet;
-	
-	public AbstractDataSetGenerator()
-	{
-		this.dataSet = new IndexedDataSet<T>();
-	}
-		
-	public abstract void generateData();
-	
-	/**
-	 * @return the dataSet
-	 */
-	public IndexedDataSet<T> getDataSet()
-	{
-		return this.dataSet;
-	}
-	
-	
+	IndexedDataSet<T> generateDataSet(int number);
 }

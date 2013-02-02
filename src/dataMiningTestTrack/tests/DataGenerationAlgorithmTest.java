@@ -33,9 +33,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package dataMiningTestTrack.tests;
 
+import generation.data.DADataGenerator;
 import generation.data.HyperrectangleUniformGenerator;
 import generation.data.SphericalNormalGenerator;
-import generation.set.ClusteredDataSetGenerator;
+import generation.data.WeightedMixtureDataGenerator;
 
 import java.util.ArrayList;
 
@@ -43,6 +44,10 @@ import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataSet;
 import datamining.gradient.functions.RelativeVarianceOfDistancesObjectiveFunction;
 import etc.SimpleStatistics;
+
+import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 /**
  * TODO Class Description
@@ -56,12 +61,12 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 	private int clusters;
 	private double noiseFraction;
 	
-	public DataGenerationAlgorithmTest(int dim, int number, int clusters)
+	public DataGenerationAlgorithmTest(int dim, int number, int clusters, double noise)
 	{
 		this.dim = dim;
 		this.number = number;
 		this.clusters = clusters;
-		this.noiseFraction = 0.2d;
+		this.noiseFraction = noise;
 	}
 
 	public void mixtureOfGaussiansTest()
@@ -70,25 +75,24 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 		int[] clustering;
 		
 		HyperrectangleUniformGenerator seedGen = new HyperrectangleUniformGenerator(this.dim);		
-		ClusteredDataSetGenerator<double[]> clusterGenerator = new ClusteredDataSetGenerator<double[]>();
+		WeightedMixtureDataGenerator<double[]> clusterGenerator = new WeightedMixtureDataGenerator<double[]>();
 		
 		// generate seeds
 		ArrayList<double[]> seeds = seedGen.generateDataObjects(this.clusters);
 		
 		// generate noise
-		clusterGenerator.addClusterDataGenerator(new HyperrectangleUniformGenerator(this.dim), (int)(number*noiseFraction));
+		clusterGenerator.addDataGenerator(new HyperrectangleUniformGenerator(this.dim), noiseFraction);
 		
 		// generate clusters
 		for(double[] seed:seeds)
 		{
-			clusterGenerator.addClusterDataGenerator(new SphericalNormalGenerator(seed, 0.05d), (int)(number*(1.0d-noiseFraction)/clusters));
+			clusterGenerator.addDataGenerator(new SphericalNormalGenerator(seed, 0.05d), (1.0d-noiseFraction)/clusters);
 		}
 		
 		// create data set
-		clusterGenerator.generateData();
 		
-		dataSet = clusterGenerator.getDataSet();
-		clustering = clusterGenerator.getClusterIndicesOfData();
+		dataSet = clusterGenerator.generateDataSet(number);
+		clustering = clusterGenerator.assignementsOfLastGeneration();
 
 		this.showCrispDataSetClustering(dataSet, this.clusters+1, clustering, null);
 		
@@ -96,7 +100,7 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 				
 		// image overlay calculation
 		
-		double scale = 0.01d;
+		double scale = 0.05d;
 		double[] parameter = new double[2];
 		double value;
 		double min = Double.MAX_VALUE, max = 0.0d;
@@ -123,6 +127,7 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 				featureSampling.set(x, y, value);
 			}	
 		}
+		
 		for(int x=0; x<featureSampling.sizeX(); x++)
 		{
 			for(int y=0; y<featureSampling.sizeY(); y++)
@@ -136,6 +141,14 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 		featureSampling.setUpperRightCorner(urC);
 		
 		this.showDataSetImaged(dataSet, featureSampling, "Data Set Test", "DataSetTest");
+	}
+	
+
+	public void variousDistributionTest()
+	{
+		DADataGenerator dataGen = new DADataGenerator();
+		dataGen.addDistribution(new BetaDistribution(0.01d, 0.01d));
+		dataGen.addDistribution(new UniformRealDistribution(0.0d, 1.0d));
 		
 		
 	}

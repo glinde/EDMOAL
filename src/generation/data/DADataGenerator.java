@@ -35,11 +35,8 @@ package generation.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Random;
 
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.random.RandomDataGenerator;
 
 /**
  * TODO Class Description
@@ -50,38 +47,32 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 {
 	protected ArrayList<AbstractRealDistribution> distributionList;
 	
-	DADataGenerator()
+	public DADataGenerator()
 	{
 		this.distributionList = new ArrayList<AbstractRealDistribution>();
 	}
 
-	DADataGenerator(Collection<AbstractRealDistribution> distributions)
+	public DADataGenerator(Collection<AbstractRealDistribution> distributions)
 	{
 		this.distributionList.addAll(distributions);
 	}
 
 
+	
 	/* (non-Javadoc)
-	 * @see generation.data.DataGenerator#generateDataObjects(int)
+	 * @see generation.data.DataGenerator#nextRandomObject()
 	 */
 	@Override
-	public ArrayList<double[]> generateDataObjects(int number)
+	public double[] nextRandomObject()
 	{
-		ArrayList<double[]> data = new ArrayList<double[]>(number);
-				
-		for(int j=0; j<number; j++)
+		double[] x = new double[this.getDim()];
+		
+		for(int k=0; k<this.getDim(); k++)
 		{
-			double[] x = new double[this.getDim()];
-			
-			for(int k=0; k<this.getDim(); k++)
-			{
-				x[k] = this.distributionList.get(k).sample();
-			}
-			
-			data.add(x);
+			x[k] = this.distributionList.get(k).sample();
 		}
 		
-		return data;
+		return x;
 	}
 	
 	public int getDim()
