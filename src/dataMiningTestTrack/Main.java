@@ -37,12 +37,16 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import data.structures.balltree.BallTree;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
 import dataMiningTestTrack.tests.DataGenerationAlgorithmTest;
 import dataMiningTestTrack.tests.DataStructureSpeedTest;
 import dataMiningTestTrack.tests.DataStructureVisualTest;
+import dataMiningTestTrack.tests.DistortionTester;
 import dataMiningTestTrack.tests.GradientAlgorithmVisualTest;
 import dataMiningTestTrack.tests.SymmetricalDataAlgorithmVisualTest;
 import etc.MyMath;
@@ -73,8 +77,8 @@ public class Main
 //		Main.clusterAlgorithmVisualSpeedTest();
 //		Main.gradientAlgorithmVisualTest();
 //		Main.symmetricalGgradientAlgorithmVisualTest();
-		Main.dataGenerationAlgorithmTest();
-		
+//		Main.dataGenerationAlgorithmTest();
+		Main.distortionTest();
 	}
 	
 	
@@ -253,7 +257,36 @@ public class Main
 	{
 		DataGenerationAlgorithmTest test = new DataGenerationAlgorithmTest(2, 10000, 3, 0.2);
 		
-		test.mixtureOfGaussiansTest();
+//		test.mixtureOfGaussiansTest();
 //		test.variousDistributionTest();
+			
+	}
+	
+	public static void distortionTest()
+	{
+		DistortionTester perf = new DistortionTester(8);
+		
+		perf.generateSphericalGaussianData(5000);
+		perf.generateStandardUniformData(5000);
+		
+		for(int i=0; i<50; i++) perf.addDistortionLayers(new double[]{0.2, 0.3, 0.1, 0.1, 0.1}, new double[]{0.5, 0.1, 0.1, 0.1, 0.5});
+
+		perf.distortDataSet();
+		
+		for(int i=0; i<perf.getDim(); i++)
+		{
+			for(int j=i+1; j<perf.getDim(); j++)
+			{
+				perf.showDataSet(i, j);
+			}
+		}
+
+		ArrayList<ArrayList<String>> info = perf.distortionNames();
+		
+		for(ArrayList<String> line : info)
+		{
+			System.out.println(line.toString());
+		}
+		
 	}
 }

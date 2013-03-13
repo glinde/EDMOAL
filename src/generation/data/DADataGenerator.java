@@ -36,7 +36,7 @@ package generation.data;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
 
 /**
  * TODO Class Description
@@ -45,14 +45,14 @@ import org.apache.commons.math3.distribution.AbstractRealDistribution;
  */
 public class DADataGenerator extends AbstractDataGenerator<double[]>
 {
-	protected ArrayList<AbstractRealDistribution> distributionList;
+	protected ArrayList<RealDistribution> distributionList;
 	
 	public DADataGenerator()
 	{
-		this.distributionList = new ArrayList<AbstractRealDistribution>();
+		this.distributionList = new ArrayList<RealDistribution>();
 	}
 
-	public DADataGenerator(Collection<AbstractRealDistribution> distributions)
+	public DADataGenerator(Collection<RealDistribution> distributions)
 	{
 		this.distributionList.addAll(distributions);
 	}
@@ -84,7 +84,7 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 	/**
 	 * @return the distributionList
 	 */
-	public ArrayList<AbstractRealDistribution> getDistributionList()
+	public ArrayList<RealDistribution> getDistributionList()
 	{
 		return this.distributionList;
 	}
@@ -94,7 +94,7 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 	 * @return
 	 * @see java.util.ArrayList#get(int)
 	 */
-	public AbstractRealDistribution getDistribution(int index)
+	public RealDistribution getDistribution(int index)
 	{
 		return distributionList.get(index);
 	}
@@ -104,7 +104,7 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 	 * @return
 	 * @see java.util.ArrayList#add(java.lang.Object)
 	 */
-	public boolean addDistribution(AbstractRealDistribution e)
+	public boolean addDistribution(RealDistribution e)
 	{
 		return distributionList.add(e);
 	}
@@ -114,7 +114,7 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 	 * @return
 	 * @see java.util.ArrayList#remove(int)
 	 */
-	public AbstractRealDistribution removeDistribution(int index)
+	public RealDistribution removeDistribution(int index)
 	{
 		return distributionList.remove(index);
 	}
@@ -133,7 +133,7 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 	 * @return
 	 * @see java.util.ArrayList#addAll(java.util.Collection)
 	 */
-	public boolean addAllDistributions(Collection<? extends AbstractRealDistribution> c)
+	public boolean addAllDistributions(Collection<? extends RealDistribution> c)
 	{
 		return distributionList.addAll(c);
 	}

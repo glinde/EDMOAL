@@ -46,10 +46,13 @@ import gui.DataMiningGraphics.GClusteredDataSet;
 import gui.DataMiningGraphics.GDataSet;
 import gui.generalGraphics.GImage;
 import gui.generalGraphics.GScale;
+import gui.projections.Orthogonal2DProjection;
+import gui.projections.OrthogonalProjection;
 import io.BatikExport;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Stroke;
 import java.io.Serializable;
@@ -142,6 +145,20 @@ public abstract class TestVisualizer implements Serializable
 	 */
 	public float dataObjectSize;
 	
+	
+	/**  */
+	public int xIndex;
+	
+	/**  */
+	public int yIndex;
+	
+	/**  */
+	public int xRes;
+	
+	/**  */
+	public int yRes;
+	
+	
 	/**
 	 * The standard constructor.
 	 */
@@ -161,6 +178,12 @@ public abstract class TestVisualizer implements Serializable
 				ColorList.DARK_RED,			ColorList.DARK_GREEN,		ColorList.DARK_BLUE,
 				ColorList.DARK_ORANGE,		ColorList.DARK_MAGENTA,		ColorList.DARK_CYAN
 			};
+		
+		this.xIndex = 0;
+		this.yIndex = 1;
+		
+		this.xRes = 1050;
+		this.yRes = 1050;
 	}
 	
 	/**
@@ -195,7 +218,12 @@ public abstract class TestVisualizer implements Serializable
 		}
 
 		gClusteredDS.setDrawMembershipLevels(true);
-		
+
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 
 		sv = new ScreenViewer();
@@ -243,7 +271,12 @@ public abstract class TestVisualizer implements Serializable
 		}
 
 		gClusteredDS.setDrawMembershipLevels(true);
-		
+
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 
 		sv = new ScreenViewer();
@@ -290,7 +323,12 @@ public abstract class TestVisualizer implements Serializable
 		}
 
 		gClusteredDS.setDrawMembershipLevels(true);
-		
+
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 
 		sv = new ScreenViewer();
@@ -332,7 +370,11 @@ public abstract class TestVisualizer implements Serializable
 		}
 
 		gClusteredDS.setDrawMembershipLevels(true);
-		
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 
 		sv = new ScreenViewer();
@@ -358,13 +400,18 @@ public abstract class TestVisualizer implements Serializable
 	{
 		ScreenViewer sv  = new ScreenViewer();
 		GDataSet gCluster = new GDataSet();
-		
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gCluster.setProjection(projection);
 		gCluster.setDataObjects(gradientAlgo.getDataSet());
 		gCluster.getScheme().setColor(0, ColorList.BLACK);
 		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
 		
 		GCentroid gCentroid = new GCentroid();
 		gCentroid.setPrototype(gradientAlgo.getCentroid());
+		gCentroid.setProjection(projection);
 		
 		sv.screen.setFileName(filename);
 //		sv.setPreferredSize(new Dimension(1200, 800));
@@ -393,7 +440,11 @@ public abstract class TestVisualizer implements Serializable
 	{
 		ScreenViewer sv  = new ScreenViewer();
 		GDataSet gCluster = new GDataSet();
-		
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gCluster.setProjection(projection);
 		gCluster.setDataObjects(dataSet);
 		gCluster.getScheme().setColor(0, ColorList.BLACK);
 		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
@@ -428,16 +479,18 @@ public abstract class TestVisualizer implements Serializable
 	 */
 	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, String filename)
 	{
-		ScreenViewer sv  = new ScreenViewer();
+		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
 		GDataSet gCluster = new GDataSet();
 		
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gCluster.setProjection(projection);
 		gCluster.setDataObjects(dataSet);
 		gCluster.getScheme().setColor(0, ColorList.BLACK);
-		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
+		gCluster.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 		
 		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
 		sv.screen.addDrawableObject(gCluster);
 		sv.screen.addDrawableObject(new GScale());
 //		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
@@ -462,7 +515,11 @@ public abstract class TestVisualizer implements Serializable
 	{
 		ScreenViewer sv  = new ScreenViewer();
 		GDataSet gCluster = new GDataSet();
-		
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gCluster.setProjection(projection);
 		gCluster.setDataObjects(dataSet);
 		gCluster.setDataSubsetList(dataObjectSubsectionIndexes);
 		gCluster.getScheme().setColor(0, ColorList.BLACK);
@@ -472,7 +529,7 @@ public abstract class TestVisualizer implements Serializable
 	//	sv.setPreferredSize(new Dimension(1200, 800));
 	//	sv.setSize(new Dimension(1200, 800));
 		sv.screen.addDrawableObject(gCluster);
-		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.addDrawableObject(new GScale());
 	//	sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
 	//	sv.screen.zoomToDisplay(data);
 		sv.screen.setScreenToDisplayAllIndexed(dataSet);
@@ -500,6 +557,11 @@ public abstract class TestVisualizer implements Serializable
 		ScreenViewer sv;
 		
 		gClusteredDS = new GClusteredDataSet(clusterCount);
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
 		gClusteredDS.setDrawMembershipLevels(false);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
 		gClusteredDS.setFuzzyColoring(false);
@@ -511,7 +573,7 @@ public abstract class TestVisualizer implements Serializable
 //		sv.setPreferredSize(new Dimension(1200, 800));
 //		sv.setSize(new Dimension(1200, 800));
 		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.addDrawableObject(new GScale());
 //		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
 //		sv.screen.zoomToDisplay(data);
 		sv.screen.setScreenToDisplayAllIndexed(dataSet);

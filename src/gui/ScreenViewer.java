@@ -63,11 +63,11 @@ public class ScreenViewer extends JFrame implements WindowListener, Serializable
 		
 	/** */
 	private JScrollPane scroller;
-	
+
 	/**
 	 * 
 	 */
-	public ScreenViewer()
+	public ScreenViewer(int xRes, int yRes)
 	{
 		// this
 		this.screen = new Screen();
@@ -75,12 +75,12 @@ public class ScreenViewer extends JFrame implements WindowListener, Serializable
 		this.addKeyListener(screen);
 		
 		// JFrame
-		this.setSize(1050, 1050);
+		this.setSize(xRes, yRes);
 		this.setLocation(0, 0);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setVisible(true);
 		this.setLayout(new BorderLayout());
-		this.setPreferredSize(new Dimension(1050, 1050));
+		this.setPreferredSize(new Dimension(xRes, yRes));
 				
 		// components
 		this.scroller = new JScrollPane(this.screen);
@@ -92,6 +92,14 @@ public class ScreenViewer extends JFrame implements WindowListener, Serializable
 						
 		this.repaint();
 		this.pack();
+	}
+	
+	/**
+	 * 
+	 */
+	public ScreenViewer()
+	{
+		this(400, 400);
 	}
 
 	@Override
