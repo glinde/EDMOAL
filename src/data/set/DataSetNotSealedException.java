@@ -62,22 +62,24 @@ public class DataSetNotSealedException extends RuntimeException
 	}
 	
 	
-    /**
-     * Constructs a new <code>DataSetNotSealedException</code> with the specified detail
-     * message, cause, suppression enabled or disabled, and writable
-     * stack trace enabled or disabled.
-     *
-     * @param message the detail message
-     * @param cause the cause
-     * @param enableSuppression whether or not suppression is enabled or disabled
-     * @param writableStackTrace whether or not the stack trace should be writable
-     * 
-     * @see RuntimeException
-     */
-	public DataSetNotSealedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
-	{
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+//	The only Java 1.7 feature in the project right now. I assume this is not needed.
+//
+//    /**
+//     * Constructs a new <code>DataSetNotSealedException</code> with the specified detail
+//     * message, cause, suppression enabled or disabled, and writable
+//     * stack trace enabled or disabled.
+//     *
+//     * @param message the detail message
+//     * @param cause the cause
+//     * @param enableSuppression whether or not suppression is enabled or disabled
+//     * @param writableStackTrace whether or not the stack trace should be writable
+//     * 
+//     * @see RuntimeException
+//     */
+//	public DataSetNotSealedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
+//	{
+//		super(message, cause, enableSuppression, writableStackTrace);
+//	}
 
     /**
      * Constructs a new runtime exception with the specified detail message and
