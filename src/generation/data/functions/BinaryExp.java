@@ -42,7 +42,6 @@ import etc.MyMath;
  */
 public class BinaryExp extends AbstractFunction
 {
-
 	public BinaryExp()
 	{
 		this(0.0d);
@@ -52,8 +51,8 @@ public class BinaryExp extends AbstractFunction
 	{
 		super(2, 1);
 		
-		this.parameterBounds[0][0] = 0.1d;
-		this.parameterBounds[0][1] = 0.5d;
+		this.parameterBounds[0][0] = -1.0d;
+		this.parameterBounds[0][1] = 1.0d;
 		if(p<this.parameterBounds[0][0]) 
 			this.parameters[0] = this.parameterBounds[0][0];
 		else if(p>this.parameterBounds[0][1]) 
@@ -65,11 +64,11 @@ public class BinaryExp extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double... x)
+	public double apply(double[] x, int... ids)
 	{
 		double a = this.parameters[0];
 		
-		return x[0]*Math.exp(a*(x[1]-1.0d));
+		return x[ids[0]]*Math.exp(a*(x[ids[1]]-1.0d));
 	}
 
 	public BinaryExp newInstance(double... parameters)

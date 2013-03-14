@@ -38,27 +38,41 @@ package generation.data.functions;
  *
  * @author Roland Winkler
  */
-public interface Function
+public class UnarySpreadLower extends AbstractFunction
 {
-	public int getParameterCount();
+	public UnarySpreadLower()
+	{
+		this(0.0d);
+	}
+	
+	public UnarySpreadLower(double p)
+	{
+		super(1, 1);
+		
+		this.parameterBounds[0][0] = 0.0d;
+		this.parameterBounds[0][1] = 0.1d;
+		if(p<this.parameterBounds[0][0]) 
+			this.parameters[0] = this.parameterBounds[0][0];
+		else if(p>this.parameterBounds[0][1]) 
+			this.parameters[0] = this.parameterBounds[0][1];
+		else this.parameters[0] = p;	
+	}
+	
+	/* (non-Javadoc)
+	 * @see generation.data.functions.Function#apply(double[])
+	 */
+	@Override
+	public double apply(double[] x, int... ids)
+	{
+		double a = this.parameters[0];
+		
+		return (Math.sqrt(x[ids[0]] + a) - Math.sqrt(a))/(Math.sqrt(1.0d + a) - Math.sqrt(a));
+	}
 
-	public void setParameter(double parameters, int parameterId);
+	public UnarySpreadLower newInstance(double... parameters)
+	{
+		return new UnarySpreadLower(parameters[0]);
+	}
 	
-	public double[] getParameters();
-	
-	public double getParameter(int parameterId);
-	
-	public void setParameterBounds(double[] bounds, int parameterId);
-	
-	public double[][] getParameterBounds();
-	
-	public double[] getParameterBounds(int parameterId);
-	
-	public int getAttributesCount();
-	
-	public double apply(double[] x, int... ids);
-	
-	public Function newInstance(double... parameters);
-	
-	public String getName();
+	public String getName() {return "Funtion Concentrate Upper";}
 }

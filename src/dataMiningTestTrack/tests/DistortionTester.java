@@ -50,7 +50,8 @@ import generation.data.functions.Identity;
 import generation.data.functions.Reverse;
 import generation.data.functions.UnaryConcentrateCentre;
 import generation.data.functions.UnaryConcentrateLower;
-import generation.data.functions.UnaryConcentrateUpper;
+import generation.data.functions.UnarySpreadLower;
+import generation.data.functions.UnarySpreadCentre;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -172,6 +173,20 @@ public class DistortionTester extends TestVisualizer implements Serializable
 	}
 	
 	/**
+	 * Unary functions:<br>
+	 * Identity<br>
+	 * Reverse<br>
+	 * UnaryConcentrateLower<br>
+	 * UnarySpreadLower<br>
+	 * UnaryConcentrateCentre<br>
+	 * <br>
+	 * Binary Functions: <br>
+	 * Identity<br>
+	 * BinaryAdd<br>
+	 * BinaryMul<br>
+	 * BinaryExp<br>
+	 * BinarySqrt<br>
+	 * 
 	 * @param unaryWaights
 	 * @param binaryWeights
 	 */
@@ -204,14 +219,15 @@ public class DistortionTester extends TestVisualizer implements Serializable
 			binaryFreq[i] /= tmp;
 		}
 		
-		ArrayList<Function> unaryFunctions = new ArrayList<Function>(4);
+		ArrayList<Function> unaryFunctions = new ArrayList<Function>(6);
 		ArrayList<Function> binaryFunctions = new ArrayList<Function>(5);
 		
 		unaryFunctions.add(new Identity(1));
 		unaryFunctions.add(new Reverse());
 		unaryFunctions.add(new UnaryConcentrateLower());
-		unaryFunctions.add(new UnaryConcentrateUpper());
+		unaryFunctions.add(new UnarySpreadLower());
 		unaryFunctions.add(new UnaryConcentrateCentre());
+		unaryFunctions.add(new UnarySpreadCentre());
 		
 		binaryFunctions.add(new Identity(2));
 		binaryFunctions.add(new BinaryAdd());
@@ -226,11 +242,18 @@ public class DistortionTester extends TestVisualizer implements Serializable
 
 	public void distortDataSet()
 	{
+		System.out.print("distort data ");
+		int i=1;
 		for(DataDistorter distorter: this.distortionLevels)
 		{
+			System.out.print(".");
+			if(i%20 == 0) System.out.println(" " + i); 
+			distorter.updateUnarySpreadFunctions(this.data);
 			distorter.applyOnDataSet(this.data);
 			this.normalize();
+			i++;
 		}
+		System.out.println(" done. ");
 	}
 	
 	/**

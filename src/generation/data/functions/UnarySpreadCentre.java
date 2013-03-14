@@ -33,46 +33,41 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package generation.data.functions;
 
+import data.set.IndexedDataSet;
+import etc.MyMath;
+import etc.SimpleStatistics;
+
 /**
  * TODO Class Description
  *
  * @author Roland Winkler
  */
-public class UnaryConcentrateUpper extends AbstractFunction
+public class UnarySpreadCentre extends AbstractFunction
 {
-	public UnaryConcentrateUpper()
+	public UnarySpreadCentre()
 	{
-		this(0.0d);
-	}
-	
-	public UnaryConcentrateUpper(double p)
-	{
-		super(1, 1);
+		super(1, 2);
 		
-		this.parameterBounds[0][0] = 0.1d;
+		this.parameterBounds[0][0] = 0.0d;
 		this.parameterBounds[0][1] = 1.0d;
-		if(p<this.parameterBounds[0][0]) 
-			this.parameters[0] = this.parameterBounds[0][0];
-		else if(p>this.parameterBounds[0][1]) 
-			this.parameters[0] = this.parameterBounds[0][1];
-		else this.parameters[0] = p;	
+
+		this.parameterBounds[1][0] = 0.0d;
+		this.parameterBounds[0][1] = 1.0d;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double... x)
+	public double apply(double[] x, int... ids)
 	{
-		double a = this.parameters[0];
-		
-		return (Math.sqrt(x[0] + a) - Math.sqrt(a))/(Math.sqrt(1.0d + a) - Math.sqrt(a));
+		return 1.0d/(1.0d+Math.exp(-((x[ids[0]]-this.parameters[0])/(this.parameters[1]*1.0d))));
 	}
 
-	public UnaryConcentrateUpper newInstance(double... parameters)
+	public UnarySpreadCentre newInstance(double... parameters)
 	{
-		return new UnaryConcentrateUpper(parameters[0]);
+		return new UnarySpreadCentre();
 	}
 	
-	public String getName() {return "Funtion Concentrate Upper";}
+	public String getName() {return "Funtion Spread Centre";}
 }

@@ -34,6 +34,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package generation.data;
 
 import generation.data.functions.Function;
+import generation.data.functions.UnarySpreadCentre;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,7 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
+import etc.SimpleStatistics;
 
 /**
  * TODO Class Description
@@ -135,6 +137,24 @@ public class DataDistorter
 		this.genBinaryFunctionMap();
 	}
 	
+
+	public void normalize(double[] data)
+	{
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
+		
+		for(int i=0; i<data.length; i++)
+		{
+			min = (data[i] < min)? data[i]:min;
+			max = (data[i] > max)? data[i]:max;
+		}
+		
+		for(int i=0; i<data.length; i++)
+		{
+			data[i] = (data[i] - min)/(max - min);
+		}
+	}
+	
 	public void genUnaryFunctionMap()
 	{
 		double[] distortionFrequenciesSums = new double[this.unaryDistortionFrequencies.length];
@@ -183,6 +203,7 @@ public class DataDistorter
 		UniformRealDistribution uniDistr = new UniformRealDistribution(0.0d, 1.0d);
 		double select = 0.0d;
 		int selctedIndex = 0;
+		int partnerIndex;
 		Function f;
 		double[] functionParameter;
 		
@@ -216,9 +237,14 @@ public class DataDistorter
 			}
 			
 			this.binaryFunctionList.add(f.newInstance(functionParameter));
+
+			do
+			{
+				partnerIndex = (int) (uniDistr.sample() * this.dim);
+				if(partnerIndex == this.dim) partnerIndex = 0;
+			}while(k == partnerIndex);
 			
-			this.binarySecondAttributeIndex[k] = (int) (uniDistr.sample() * this.dim);
-			if(this.binarySecondAttributeIndex[k] == this.dim) this.binarySecondAttributeIndex[k] = 0;
+			this.binarySecondAttributeIndex[k] = partnerIndex;
 		}
 	}
 	
@@ -228,22 +254,79 @@ public class DataDistorter
 		this.genBinaryFunctionMap();
 	}
 	
-	public void applyOnDataSet(Collection<double[]> data)
+	public void updateUnarySpreadFunctions(List<double[]> data)
+	{		
+		for(int k=0; k<this.dim; k++)
+		{
+			if(this.unaryFunctionList.get(k) instanceof UnarySpreadCentre)
+			{
+				double[] list = new double[data.size()];
+				
+				for(int i=0; i<data.size(); i++)
+				{
+					list[i] = data.get(i)[k];
+				}
+				
+				double[] stats = SimpleStatistics.mean_variance(list);
+				
+				this.unaryFunctionList.get(k).setParameter(stats[0], 0);
+				this.unaryFunctionList.get(k).setParameter(Math.sqrt(stats[1]), 1);
+			}
+		}
+	}
+	
+	
+	public void updateUnarySpreadFunctionsIndexed(IndexedDataSet<double[]> data)
+	{		
+		for(int k=0; k<this.dim; k++)
+		{
+			if(this.unaryFunctionList.get(k) instanceof UnarySpreadCentre)
+			{
+				double[] list = new double[data.size()];
+				
+				for(int i=0; i<data.size(); i++)
+				{
+					list[i] = data.get(i).x[k];
+				}
+				
+				double[] stats = SimpleStatistics.mean_variance(list);
+				
+				this.unaryFunctionList.get(k).setParameter(stats[0], 0);
+				this.unaryFunctionList.get(k).setParameter(Math.sqrt(stats[1]), 1);
+			}
+		}
+	}
+	
+	public void applyOnDataSet(List<double[]> data)
 	{
 		int k;
-		
-		for(double[] x:data)
-		{
-			// apply unary functions
-			for(k=0; k<this.dim; k++)
-			{
-				x[k] = this.unaryFunctionList.get(k).apply(x[k]);
-			}
+		double[] col = new double[data.size()];
 
-			// apply binary functions
-			for(k=0; k<this.dim; k++)
+		// apply unary functions
+		for(k=0; k<this.dim; k++)
+		{
+			for(int i=0; i<data.size(); i++)
 			{
-				x[k] = this.binaryFunctionList.get(k).apply(x[k], x[this.binarySecondAttributeIndex[k]]);
+				col[i] = this.unaryFunctionList.get(k).apply(data.get(i), k); 
+			}
+			this.normalize(col);
+			for(int i=0; i<data.size(); i++)
+			{
+				data.get(i)[k] = col[i]; 
+			}
+		}
+
+		// apply binary functions
+		for(k=0; k<this.dim; k++)
+		{			
+			for(int i=0; i<data.size(); i++)
+			{				
+				col[i] = this.binaryFunctionList.get(k).apply(data.get(i), k, this.binarySecondAttributeIndex[k]);
+			}
+			this.normalize(col);
+			for(int i=0; i<data.size(); i++)
+			{
+				data.get(i)[k] = col[i]; 
 			}
 		}
 	}
@@ -251,20 +334,34 @@ public class DataDistorter
 	public void applyOnIndexedDataSet(IndexedDataSet<double[]> data)
 	{
 		int k;
-		
-		for(IndexedDataObject<double[]> x:data)
-		{
-			// apply unary functions
-			for(k=0; k<this.dim; k++)
-			{
-				x.x[k] = this.unaryFunctionList.get(k).apply(x.x[k]);
-			}
+		double[] col = new double[data.size()];
 
-			// apply binary functions
-			for(k=0; k<this.dim; k++)
+		// apply unary functions
+		for(k=0; k<this.dim; k++)
+		{
+			for(int i=0; i<data.size(); i++)
 			{
-				x.x[k] = this.binaryFunctionList.get(k).apply(x.x[k], x.x[this.binarySecondAttributeIndex[k]]);
-			}	
+				col[i] = this.unaryFunctionList.get(k).apply(data.get(i).x, k); 
+			}
+			this.normalize(col);
+			for(int i=0; i<data.size(); i++)
+			{
+				data.get(i).x[k] = col[i]; 
+			}
+		}
+
+		// apply binary functions
+		for(k=0; k<this.dim; k++)
+		{			
+			for(int i=0; i<data.size(); i++)
+			{				
+				col[i] = this.binaryFunctionList.get(k).apply(data.get(i).x, k, this.binarySecondAttributeIndex[k]);
+			}
+			this.normalize(col);
+			for(int i=0; i<data.size(); i++)
+			{
+				data.get(i).x[k] = col[i]; 
+			}
 		}
 	}
 
