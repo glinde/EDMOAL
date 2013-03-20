@@ -49,9 +49,9 @@ public class Identity extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
-		return x[ids[0]];
+		return x[0];
 	}
 
 	public Identity newInstance(double... parameters)

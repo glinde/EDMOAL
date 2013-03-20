@@ -65,15 +65,6 @@ public class HyperrectangleUniformGenerator extends DADataGenerator
 	 */
 	public HyperrectangleUniformGenerator(int dim)
 	{
-		this(new double[dim], HyperrectangleUniformGenerator.filledArray(dim, 1.0d));
-	}
-	
-	public static double[] filledArray(int dim, double value)
-	{
-		double[] array = new double[dim];
-		
-		Arrays.fill(array, value);
-		
-		return array;
+		this(newFilledArray(dim, 0.0d), newFilledArray(dim, 1.0d));
 	}
 }

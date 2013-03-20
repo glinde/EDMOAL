@@ -51,8 +51,8 @@ public class UnaryConcentrateCentre extends AbstractFunction
 	{
 		super(1, 1);
 		
-		this.parameterBounds[0][0] = 0.1d;
-		this.parameterBounds[0][1] = 0.3d;
+		this.parameterBounds[0][0] = 0.2d;
+		this.parameterBounds[0][1] = 0.8d;
 		if(p<this.parameterBounds[0][0]) 
 			this.parameters[0] = this.parameterBounds[0][0];
 		else if(p>this.parameterBounds[0][1]) 
@@ -64,11 +64,11 @@ public class UnaryConcentrateCentre extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
 		double a = this.parameters[0];
 		
-		return 0.5*(1.0d + MyMath.pow(x[ids[0]], a) - MyMath.pow(1.0d-x[ids[0]], a));
+		return 0.5*(1.0d + MyMath.pow(x[0], a) - MyMath.pow(1.0d-x[0], a));
 	}
 
 	public UnaryConcentrateCentre newInstance(double... parameters)

@@ -52,7 +52,7 @@ public class BinaryMul extends AbstractFunction
 	{
 		super(2, 1);
 		
-		this.parameterBounds[0][0] = 0.0d;
+		this.parameterBounds[0][0] = 1.0d;
 		this.parameterBounds[0][1] = 1.0d;
 		if(p<this.parameterBounds[0][0]) 
 			this.parameters[0] = this.parameterBounds[0][0];
@@ -65,11 +65,11 @@ public class BinaryMul extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
 		double a = this.parameters[0];
 		
-		return MyMath.pow(x[ids[0]], 1.0d/(1.0d+a))*MyMath.pow(x[ids[1]], a/(1.0d+a));
+		return MyMath.pow(x[0], 1.0d/(1.0d+a))*MyMath.pow(x[1], a/(1.0d+a));
 	}
 
 	public BinaryMul newInstance(double... parameters)

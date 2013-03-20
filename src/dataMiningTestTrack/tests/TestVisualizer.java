@@ -513,7 +513,7 @@ public abstract class TestVisualizer implements Serializable
 	 */
 	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, int[] dataObjectSubsectionIndexes, String filename)
 	{
-		ScreenViewer sv  = new ScreenViewer();
+		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
 		GDataSet gCluster = new GDataSet();
 
 		Orthogonal2DProjection projection = new Orthogonal2DProjection();
@@ -568,7 +568,7 @@ public abstract class TestVisualizer implements Serializable
 		gClusteredDS.setDataSet(dataSet);
 		gClusteredDS.setCrispClusterAssignments(crispCluster);
 
-		sv = new ScreenViewer();
+		sv = new ScreenViewer(this.xRes, this.yRes);
 		sv.screen.setFileName(filename);
 //		sv.setPreferredSize(new Dimension(1200, 800));
 //		sv.setSize(new Dimension(1200, 800));

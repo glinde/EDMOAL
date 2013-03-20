@@ -41,7 +41,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
  * @author Roland Winkler
  */
 public class SphericalNormalGenerator extends DADataGenerator
-{	
+{		
 	/**
 	 * @param dim
 	 */
@@ -53,5 +53,13 @@ public class SphericalNormalGenerator extends DADataGenerator
 		{
 			this.addDistribution(new NormalDistribution(mean[k], variance));
 		}
+	}
+	
+	/**
+	 * @param dim
+	 */
+	public SphericalNormalGenerator(int dim)
+	{
+		this(newFilledArray(dim, 0.0d), 1.0d);
 	}
 }

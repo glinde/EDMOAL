@@ -56,7 +56,7 @@ public interface Function
 	
 	public int getAttributesCount();
 	
-	public double apply(double[] x, int... ids);
+	public double apply(double ... x);
 	
 	public Function newInstance(double... parameters);
 	

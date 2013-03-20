@@ -37,13 +37,17 @@ import generation.data.functions.Function;
 import generation.data.functions.UnarySpreadCentre;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
+import etc.Parallel;
 import etc.SimpleStatistics;
 
 /**
@@ -51,7 +55,7 @@ import etc.SimpleStatistics;
  *
  * @author Roland Winkler
  */
-public class DataDistorter
+public class DistortionLayer
 {
 	private int	dim;
 	
@@ -73,7 +77,7 @@ public class DataDistorter
 	 * @param unaryFunctionDummies
 	 * @param binaryFunctionDummies
 	 */
-	public DataDistorter(int dim, List<Function> unaryFunctionDummies, List<Function> binaryFunctionDummies)
+	public DistortionLayer(int dim, List<Function> unaryFunctionDummies, List<Function> binaryFunctionDummies)
 	{
 		this.dim = dim;
 		
@@ -115,7 +119,7 @@ public class DataDistorter
 	 * @param unaryFrequencies
 	 * @param binaryFrequencies
 	 */
-	public DataDistorter(int dim, List<Function> unaryFunctionDummies, List<Function> binaryFunctionDummies, double[] unaryFrequencies, double[] binaryFrequencies)
+	public DistortionLayer(int dim, List<Function> unaryFunctionDummies, List<Function> binaryFunctionDummies, double[] unaryFrequencies, double[] binaryFrequencies)
 	{
 		this.dim = dim;
 
@@ -135,24 +139,6 @@ public class DataDistorter
 		
 		this.genUnaryFunctionMap();
 		this.genBinaryFunctionMap();
-	}
-	
-
-	public void normalize(double[] data)
-	{
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
-		
-		for(int i=0; i<data.length; i++)
-		{
-			min = (data[i] < min)? data[i]:min;
-			max = (data[i] > max)? data[i]:max;
-		}
-		
-		for(int i=0; i<data.length; i++)
-		{
-			data[i] = (data[i] - min)/(max - min);
-		}
 	}
 	
 	public void genUnaryFunctionMap()
@@ -261,58 +247,33 @@ public class DataDistorter
 			if(this.unaryFunctionList.get(k) instanceof UnarySpreadCentre)
 			{
 				double[] list = new double[data.size()];
+				double[] cutlist;
 				
 				for(int i=0; i<data.size(); i++)
 				{
 					list[i] = data.get(i)[k];
 				}
+				Arrays.sort(list);
+				cutlist = Arrays.copyOfRange(list, 5, list.length-5);
 				
-				double[] stats = SimpleStatistics.mean_variance(list);
-				
-				this.unaryFunctionList.get(k).setParameter(stats[0], 0);
-				this.unaryFunctionList.get(k).setParameter(Math.sqrt(stats[1]), 1);
-			}
-		}
-	}
-	
-	
-	public void updateUnarySpreadFunctionsIndexed(IndexedDataSet<double[]> data)
-	{		
-		for(int k=0; k<this.dim; k++)
-		{
-			if(this.unaryFunctionList.get(k) instanceof UnarySpreadCentre)
-			{
-				double[] list = new double[data.size()];
-				
-				for(int i=0; i<data.size(); i++)
-				{
-					list[i] = data.get(i).x[k];
-				}
-				
-				double[] stats = SimpleStatistics.mean_variance(list);
+				double[] stats = SimpleStatistics.mean_variance(cutlist);
 				
 				this.unaryFunctionList.get(k).setParameter(stats[0], 0);
 				this.unaryFunctionList.get(k).setParameter(Math.sqrt(stats[1]), 1);
 			}
 		}
 	}
-	
-	public void applyOnDataSet(List<double[]> data)
+		
+	public void applyDistortions(List<double[]> data)
 	{
 		int k;
-		double[] col = new double[data.size()];
 
 		// apply unary functions
 		for(k=0; k<this.dim; k++)
 		{
 			for(int i=0; i<data.size(); i++)
 			{
-				col[i] = this.unaryFunctionList.get(k).apply(data.get(i), k); 
-			}
-			this.normalize(col);
-			for(int i=0; i<data.size(); i++)
-			{
-				data.get(i)[k] = col[i]; 
+				data.get(i)[k] = this.unaryFunctionList.get(k).apply(data.get(i)[k]); 
 			}
 		}
 
@@ -321,50 +282,72 @@ public class DataDistorter
 		{			
 			for(int i=0; i<data.size(); i++)
 			{				
-				col[i] = this.binaryFunctionList.get(k).apply(data.get(i), k, this.binarySecondAttributeIndex[k]);
-			}
-			this.normalize(col);
-			for(int i=0; i<data.size(); i++)
-			{
-				data.get(i)[k] = col[i]; 
+				data.get(i)[k] = this.binaryFunctionList.get(k).apply(data.get(i)[k], data.get(i)[this.binarySecondAttributeIndex[k]]);
 			}
 		}
 	}
 	
-	public void applyOnIndexedDataSet(IndexedDataSet<double[]> data)
+	public void applyDistortionsParallel(List<double[]> data)
 	{
-		int k;
-		double[] col = new double[data.size()];
-
-		// apply unary functions
-		for(k=0; k<this.dim; k++)
+		class DistortData
 		{
-			for(int i=0; i<data.size(); i++)
+			public double[] x;
+			public ArrayList<Function> functionList;
+			int[] binaryIndex;
+			
+			/**
+			 * @param x
+			 * @param functionList
+			 */
+			public DistortData(double[] x, ArrayList<Function> functionList, int[] binaryIndex)
 			{
-				col[i] = this.unaryFunctionList.get(k).apply(data.get(i).x, k); 
+				this.x = x;
+				this.functionList = functionList;
+				this.binaryIndex = binaryIndex;
 			}
-			this.normalize(col);
-			for(int i=0; i<data.size(); i++)
-			{
-				data.get(i).x[k] = col[i]; 
-			}
+		};
+
+		ArrayList<DistortData> distortDataList = new ArrayList<DistortData>(data.size());
+		for(int i=0; i<data.size(); i++)
+		{
+			distortDataList.add(new DistortData(data.get(i), this.unaryFunctionList, this.binarySecondAttributeIndex));
 		}
 
-		// apply binary functions
-		for(k=0; k<this.dim; k++)
-		{			
-			for(int i=0; i<data.size(); i++)
-			{				
-				col[i] = this.binaryFunctionList.get(k).apply(data.get(i).x, k, this.binarySecondAttributeIndex[k]);
+		
+		// apply unary functions in parallel
+		Parallel.ForFJ(distortDataList, 
+			 new Parallel.Operation<DistortData>()
+			 {
+			    public void perform(DistortData dis)
+			    {
+			    	for(int k=0; k<dis.x.length; k++)
+					{
+			    		dis.x[k] = dis.functionList.get(k).apply(dis.x[k]);
+					}
+			    };
 			}
-			this.normalize(col);
-			for(int i=0; i<data.size(); i++)
-			{
-				data.get(i).x[k] = col[i]; 
-			}
+		);
+		
+		for(DistortData dis:distortDataList)
+		{
+			dis.functionList = this.binaryFunctionList;
 		}
+		
+		Parallel.ForFJ(distortDataList, 
+			 new Parallel.Operation<DistortData>()
+			 {
+			    public void perform(DistortData dis)
+			    {			    						
+			    	for(int k=0; k<dis.x.length; k++)
+					{
+			    		dis.x[k] = dis.functionList.get(k).apply(dis.x[k], dis.x[dis.binaryIndex[k]]);
+					}
+			    };
+			}
+		);
 	}
-
+	
+	
 
 	/**
 	 * @return the dim

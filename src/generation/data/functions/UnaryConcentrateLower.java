@@ -49,8 +49,8 @@ public class UnaryConcentrateLower extends AbstractFunction
 	{
 		super(1, 1);
 		
-		this.parameterBounds[0][0] = 0.1d;
-		this.parameterBounds[0][1] = 1.0d;
+		this.parameterBounds[0][0] = 0.2d;
+		this.parameterBounds[0][1] = 0.3d;
 		if(p<this.parameterBounds[0][0]) 
 			this.parameters[0] = this.parameterBounds[0][0];
 		else if(p>this.parameterBounds[0][1]) 
@@ -62,11 +62,11 @@ public class UnaryConcentrateLower extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
 		double a = this.parameters[0];
 		
-		return ((x[ids[0]] + a)*(x[ids[0]] + a) - a*a)/((1.0d + a)*(1.0d + a) - a*a);
+		return ((x[0] + a)*(x[0] + a) - a*a)/((1.0d + a)*(1.0d + a) - a*a);
 	}
 	
 	public String getName() {return "Funtion Concentrate Lower";}

@@ -50,7 +50,7 @@ public class UnarySpreadLower extends AbstractFunction
 		super(1, 1);
 		
 		this.parameterBounds[0][0] = 0.0d;
-		this.parameterBounds[0][1] = 0.1d;
+		this.parameterBounds[0][1] = 0.0d;
 		if(p<this.parameterBounds[0][0]) 
 			this.parameters[0] = this.parameterBounds[0][0];
 		else if(p>this.parameterBounds[0][1]) 
@@ -62,11 +62,11 @@ public class UnarySpreadLower extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
 		double a = this.parameters[0];
 		
-		return (Math.sqrt(x[ids[0]] + a) - Math.sqrt(a))/(Math.sqrt(1.0d + a) - Math.sqrt(a));
+		return (Math.sqrt(x[0] + a) - Math.sqrt(a))/(Math.sqrt(1.0d + a) - Math.sqrt(a));
 	}
 
 	public UnarySpreadLower newInstance(double... parameters)

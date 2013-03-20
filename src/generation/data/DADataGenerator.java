@@ -34,6 +34,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package generation.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -58,6 +59,15 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 	}
 
 
+	
+	public static double[] newFilledArray(int dim, double value)
+	{
+		double[] array = new double[dim];
+		
+		Arrays.fill(array, value);
+		
+		return array;
+	}
 	
 	/* (non-Javadoc)
 	 * @see generation.data.DataGenerator#nextRandomObject()

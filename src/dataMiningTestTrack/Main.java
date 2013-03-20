@@ -264,47 +264,14 @@ public class Main
 	
 	public static void distortionTest()
 	{
-		int dim = 100;
-		System.out.print("generate data ... ");
-		DistortionTester perf = new DistortionTester(dim);
+		DistortionTester tester = new DistortionTester();
 		
-		perf.generateSphericalGaussianData(5000);
-		perf.generateStandardUniformData(5000);
-		System.out.println(" done.");
-
-		System.out.print("generate distortions ... ");
-		for(int i=0; i<2*dim; i++) perf.addDistortionLayers(new double[]{0.0, 0.5, 0.1, 0.1, 0.0, 1.0d/dim},  new double[]{0.0d, 0.2, 0.2, 0.2, 1.0});
-		perf.addDistortionLayers(new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
-		for(int i=0; i<10; i++) perf.addDistortionLayers(new double[]{0.8, 0.0, 0.0, 0.2, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
-		perf.addDistortionLayers(new double[]{0.5, 0.5, 0.0, 0.0, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
-		System.out.println(" done.");
+		int dim = 10;
 		
-//		for(int i=0; i<10; i++) perf.addDistortionLayers(new double[]{0.2, 0.3, 0.1, 0.1, 0.1, 0.2}, new double[]{0.1, 0.1, 0.1, 0.1, 0.5});
-//		for(int i=0; i<1; i++) perf.addDistortionLayers(new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0}, new double[]{0.1, 0.0, 0.0, 0.0, 0.0});
-//		for(int i=0; i<1; i++) perf.addDistortionLayers(new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0}, new double[]{0.1, 0.0, 0.0, 0.0, 0.0});
-
-		perf.distortDataSet();
-		
-		for(int i=0; i<perf.getDim(); i+=Math.max(dim/5, 1))
-		{
-			for(int j=i+1; j<perf.getDim(); j+=Math.max(dim/7, 1))
-			{
-				perf.showDataSet(i, j);
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-//		ArrayList<ArrayList<String>> info = perf.distortionNames();
-//		
-//		for(ArrayList<String> line : info)
-//		{
-//			System.out.println(line.toString());
-//		}
-		
+		int dataPerCluster = 2000;
+		int clusterCount = dim+1;
+		int noise = dataPerCluster*clusterCount/10;
+				
+		tester.testDistortedClusters(dim, dataPerCluster, clusterCount, 0);
 	}
 }

@@ -51,7 +51,7 @@ public class BinaryExp extends AbstractFunction
 	{
 		super(2, 1);
 		
-		this.parameterBounds[0][0] = -1.0d;
+		this.parameterBounds[0][0] = 1.0d;
 		this.parameterBounds[0][1] = 1.0d;
 		if(p<this.parameterBounds[0][0]) 
 			this.parameters[0] = this.parameterBounds[0][0];
@@ -64,11 +64,11 @@ public class BinaryExp extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
 		double a = this.parameters[0];
 		
-		return x[ids[0]]*Math.exp(a*(x[ids[1]]-1.0d));
+		return x[0]*Math.exp(a*(x[1]-1.0d));
 	}
 
 	public BinaryExp newInstance(double... parameters)

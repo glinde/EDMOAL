@@ -49,9 +49,9 @@ public class Reverse extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
-		return 1.0d-x[ids[0]];
+		return 1.0d-x[0];
 	}
 
 	public Reverse newInstance(double... parameters)

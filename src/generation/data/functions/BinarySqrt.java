@@ -51,9 +51,9 @@ public class BinarySqrt extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
-		return 0.5*x[ids[0]] + Math.sqrt(0.25 - (x[ids[1]]-0.5)*(x[ids[1]]-0.5));
+		return 0.5*x[0] + Math.sqrt(0.25 - (x[1]-0.5)*(x[1]-0.5));
 	}
 	
 	public BinarySqrt newInstance(double... parameters)

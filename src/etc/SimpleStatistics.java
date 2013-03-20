@@ -37,11 +37,13 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package etc;
 
+import java.awt.List;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import data.objects.doubleArray.DAEuclideanMetric;
 import data.set.IndexedDataObject;
 
 /**
@@ -232,6 +234,29 @@ public class SimpleStatistics implements Serializable
 
 	
 	/**
+	 * Calculates the sample variance of a list of double vectors, given the specified mean. Assuming the variance in a spherical distribution
+	 * 
+	 * @param data The double vectors
+	 * @param mean The (sample) mean of the data
+	 * @return The (sample) variance given the data and specified (sample) mean
+	 */
+	public static double variance(Collection<double[]> data, double[] mean)
+	{
+		double variance = 0.0d;
+		DAEuclideanMetric eucl = new DAEuclideanMetric();
+		
+		for(double[] x:data)
+		{
+			variance += eucl.distanceSq(x, mean);
+		}
+		
+		variance /= (double) (data.size()-1);
+		
+		return variance;
+	}
+
+	
+	/**
 	 * Calculates the mean and the sample variance of a set of double values and
 	 * returns it in form of an array where the first value holds the mean
 	 * and the second holds the sample variance.
@@ -253,6 +278,7 @@ public class SimpleStatistics implements Serializable
 		
 		return new double[]{mean, variance};
 	}
+	
 
 	/**
 	 * Calculates an axis parallel hyper rectangle as bounding box of the specified

@@ -59,9 +59,9 @@ public class UnarySpreadCentre extends AbstractFunction
 	 * @see generation.data.functions.Function#apply(double[])
 	 */
 	@Override
-	public double apply(double[] x, int... ids)
+	public double apply(double... x)
 	{
-		return 1.0d/(1.0d+Math.exp(-((x[ids[0]]-this.parameters[0])/(this.parameters[1]*1.0d))));
+		return 1.0d/(1.0d+Math.exp(-((x[0]-this.parameters[0])/(this.parameters[1]*1.0))));
 	}
 
 	public UnarySpreadCentre newInstance(double... parameters)
