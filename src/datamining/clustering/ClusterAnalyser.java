@@ -598,11 +598,11 @@ public class ClusterAnalyser<T>  implements Serializable
 	}
 
 	/**
-	 * Calculates the partition entropie of the fuzzy clustering result.<br>
+	 * Calculates the partition entropy of the fuzzy clustering result.<br>
 	 * 
 	 * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
 	 * 
-	 * See paper: J.C. Bezdek.Pattern Recognition with Fuzzy Objective Func-tion Algorithms. Plenum Press, New York, NY, USA 1981
+	 * See paper: J.C. Bezdek.Pattern Recognition with Fuzzy Objective Function Algorithms. Plenum Press, New York, NY, USA 1981
 	 *
 	 * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
 	 * @return The partition coefficient of the specified clustering result.

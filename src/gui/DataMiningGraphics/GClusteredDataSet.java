@@ -746,6 +746,8 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	public void setFuzzyMemberships(Collection<double[]> fuzzyMemberships)
 	{
 		this.fuzzyMemberships = new ArrayList<double[]>(fuzzyMemberships);
+		this.fuzzyAssignmentsAvailable = this.fuzzyMemberships != null;
+		this.recalculateConvexHulls();
 	}
 
 	/**
@@ -794,7 +796,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	public void setCrispClusterAssignments(int[] crispClusterAssignments)
 	{
 		this.crispClusterAssignments = crispClusterAssignments;
-		this.crispAssignmentsAvailable = crispClusterAssignments != null;
+		this.crispAssignmentsAvailable = this.crispClusterAssignments != null;
 		this.recalculateConvexHulls();
 	}
 

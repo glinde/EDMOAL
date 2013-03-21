@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import data.structures.balltree.BallTree;
+import dataMiningTestTrack.tests.ClusterAlgorithmTestCentre;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
 import dataMiningTestTrack.tests.DataGenerationAlgorithmTest;
@@ -49,6 +50,7 @@ import dataMiningTestTrack.tests.DataStructureVisualTest;
 import dataMiningTestTrack.tests.DistortionTester;
 import dataMiningTestTrack.tests.GradientAlgorithmVisualTest;
 import dataMiningTestTrack.tests.SymmetricalDataAlgorithmVisualTest;
+import datamining.clustering.ClusteringAlgorithm;
 import etc.MyMath;
 
 /**
@@ -78,7 +80,8 @@ public class Main
 //		Main.gradientAlgorithmVisualTest();
 //		Main.symmetricalGgradientAlgorithmVisualTest();
 //		Main.dataGenerationAlgorithmTest();
-		Main.distortionTest();
+//		Main.distortionTest();
+		Main.distortionClusteringTest();
 	}
 	
 	
@@ -130,7 +133,7 @@ public class Main
 //		clusterTest.showDataSet();
 //		clusterTest.showClusteredDataSet();
 //		clusterTest.testHardCMeans();
-		clusterTest.testFuzzyCMeans();
+//		clusterTest.testFuzzyCMeans();
 //		clusterTest.testFuzzyCMeansNoise();
 //		clusterTest.testPolynomialFuzzyCMeans();
 //		clusterTest.testPolynomialFuzzyCMeansNoise();
@@ -259,7 +262,6 @@ public class Main
 		
 //		test.mixtureOfGaussiansTest();
 //		test.variousDistributionTest();
-			
 	}
 	
 	public static void distortionTest()
@@ -269,9 +271,30 @@ public class Main
 		int dim = 10;
 		
 		int dataPerCluster = 2000;
-		int clusterCount = dim+1;
+		int clusterCount = dim + 1;
 		int noise = dataPerCluster*clusterCount/10;
 				
-		tester.testDistortedClusters(dim, dataPerCluster, clusterCount, 0);
+		tester.testDistortedClusters(dim, dataPerCluster, clusterCount, noise, true, 2);
+	}
+
+	public static void distortionClusteringTest()
+	{
+		int dim = 100;		
+		int dataPerCluster = 2000;
+		int clusterCount = dim + 1;
+		int noise = dataPerCluster*clusterCount/10;
+
+		ClusterAlgorithmTestCentre testCentre = new ClusterAlgorithmTestCentre(dim, clusterCount);
+
+		testCentre.printPNG = false;
+		testCentre.printJPG = false;
+		testCentre.printSVG = false;
+		testCentre.printPDF = false;
+		
+		testCentre.generateDistortedData(dataPerCluster, 0, true, 4);
+		testCentre.generateInitialPositionsRandomUniform();
+		testCentre.showDataSetClustered2DProjections(dim/3.0d, dim/2.0d, null);
+		testCentre.testRewardingCrispFCM(1.0d-1.0d/dim);
+		testCentre.showFuzzyClusteringResult2DProjections(dim/3.0d, dim/2.0d, null);
 	}
 }

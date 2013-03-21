@@ -62,15 +62,15 @@ public class ClusteredDataSetGenerator
 	}
 	
 	
-	public void generateClusteredDataSet(int dataObjectsPerClusterCount, int clusterCount, int uniformNoise, int normalNiose)
+	public void generateClusteredDataSet(int dataObjectsPerClusterCount, int clusterCount, int noise, boolean scale, int shuffleLocation)
 	{
-		this.data.ensureCapacity(dataObjectsPerClusterCount*clusterCount + uniformNoise + normalNiose);
-		this.clusterIndices = new int[dataObjectsPerClusterCount*clusterCount + uniformNoise + normalNiose];
+		this.data.ensureCapacity(dataObjectsPerClusterCount*clusterCount + noise);
+		this.clusterIndices = new int[dataObjectsPerClusterCount*clusterCount + noise];
 				
 		System.out.print("Generate data ... ");		
 		for(int i=0; i<clusterCount; i++)
 		{
-			clusters.add(this.generateRandomData(new int[]{dataObjectsPerClusterCount/2, dataObjectsPerClusterCount/2 + dataObjectsPerClusterCount%2}));
+			this.clusters.add(this.generateRandomData(new int[]{dataObjectsPerClusterCount/2, dataObjectsPerClusterCount/2 + dataObjectsPerClusterCount%2}));
 		}
 		System.out.println(" done.");
 
@@ -78,20 +78,25 @@ public class ClusteredDataSetGenerator
 				
 		for(int i=0; i<clusterCount; i++)
 		{
-			this.distortCluster(clusters.get(i));
+			System.out.println("======= Distort cluster " + i + " ======="); 		
+			this.distortCluster(clusters.get(i), scale, shuffleLocation);
 			this.data.addAll(clusters.get(i));
-			for(int j=0; j<dataObjectsPerClusterCount; j++, k++) this.clusterIndices[k] = i+1; 
+			for(int j=0; j<dataObjectsPerClusterCount; j++, k++) this.clusterIndices[k] = i; 
 		}
 
 		System.out.print("Add noise ... ");
-		
-		double[] mean = SimpleStatistics.mean(data);
-		double variance = SimpleStatistics.variance(data, mean);
 
-		this.data.addAll((new HyperrectangleUniformGenerator(dim)).generateDataObjects(uniformNoise));
-		this.data.addAll((new SphericalNormalGenerator(mean, variance)).generateDataObjects(normalNiose));
+		this.data.addAll((new HyperrectangleUniformGenerator(dim)).generateDataObjects(noise));
+
+//		double[] mean = SimpleStatistics.mean(data);
+//		double variance = SimpleStatistics.variance(data, mean);
+//		ArrayList<double[]> tmpData;
+//		DataDistorter distorter = new DataDistorter(this.dim);
+//		tmpData = (new SphericalNormalGenerator(mean, variance)).generateDataObjects(normalNiose);
+//		distorter.normalizeParallel(tmpData);		
+//		this.data.addAll(tmpData);
 		
-		for(int j=0; j<uniformNoise+normalNiose; j++, k++) this.clusterIndices[k] = 0; 
+		for(int j=0; j<noise; j++, k++) this.clusterIndices[k] = -1; 
 
 		System.out.println(" done.");
 	}
@@ -130,23 +135,22 @@ public class ClusteredDataSetGenerator
 		return data;
 	}
 	
-	public void distortCluster(ArrayList<double[]> clusterData)
+	public void distortCluster(ArrayList<double[]> clusterData, boolean scale, int shuffleLocation)
 	{
 		DataDistorter distorter = new DataDistorter(this.dim);
-
 
 		System.out.print("generate distortions ... ");
 		// distort data
 		for(int i=0; i<2*dim; i++) distorter.addDistortionLayers(new double[]{1.0, 0.5d/dim, 20.0d/dim, 10.0d/dim, 10.0d/dim, 1.2d/dim},  new double[]{0.0d, 0.1, 0.1, 1.0d/dim, Math.log(dim)/dim});
-				
+
 		// scale to fill the unit hypercube
-		distorter.addDistortionLayers(new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
-		
+		if(scale) distorter.addDistortionLayers(new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
+
 		// push the data randomly in the direction of the upper right corner 
-		for(int i=0; i<10; i++) distorter.addDistortionLayers(new double[]{0.7, 0.0, 0.0, 0.3, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
-		
+		for(int i=0; i<shuffleLocation; i++) distorter.addDistortionLayers(new double[]{0.7, 0.0, 0.0, 0.3, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
+
 		// randomly reverse data to randomize the data in the feature space
-		distorter.addDistortionLayers(new double[]{0.5, 0.5, 0.0, 0.0, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
+		if(shuffleLocation > 0) distorter.addDistortionLayers(new double[]{0.5, 0.5, 0.0, 0.0, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
 		System.out.println(" done.");
 
 		System.out.print("Distort data ");

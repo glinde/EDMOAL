@@ -57,6 +57,7 @@ import java.awt.Font;
 import java.awt.Stroke;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -583,7 +584,50 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.print(sv.screen, filename);
 	}
-	
+
+
+	/**
+	 * Presents the specified data set, coloured by the specified crisp clustering (partitioning). Currently,
+	 * only the first two dimensions of the data vectors are presented. For visualising other
+	 * dimensions, please change the order of the attributes in the data vector.
+	 * 
+	 * @param dataSet The data set to be visualised.
+	 * @param clusterCount The number of clusters in the clustering or the number of partitions of the data set.
+	 * @param crispCluster The crisp clustering (partitioning) that should be used for colouring the data.
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
+	public void showFuzzyDataSetClustering(Collection<IndexedDataObject<double[]>> dataSet, Collection<double[]> clustering, String filename)
+	{
+		GClusteredDataSet gClusteredDS;
+		ScreenViewer sv;
+		
+		gClusteredDS = new GClusteredDataSet(clustering.iterator().next().length);
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
+		gClusteredDS.setDrawMembershipLevels(false);
+		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
+		gClusteredDS.setFuzzyColoring(true);
+		gClusteredDS.setDataSet(dataSet);
+		gClusteredDS.setFuzzyMemberships(clustering);
+
+		sv = new ScreenViewer(this.xRes, this.yRes);
+		sv.screen.setFileName(filename);
+//		sv.setPreferredSize(new Dimension(1200, 800));
+//		sv.setSize(new Dimension(1200, 800));
+		sv.screen.addDrawableObject(gClusteredDS);
+//		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
+//		sv.screen.zoomToDisplay(data);
+		sv.screen.setScreenToDisplayAllIndexed(dataSet);
+		sv.repaint();
+		sv.setTitle(filename);
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
 	
 	
 	/**

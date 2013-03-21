@@ -58,7 +58,37 @@ public class DADataGenerator extends AbstractDataGenerator<double[]>
 		this.distributionList.addAll(distributions);
 	}
 
+	public static double[] dataLowerBound(Collection<double[]> data)
+	{
+		double[] bound = null;
+		for(double[] x:data)
+		{
+			if(bound == null) bound = x.clone();
+			
+			for(int k=0; k<bound.length; k++)
+			{
+				bound[k] = (bound[k] < x[k])? bound[k] : x[k]; 
+			}
+		}
+		
+		return bound;
+	}
 
+	public static double[] dataUpperBound(Collection<double[]> data)
+	{
+		double[] bound = null;
+		for(double[] x:data)
+		{
+			if(bound == null) bound = x.clone();
+			
+			for(int k=0; k<bound.length; k++)
+			{
+				bound[k] = (bound[k] > x[k])? bound[k] : x[k]; 
+			}
+		}
+		
+		return bound;
+	}
 	
 	public static double[] newFilledArray(int dim, double value)
 	{

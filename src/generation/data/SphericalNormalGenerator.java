@@ -45,13 +45,13 @@ public class SphericalNormalGenerator extends DADataGenerator
 	/**
 	 * @param dim
 	 */
-	public SphericalNormalGenerator(double[] mean, double variance)
+	public SphericalNormalGenerator(double[] mean, double standardDeviation)
 	{
 		super();
 		
 		for(int k=0; k<mean.length; k++)
 		{
-			this.addDistribution(new NormalDistribution(mean[k], variance));
+			this.addDistribution(new NormalDistribution(mean[k], standardDeviation));
 		}
 	}
 	

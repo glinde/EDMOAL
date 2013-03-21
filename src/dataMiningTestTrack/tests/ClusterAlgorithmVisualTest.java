@@ -221,11 +221,11 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a fuzzy c-means clustering algorithm on the generated data set.
 	 */
-	public void testFuzzyCMeans()
+	public void testFuzzyCMeans(double fuzzifier)
 	{
 		FuzzyCMeansClusteringAlgorithm<double[]> clusterAlgo = new FuzzyCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setFuzzifier(1.5d);
+		clusterAlgo.setFuzzifier(fuzzifier);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -235,12 +235,12 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
-	public void testFuzzyCMeansNoise()
+	public void testFuzzyCMeansNoise(double fuzzifier, double noiseDist)
 	{
 		FuzzyCMeansNoiseClusteringAlgorithm<double[]> clusterAlgo = new FuzzyCMeansNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setNoiseDistance(0.2d);
+		clusterAlgo.setFuzzifier(fuzzifier);
+		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -250,11 +250,11 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a fuzzy c-means clustering algorithm with polynomial fuzzifier function on the generated data set.
 	 */
-	public void testPolynomialFuzzyCMeans()
+	public void testPolynomialFuzzyCMeans(double beta)
 	{
 		PolynomFCMClusteringAlgorithm<double[]> clusterAlgo = new PolynomFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setBeta(0.3d);
+		clusterAlgo.setBeta(beta);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -264,12 +264,12 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a fuzzy c-means (noise-) clustering algorithm with polynomial fuzzifier function on the generated data set.
 	 */
-	public void testPolynomialFuzzyCMeansNoise()
+	public void testPolynomialFuzzyCMeansNoise(double beta, double noiseDist)
 	{
 		PolynomFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new PolynomFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setBeta(0.3d);
-		clusterAlgo.setNoiseDistance(0.3d);
+		clusterAlgo.setBeta(beta);
+		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -279,12 +279,12 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a rewarding crisp membership values fuzzy c-means clustering algorithm on the generated data set.
 	 */
-	public void testRewardingCrispFCM()
+	public void testRewardingCrispFCM(double distMul)
 	{
 		RewardingCrispFCMClusteringAlgorithm<double[]> clusterAlgo = new RewardingCrispFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setDistanceMultiplierConstant(0.7d);
+		clusterAlgo.setDistanceMultiplierConstant(distMul);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -294,13 +294,13 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a rewarding crisp membership values fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
-	public void testRewardingCrispFCMNoise()
+	public void testRewardingCrispFCMNoise(double distMul, double noiseDist)
 	{
 		RewardingCrispFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new RewardingCrispFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setDistanceMultiplierConstant(0.7d);
-		clusterAlgo.setNoiseDistance(0.3d);
+		clusterAlgo.setDistanceMultiplierConstant(distMul);
+		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -308,7 +308,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * Performs a voronoi cell opimized fuzzy c-means clustering algorithm on the generated data set.
+	 * Performs a voronoi cell optimized fuzzy c-means clustering algorithm on the generated data set.
 	 */
 	public void testVoronoiPartitionFCM()
 	{
@@ -323,15 +323,15 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	
 
 	/**
-	 * Performs a voronoi cell opimized fuzzy c-means (noise-) clustering algorithm on the generated data set.
+	 * Performs a voronoi cell optimized fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
-	public void testVoronoiPartitionFCMNoise()
+	public void testVoronoiPartitionFCMNoise(double noiseDist)
 	{
 		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(this.dataSet.first().x.length);
 		VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new VoronoiPartitionFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, evs, evs, evs);
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setNoiseDistance(0.2d);
+		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -341,12 +341,12 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs distance adapted fuzzy c-means clustering algorithm on the generated data set.
 	 */
-	public void testDistAdaptedFCM()
+	public void testDistAdaptedFCM(double fuzzifier, double distCorr)
 	{
 		DistAdaptedFCMClusteringAlgorithm<double[]> clusterAlgo = new DistAdaptedFCMClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setDistanceCorrectionParameter(1.0d);
+		clusterAlgo.setFuzzifier(fuzzifier);
+		clusterAlgo.setDistanceCorrectionParameter(distCorr);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -356,13 +356,13 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs a  distance adapted fuzzy c-means (noise-) clustering algorithm on the generated data set.
 	 */
-	public void testDistAdaptedFCMNoise()
+	public void testDistAdaptedFCMNoise(double fuzzifier, double distCorr, double noiseDist)
 	{
 		DistAdaptedFCMNoiseClusteringAlgorithm<double[]> clusterAlgo = new DistAdaptedFCMNoiseClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setDistanceCorrectionParameter(1.0d);
-		clusterAlgo.setNoiseDistance(0.2d);
+		clusterAlgo.setFuzzifier(fuzzifier);
+		clusterAlgo.setDistanceCorrectionParameter(distCorr);
+		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -370,14 +370,14 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 
 
 	/**
-	 * Performs a fuzzy c-means clustering algorithm, opimised by using a centered ball tree on the generated data set.
+	 * Performs a fuzzy c-means clustering algorithm, optimised by using a centered ball tree on the generated data set.
 	 */
-	public void testBallTreeFuzzyCMeans()
+	public void testBallTreeFuzzyCMeans(double fuzzifier, double membershipIntervalLength)
 	{
 		BallTreeFuzzyCMeansClusteringAlgorithm<double[]> clusterAlgo = new BallTreeFuzzyCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
-		clusterAlgo.setFuzzifier(2.0d);
-		clusterAlgo.setMaximalMembershipIntervalLength(0.2d);
+		clusterAlgo.setFuzzifier(fuzzifier);
+		clusterAlgo.setMaximalMembershipIntervalLength(membershipIntervalLength);
 		clusterAlgo.setEpsilon(0.01d);
 		clusterAlgo.apply(50);
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
@@ -404,11 +404,11 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	/**
 	 * Performs the DBScan clustering algorithm on the generated data set.
 	 */
-	public void testDBScan()
+	public void testDBScan(int coreNum, double coreDist)
 	{
 		DBScan<double[]> clusterAlgo = new DBScan<double[]>(this.dataSet, new DAEuclideanMetric());
-		clusterAlgo.setCoreNum(50);
-		clusterAlgo.setCoreDist(0.02d);
+		clusterAlgo.setCoreNum(coreNum);
+		clusterAlgo.setCoreDist(coreDist);
 		clusterAlgo.apply();
 		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
