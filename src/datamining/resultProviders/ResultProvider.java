@@ -33,10 +33,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.resultProviders;
 
+import data.set.IndexedDataSet;
+
 /**
  * Dummy Interface for OOP
  *
  * @author Roland Winkler
  */
 public interface ResultProvider<T>
-{}
+{
+	public IndexedDataSet<T> getDataSet();
+}

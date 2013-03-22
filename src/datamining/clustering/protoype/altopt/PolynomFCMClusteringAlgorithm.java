@@ -49,6 +49,7 @@ import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.MembershipFunctionProvider;
 import datamining.resultProviders.FuzzyClusteringProvider;
 
 /**
@@ -78,7 +79,7 @@ import datamining.resultProviders.FuzzyClusteringProvider;
  * 
  * @author Roland Winkler
  */
-public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>
+public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>, MembershipFunctionProvider
 {
 	/**  */
 	private static final long	serialVersionUID	= 3347388178304679371L;
@@ -739,5 +740,15 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		if(beta < 0.0d || 1.0d < beta)  throw new IllegalArgumentException("The beta parameter must be larger than 0 and smaller than 1. Specified beta: " + beta);
 		
 		this.beta = beta;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.MembershipFunctionProvider#applyMembershipFunction(double)
+	 */
+	@Override
+	public double applyMembershipFunction(double membershipValue)
+	{
+		return (1.0d - this.beta)/(1.0d + this.beta) * membershipValue * membershipValue + 2.0d * this.beta/(1.0d + this.beta) * membershipValue;
 	}
 }

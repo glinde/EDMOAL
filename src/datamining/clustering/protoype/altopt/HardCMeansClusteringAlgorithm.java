@@ -48,6 +48,7 @@ import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.MembershipFunctionProvider;
 import datamining.resultProviders.CrispClusteringProvider;
 
 /**
@@ -72,7 +73,7 @@ import datamining.resultProviders.CrispClusteringProvider;
  * 
  * @author Roland Winkler
  */
-public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements CrispClusteringProvider<T>
+public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements CrispClusteringProvider<T>, MembershipFunctionProvider
 {		
 	/**  */
 	private static final long	serialVersionUID	= -2518725991257149820L;
@@ -319,5 +320,14 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	public boolean isCrispAssigned(IndexedDataObject<T> obj)
 	{
 		return this.initialized;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.MembershipFunctionProvider#applyMembershipFunction(double)
+	 */
+	@Override
+	public double applyMembershipFunction(double membershipValue)
+	{
+		return membershipValue;
 	}
 }

@@ -49,6 +49,7 @@ import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.MembershipFunctionProvider;
 import datamining.resultProviders.FuzzyClusteringProvider;
 import etc.MyMath;
 
@@ -74,7 +75,7 @@ import etc.MyMath;
  *
  * @author Roland Winkler
  */
-public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>
+public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>, MembershipFunctionProvider
 {
 	/**  */
 	private static final long	serialVersionUID	= -1260886261257302868L;
@@ -551,7 +552,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	/**
 	 * @TODO: remove.  
 	 */
-	public void clone(FuzzyCMeansNoiseClusteringAlgorithm<T> clone)
+	public void clone(FuzzyCMeansClusteringAlgorithm<T> clone)
 	{
 		super.clone(clone);
 		
@@ -569,4 +570,13 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		return clone;
 	}
 
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.MembershipFunctionProvider#applyMembershipFunction(double)
+	 */
+	@Override
+	public double applyMembershipFunction(double membershipValue)
+	{
+		return MyMath.pow(membershipValue, this.fuzzifier);
+	}
 }

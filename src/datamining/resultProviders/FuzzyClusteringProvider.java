@@ -42,7 +42,7 @@ import data.set.IndexedDataObject;
 /**
  * Fuzzy clustering algorithms do not assign data objects uniquely to one cluster like a crisp clustering algorithm.
  * They do it in a fuzzy manner, that is: they create a partitioning of the data set such that the
- * sum of membership values of one data object is 1. Terefore, the fuzzy assignment (membership values) for one data object
+ * sum of membership values of one data object is 1. Therefore, the fuzzy assignment (membership values) for one data object
  * are always a list of double values between 0 and 1.<br>
  * 
  * This interface provides the functions to gain access to the fuzzy membership values, which are essentially the result
