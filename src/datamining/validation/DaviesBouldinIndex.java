@@ -31,7 +31,7 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.clustering.validation;
+package datamining.validation;
 
 import java.util.ArrayList;
 
@@ -59,12 +59,12 @@ import datamining.resultProviders.FuzzyNoiseClusteringProvider;
  * @param dist The distance metric.
  * @return The Davies - Bouldin index for the specified clustering result.
  */
-public class DaviesBouldinIndex extends ClusterValidation
+public class DaviesBouldinIndex<T> extends ClusterValidation<T>
 {
 	/**
 	 * @param clusterInfo
 	 */
-	public DaviesBouldinIndex(ClusteringInformation clusterInfo)
+	public DaviesBouldinIndex(ClusteringInformation<T> clusterInfo)
 	{
 		super(clusterInfo);
 	}

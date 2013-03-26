@@ -31,7 +31,7 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.clustering.validation;
+package datamining.validation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,20 +75,25 @@ public class ClusteringInformation<T>
 	protected double[] noiseClusterMembershipValues;
 	
 	protected int[] crispClusteringResult;
+
+	
+	protected int[] trueClusteringResult;
 	
 	
 	/**	 */
 	public ClusteringInformation(int clusterCount)
 	{
+		this.clusterCount = clusterCount;
+		this.clusterDiameters = null;
+		this.clusterDistances = null;
+
 		this.prototypes = null;
 		this.fuzzyClusteringProvider = null;
 		this.fuzzyClusteringResult = null;
 		this.noiseClusterMembershipValues = null;
 		this.crispClusteringResult = null;
-		
-		this.clusterCount = clusterCount;
-		this.clusterDiameters = null;
-		this.clusterDistances = null;
+
+		this.trueClusteringResult = null;
 	}
 	
 	/**
@@ -574,7 +579,12 @@ public class ClusteringInformation<T>
 
 	public void checkFuzzyClusteringProvider_FuzzyClusteringResult()
 	{
-		if(this.fuzzyClusteringResult == null && this.fuzzyClusteringProvider == null) throw new NotEnoughInformationException("Fuzzy clustering result and fuzzy clustering provider are not available. At least one of the two is required.");
+		if(this.fuzzyClusteringResult == null && this.fuzzyClusteringProvider == null) throw new NotEnoughInformationException("Neither fuzzy clustering result nor fuzzy clustering provider are available. At least one of the two is required.");
+	}
+	
+	public void checkClusteringAvailable()
+	{
+		if(this.fuzzyClusteringResult == null && this.fuzzyClusteringProvider == null && this.crispClusteringResult == null) throw new NotEnoughInformationException("Neither the fuzzy clustering result, the fuzzy clustering provider or the crisp clustering are available. At least one of the three is required.");
 	}
 
 	public void checkFuzzyClusteringResult()
@@ -591,7 +601,12 @@ public class ClusteringInformation<T>
 	{
 		if(this.crispClusteringResult == null) throw new NotEnoughInformationException("Crisp clustering result not available.");
 	}
-	
+
+	public void checkTrueClusteringResult()
+	{
+		if(this.trueClusteringResult == null) throw new NotEnoughInformationException("True clustering result not available.");
+	}
+		
 	public void checkClusterDiameters()
 	{
 		if(this.clusterDiameters == null) throw new NotEnoughInformationException("Cluster diameters not available.");
@@ -753,5 +768,21 @@ public class ClusteringInformation<T>
 	public void setCrispClusteringResult(int[] crispClusteringResult)
 	{
 		this.crispClusteringResult = crispClusteringResult;
+	}
+
+	/**
+	 * @return the trueClusteringResult
+	 */
+	public int[] getTrueClusteringResult()
+	{
+		return this.trueClusteringResult;
+	}
+
+	/**
+	 * @param trueClusteringResult the trueClusteringResult to set
+	 */
+	public void setTrueClusteringResult(int[] trueClusteringResult)
+	{
+		this.trueClusteringResult = trueClusteringResult;
 	}
 }

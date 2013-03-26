@@ -64,6 +64,8 @@ import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlg
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
+import datamining.validation.ClusterMaxRecallIndex;
+import datamining.validation.ClusteringInformation;
 import etc.DataGenerator;
 import generation.data.ClusteredDataSetGenerator;
 import generation.data.HyperrectangleUniformGenerator;
@@ -452,5 +454,20 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.apply();
 		
 		this.lastCrispClusteringResult = clusterAlgo.getAllCrispClusterAssignments();
+	}
+	
+	public void validateLastFuzzyClusteringResult()
+	{
+		ClusteringInformation<double[]> info = new ClusteringInformation<double[]>(this.clusterCount);
+		
+		info.setDataSet(this.dataSet);
+		info.setFuzzyClusteringResult(this.lastFuzzyClusteringResult);
+		info.setTrueClusteringResult(this.correctClustering);
+		
+		ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info);
+		
+		double index = maxRecall.index();
+		
+		System.out.println("Max Recall Index: " + index);
 	}
 }

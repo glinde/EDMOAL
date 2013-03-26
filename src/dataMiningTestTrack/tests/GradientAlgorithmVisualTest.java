@@ -49,7 +49,6 @@ import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
-import datamining.clustering.validation.ClusterValidation;
 import datamining.gradient.centroid.PrototypeGradientOptimizationAlgorithm;
 import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
 import datamining.gradient.functions.DALeastSquaresObjectiveFunction;
@@ -58,6 +57,7 @@ import datamining.gradient.functions.clustering.FuzzyCMeansObjectiveFunction;
 import datamining.gradient.parameter.PositionListParameter;
 import datamining.gradient.parameter.PositionListParameterMetric;
 import datamining.gradient.parameter.PositionListParameterVectorSpace;
+import datamining.validation.ClusterValidation;
 import etc.DataGenerator;
 import etc.SimpleStatistics;
 

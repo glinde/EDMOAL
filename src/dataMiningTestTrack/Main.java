@@ -81,7 +81,8 @@ public class Main
 //		Main.symmetricalGgradientAlgorithmVisualTest();
 //		Main.dataGenerationAlgorithmTest();
 //		Main.distortionTest();
-		Main.distortionClusteringTest();
+//		Main.distortionClusteringTest();
+		Main.clusterValidityTest();
 	}
 	
 	
@@ -258,7 +259,7 @@ public class Main
 	
 	public static void dataGenerationAlgorithmTest()
 	{
-		DataGenerationAlgorithmTest test = new DataGenerationAlgorithmTest(2, 10000, 3, 0.2);
+		DataGenerationAlgorithmTest test = new DataGenerationAlgorithmTest(10, 10000, 3, 0.2);
 		
 //		test.mixtureOfGaussiansTest();
 //		test.variousDistributionTest();
@@ -270,11 +271,11 @@ public class Main
 		
 		int dim = 10;
 		
-		int dataPerCluster = 2000;
-		int clusterCount = dim + 1;
-		int noise = dataPerCluster*clusterCount/10;
+		int dataPerCluster = 10000;
+		int clusterCount = 1;
+		int noise = 0;// = dataPerCluster*clusterCount/10;
 				
-		tester.testDistortedClusters(dim, dataPerCluster, clusterCount, noise, true, 2);
+		tester.testDistortedClusters(dim, dataPerCluster, clusterCount, noise, true, 5);
 	}
 
 	public static void distortionClusteringTest()
@@ -291,10 +292,39 @@ public class Main
 		testCentre.printSVG = false;
 		testCentre.printPDF = false;
 		
-		testCentre.generateDistortedData(dataPerCluster, 0, true, 4);
+		testCentre.generateDistortedData(dataPerCluster, 0, true, 10);
 		testCentre.generateInitialPositionsRandomUniform();
 		testCentre.showDataSetClustered2DProjections(dim/3.0d, dim/2.0d, null);
 		testCentre.testRewardingCrispFCM(1.0d-1.0d/dim);
 		testCentre.showFuzzyClusteringResult2DProjections(dim/3.0d, dim/2.0d, null);
+	}
+
+	public static void clusterValidityTest()
+	{
+		int dim = 10;
+		int dataPerCluster = 5000;
+		int clusterCount = dim+1;
+		int noise = 0;// dataPerCluster*clusterCount/10;
+
+		ClusterAlgorithmTestCentre testCentre = new ClusterAlgorithmTestCentre(dim, clusterCount);
+
+		testCentre.printPNG = false;
+		testCentre.printJPG = false;
+		testCentre.printSVG = false;
+		testCentre.printPDF = false;
+		
+		testCentre.generateDistortedData(dataPerCluster, noise, true, 4);
+		testCentre.generateInitialPositionsRandomUniform();
+//		testCentre.testHardCMeans();
+		testCentre.testFuzzyCMeans(1.0d+1.0d/dim);
+		testCentre.validateLastFuzzyClusteringResult();
+		testCentre.testFuzzyCMeans(2.0d);
+		testCentre.validateLastFuzzyClusteringResult();
+		testCentre.testPolynomialFuzzyCMeans(0.5d);
+		testCentre.validateLastFuzzyClusteringResult();
+		testCentre.testRewardingCrispFCM(0.99d);
+		testCentre.validateLastFuzzyClusteringResult();
+		
+		testCentre.showDataSetClustered2DProjections(dim/2.0d, dim/3.0d, null);
 	}
 }

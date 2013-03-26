@@ -31,7 +31,7 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.clustering.validation;
+package datamining.validation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,13 +66,13 @@ import datamining.resultProviders.PrototypeProvider;
  * @param dist The distance metric.
  * @return The Bezdec separation index (fuzzy Dunn separation index) for the specified clustering result.
  */
-public class BezdecSeperationIndex extends ClusterValidation
+public class BezdecSeperationIndex<T> extends ClusterValidation<T>
 {
 	
 	/**
 	 * @param clusterInfo
 	 */
-	public BezdecSeperationIndex(ClusteringInformation clusterInfo)
+	public BezdecSeperationIndex(ClusteringInformation<T> clusterInfo)
 	{
 		super(clusterInfo);
 		

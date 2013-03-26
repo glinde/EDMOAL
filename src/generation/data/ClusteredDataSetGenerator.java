@@ -86,7 +86,7 @@ public class ClusteredDataSetGenerator
 
 		System.out.print("Add noise ... ");
 
-		this.data.addAll((new HyperrectangleUniformGenerator(dim)).generateDataObjects(noise));
+		this.data.addAll((new HyperrectangleUniformGenerator(this.dim)).generateDataObjects(noise));
 
 //		double[] mean = SimpleStatistics.mean(data);
 //		double variance = SimpleStatistics.variance(data, mean);

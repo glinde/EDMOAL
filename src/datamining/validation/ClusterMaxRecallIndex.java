@@ -31,59 +31,73 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.clustering.validation;
-
-import java.util.ArrayList;
-
-import data.set.IndexedDataObject;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.resultProviders.FuzzyClusteringProvider;
+package datamining.validation;
 
 /**
- * Calculates the partition entropy of the fuzzy clustering result.<br>
- * 
- * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
- * 
- * See paper: J.C. Bezdek.Pattern Recognition with Fuzzy Objective Function Algorithms. Plenum Press, New York, NY, USA 1981
+ * TODO Class Description
  *
- * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
- * @return The partition coefficient of the specified clustering result.
+ * @author Roland Winkler
  */
-public class PartitionEntropy<T> extends ClusterValidation<T>
+public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 {
 	/**
 	 * @param clusterInfo
 	 */
-	public PartitionEntropy(ClusteringInformation<T> clusterInfo)
+	public ClusterMaxRecallIndex(ClusteringInformation<T> clusterInfo)
 	{
 		super(clusterInfo);
 	}
-	
-	
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.validation.ClusterValidation#index()
+	 */
+	@Override
 	public double index()
 	{
 		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
+		this.clusterInfo.checkTrueClusteringResult();
 		
-		double sum = 0.0d;
-		int i;		
-		
-		if(this.clusterInfo.getFuzzyClusteringResult() != null)
+		double[][] clusterRecall = new double[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
+		double[] membershipValues;
+		int dataObjectCount;
+		double max;
+		double sum;
+		int[] classSize = new int[this.clusterInfo.getClusterCount()];
+		int clas;
+
+		dataObjectCount = (this.clusterInfo.getFuzzyClusteringResult() != null) ?
+			this.clusterInfo.getFuzzyClusteringResult().size() :
+			this.clusterInfo.getFuzzyClusteringProvider().getDataSet().size();
+
+		int i, j, k;
+		for(j=0; j<dataObjectCount; j++)
 		{
-			for(double[] membershipValues : this.clusterInfo.getFuzzyClusteringResult())
+			membershipValues = (this.clusterInfo.getFuzzyClusteringResult() != null)?
+				this.clusterInfo.getFuzzyClusteringResult().get(j) :
+				this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(this.clusterInfo.getFuzzyClusteringProvider().getDataSet().get(j));
+
+			clas = this.clusterInfo.getTrueClusteringResult()[j];
+			if(clas >= 0)
 			{
-				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * Math.log(membershipValues[i])/Math.log(2.0d);
-			}	
-		}
-		else
-		{
-			double[] membershipValues;
-			for(IndexedDataObject<T> d : this.clusterInfo.getFuzzyClusteringProvider().getDataSet())
-			{
-				membershipValues = this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(d);
-				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * Math.log(membershipValues[i])/Math.log(2.0d);
+				classSize[clas]++;			
+				for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+					clusterRecall[i][clas] += membershipValues[i];
 			}
 		}
 		
-		return -sum;
+		sum = 0.0d;
+		for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			max = 0.0d;
+			for(k=0; k<this.clusterInfo.getClusterCount(); k++)
+			{
+				max = (max > clusterRecall[i][k]/classSize[k])? max : clusterRecall[i][k]/classSize[k];  
+			}
+//			System.out.println("Max = " + max);
+			sum += max;
+		}
+		
+		return (sum - 1.0d)/(this.clusterInfo.getClusterCount() - 1.0d);
 	}
+
 }

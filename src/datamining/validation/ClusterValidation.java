@@ -35,7 +35,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-package datamining.clustering.validation;
+package datamining.validation;
 
 import java.io.Serializable;
 import java.util.ArrayList;

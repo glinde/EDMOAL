@@ -31,35 +31,50 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
  */
-package datamining.clustering.validation;
-
-import data.set.IndexedDataObject;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.resultProviders.FuzzyClusteringProvider;
-
+package datamining.validation;
 
 /**
- * Calculates the non fuzzines index (normalised partition coefficient) of the fuzzy clustering result.<br>
- * 
- * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
- * 
- * See paper: E. Backer and A.K. Jain. A Clustering Performance Measure based on Fuzzy Set Decomposition.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI)3(1):66–74. IEEE Press, Piscataway, NJ, USA 1981<br>
+ * TODO Class Description
  *
- * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
- * @return The partition coefficient of the specified clustering result.
+ * @author Roland Winkler
  */
-public class NonFuzzynessIndex<T> extends PartitionCoefficient<T>
+public class NotEnoughInformationException extends RuntimeException
 {
+	/**  */
+	private static final long	serialVersionUID	= -1957372593322337680L;
+
 	/**
-	 * @param clusterInfo
+	 * 
 	 */
-	public NonFuzzynessIndex(ClusteringInformation<T> clusterInfo)
+	public NotEnoughInformationException()
 	{
-		super(clusterInfo);
+		super();
 	}
 
-	public double index()
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public NotEnoughInformationException(String message, Throwable cause)
 	{
-		return 1.0d - (((double)this.clusterInfo.getClusterCount())/(((double)this.clusterInfo.getClusterCount()) - 1.0d))*(1.0d - super.index());
+		super(message, cause);
 	}
+
+	/**
+	 * @param message
+	 */
+	public NotEnoughInformationException(String message)
+	{
+		super(message);
+	}
+
+	/**
+	 * @param cause
+	 */
+	public NotEnoughInformationException(Throwable cause)
+	{
+		super(cause);
+	}
+	
+	
 }
