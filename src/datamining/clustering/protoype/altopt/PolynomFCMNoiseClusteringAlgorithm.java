@@ -180,9 +180,14 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		SortablePrototype sortedNoise = new SortablePrototype(null);
 		sortedNoise.squareDistance = this.noiseDistance*this.noiseDistance;
 		
+
+		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
+			System.out.print(".");
+			
 			maxPrototypeMovement = 0.0d;			
 			for(i=0; i<this.getClusterCount(); i++)
 			{
@@ -302,6 +307,8 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 	/* (non-Javadoc)

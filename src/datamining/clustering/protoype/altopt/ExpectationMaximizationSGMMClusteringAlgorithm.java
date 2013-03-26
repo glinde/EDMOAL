@@ -263,9 +263,14 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		ArrayList<double[]> newExpectationValues = new ArrayList<double[]>(this.getClusterCount());
 		for(i=0; i<this.getClusterCount(); i++) newExpectationValues.add(this.vs.getNewAddNeutralElement());
 		
+
+		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
+			System.out.print(".");
+			
 			prototypeMovement = 0.0d;
 
 			for(i = 0; i < this.getClusterCount(); i++)
@@ -371,6 +376,8 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			
 			if(prototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 

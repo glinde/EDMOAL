@@ -212,9 +212,14 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		
 		int[] zeroDistanceIndexList					= new int[this.getClusterCount()];
 		int zeroDistanceCount;
+
+		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
+			System.out.print(".");
+			
 			// reset values
 			maxPrototypeMovement = 0.0d;
 			prototypesMerged = false;
@@ -336,6 +341,8 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 		{
 			this.removePrototypes();
 		}
+
+		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 	/* (non-Javadoc)

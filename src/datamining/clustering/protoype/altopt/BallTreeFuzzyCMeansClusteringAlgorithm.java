@@ -423,8 +423,13 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
 		double maxPrototypeMovement;
 		
+		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
+		
 		for(t = 0; t < steps; t++)
 		{
+			System.out.print(".");
+			
 			maxPrototypeMovement = 0.0d;
 			//System.out.println("");
 			for(i=0; i<this.getClusterCount(); i++)
@@ -465,6 +470,8 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 

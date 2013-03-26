@@ -206,9 +206,14 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
 		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
 		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
-				
+
+		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
+		
 		for(t = 0; t < steps; t++)
 		{
+			System.out.print(".");
+			
 			maxPrototypeMovement = 0.0d;			
 			for(i=0; i<this.getClusterCount(); i++)
 			{
@@ -326,6 +331,8 @@ public class PolynomFCMClusteringAlgorithm<T> extends AbstractCentroidClustering
 			
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 
