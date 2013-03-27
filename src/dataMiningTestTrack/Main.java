@@ -37,10 +37,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import data.structures.balltree.BallTree;
+import dataMiningTestTrack.diss.ClusterDataSetsGenerator;
+import dataMiningTestTrack.diss.DissExperiments;
 import dataMiningTestTrack.tests.ClusterAlgorithmTestCentre;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
@@ -351,6 +355,6 @@ public class Main
 	
 	public static void dissDataSets()
 	{
-		
+		DissExperiments.genDissDataSets();
 	}
 }

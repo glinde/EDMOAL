@@ -144,7 +144,7 @@ public class ClusteredDataSetGenerator
 	
 	public void generateDistortedClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, boolean scale, int shuffleLocation)
 	{
-		System.out.print("Generate distorted data ... ");
+//		System.out.print("Generate distorted data ... ");
 		
 		this.data.clear();
 		this.clusters.clear();
@@ -165,7 +165,7 @@ public class ClusteredDataSetGenerator
 			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
 			ArrayList<double[]> cluster = this.generateRandomData(new int[]{clusterSize/2, clusterSize/2 + clusterSize%2});
 			
-			System.out.println("======= Distort cluster " + i + " ======="); 		
+//			System.out.println("======= Distort cluster " + i + " ======="); 		
 			this.distortCluster(cluster, scale, shuffleLocation);
 						
 			this.clusters.add(cluster);
@@ -200,7 +200,7 @@ public class ClusteredDataSetGenerator
 			dataIndex++;
 		}
 				
-		System.out.println(" done.");
+//		System.out.println(" done.");
 	}
 	
 	/**
@@ -241,7 +241,7 @@ public class ClusteredDataSetGenerator
 	{
 		DataDistorter distorter = new DataDistorter(this.dim);
 
-		System.out.print("generate distortions ... ");
+//		System.out.print("generate distortions ... ");
 		// distort data
 		for(int i=0; i<2*dim; i++) distorter.addDistortionLayers(new double[]{1.0, 0.5d/dim, 20.0d/dim, 10.0d/dim, 10.0d/dim, 1.2d/dim},  new double[]{0.0d, 0.1, 0.1, 1.0d/dim, Math.log(dim)/dim});
 
@@ -253,12 +253,12 @@ public class ClusteredDataSetGenerator
 
 		// randomly reverse data to randomize the data in the feature space
 		if(shuffleLocation > 0) distorter.addDistortionLayers(new double[]{0.5, 0.5, 0.0, 0.0, 0.0, 0.0d},  new double[]{1.0d, 0.0, 0.0, 0.0, 0.0});
-		System.out.println(" done.");
+//		System.out.println(" done.");
 
-		System.out.print("Distort data ");
-		long start = System.currentTimeMillis();
+//		System.out.print("Distort data ");
+//		long start = System.currentTimeMillis();
 		distorter.distortData(clusterData);
-		System.out.println(" done. [" + ((System.currentTimeMillis() - start)/1000) + " s]");
+//		System.out.println(" done. [" + ((System.currentTimeMillis() - start)/1000) + " s]");
 	}
 
 	public void shuffle()

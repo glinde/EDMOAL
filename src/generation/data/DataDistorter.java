@@ -262,8 +262,8 @@ public class DataDistorter implements Serializable
 //		this.normalize();
 		for(DistortionLayer distorter: this.distortionLevels)
 		{
-			System.out.print(".");
-			if(i%20 == 0) System.out.println(" " + i);
+//			System.out.print(".");
+//			if(i%20 == 0) System.out.println(" " + i);
 			distorter.updateUnarySpreadFunctions(data);
 			distorter.applyDistortionsParallel(data);
 			this.normalizeParallel(data);
