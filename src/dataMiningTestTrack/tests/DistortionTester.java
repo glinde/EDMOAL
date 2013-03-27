@@ -98,11 +98,11 @@ public class DistortionTester extends TestVisualizer implements Serializable
 		this.showCrispDataSetClustering(dataSet, clusterCount, clusterInformation, null);
 	}
 	
-	public void testDistortedClusters(int dim, int dataPerClusterCount, int clusterCount, int noise, boolean scale, int shuffleLocation)
+	public void testDistortedClusters(int dim, int dataPerClusterCount, boolean randomClusterSize, int clusterCount, int noise, boolean scale, int shuffleLocation)
 	{
 		ClusteredDataSetGenerator clusterGen = new ClusteredDataSetGenerator(dim);
 		
-		clusterGen.generateClusteredDataSet(dataPerClusterCount, clusterCount, noise, scale, shuffleLocation);
+		clusterGen.generateDistortedClusteredDataSet(dataPerClusterCount, randomClusterSize, clusterCount, noise, scale, shuffleLocation);
 		
 		for(int i=0; i<dim; i+=Math.max(dim/4, 1))
 		{

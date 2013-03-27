@@ -372,6 +372,6 @@ public abstract class AbstractTree<E, N extends AbstractTreeNode<E, N, T>, T ext
 	@Override
 	public boolean isBuild()
 	{
-		return this.isBuild();
+		return this.build;
 	}
 }

@@ -64,6 +64,7 @@ import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlg
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
+import datamining.validation.ClusterMaxPrecisionIndex;
 import datamining.validation.ClusterMaxRecallIndex;
 import datamining.validation.ClusteringInformation;
 import etc.DataGenerator;
@@ -91,6 +92,9 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	/**  */
 	private static final long	serialVersionUID	= -4791280640176444354L;
 
+	
+	private ClusteredDataSetGenerator clusterGen;
+	
 	/**
 	 * The data set to be clustered
 	 */
@@ -124,6 +128,7 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	{
 		this.dim = dim;
 		this.clusterCount = clusterCount;
+		this.clusterGen = new ClusteredDataSetGenerator(this.dim);
 		this.dataSet = new IndexedDataSet<double[]>();
 		this.correctClustering = new int[0];
 		this.initialPositons = new ArrayList<double[]>();
@@ -200,11 +205,23 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		}
 	}
 	
-	public void generateDistortedData(int dataPerClusterCount, int noise, boolean scale, int shuffleLocation)
-	{
-		ClusteredDataSetGenerator clusterGen = new ClusteredDataSetGenerator(this.dim);
+	public void generateDistortedData(int dataPerClusterCount, boolean randomClusterSize, int noise, boolean scale, int shuffleLocation)
+	{		
+		this.clusterGen.generateDistortedClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, scale, shuffleLocation);
+		this.clusterGen.shuffle();
 		
-		clusterGen.generateClusteredDataSet(dataPerClusterCount, this.clusterCount, noise, scale, shuffleLocation);
+		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
+		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+		
+		this.dataSet.seal();
+		
+		this.correctClustering = clusterGen.getClusterIndices();
+	}
+	
+	public void generateUniformDistributedNormalClusteres(int dataPerClusterCount, boolean randomClusterSize, int noise, double clusterRadius, boolean randomRadius)
+	{		
+		this.clusterGen.generateUniformNormalClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, clusterRadius, randomRadius);
+		this.clusterGen.shuffle();
 		
 		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
 		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
@@ -456,6 +473,23 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		this.lastCrispClusteringResult = clusterAlgo.getAllCrispClusterAssignments();
 	}
 	
+	public void validateLastCrispClusteringResult()
+	{
+		ClusteringInformation<double[]> info = new ClusteringInformation<double[]>(this.clusterCount);
+		
+		info.setDataSet(this.dataSet);
+		info.setCrispClusteringResult(this.lastCrispClusteringResult);
+		info.setTrueClusteringResult(this.correctClustering);
+
+		ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, true);		
+		double precisionIndex = maxPrecision.index();		
+		ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info, true);		
+		double recallIndex = maxRecall.index();		
+		
+		System.out.println("Max Precision Index: " + precisionIndex);
+		System.out.println("Max Recall    Index: " + recallIndex);
+	}
+	
 	public void validateLastFuzzyClusteringResult()
 	{
 		ClusteringInformation<double[]> info = new ClusteringInformation<double[]>(this.clusterCount);
@@ -463,11 +497,25 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		info.setDataSet(this.dataSet);
 		info.setFuzzyClusteringResult(this.lastFuzzyClusteringResult);
 		info.setTrueClusteringResult(this.correctClustering);
-		
-		ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info);
-		
-		double index = maxRecall.index();
-		
-		System.out.println("Max Recall Index: " + index);
+
+		ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, false);		
+		double precisionIndex = maxPrecision.index();		
+		ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info, false);		
+		double recallIndex = maxRecall.index();		
+		System.out.println("Max Precision Index: " + precisionIndex);
+		System.out.println("Max Recall    Index: " + recallIndex);
+	}
+	
+	public void printDataStatistics()
+	{
+		System.out.println("========== Data Statistics ==========");
+		System.out.println("Dimensionality: " + this.dim);
+		System.out.println("Number of data Objects: " + this.dataSet.size());
+		for(int i=0; i<this.clusterCount; i++)
+		{
+			System.out.println("\tSize of cluster "+i+": " + this.clusterGen.getClusters().get(i).size());
+		}
+			
+		System.out.println("Number of noise data Objects: " + this.clusterGen.getNoise().size());
 	}
 }

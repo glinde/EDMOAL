@@ -36,6 +36,11 @@ package generation.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.random.RandomData;
+import org.apache.commons.math3.random.RandomDataGenerator;
+
 import etc.SimpleStatistics;
 
 /**
@@ -50,6 +55,8 @@ public class ClusteredDataSetGenerator
 	private ArrayList<double[]> data;
 	
 	private ArrayList<ArrayList<double[]>> clusters;
+
+	private ArrayList<double[]> noise;
 	
 	private int[] clusterIndices;
 	
@@ -58,46 +65,141 @@ public class ClusteredDataSetGenerator
 		this.dim = dim;
 		this.data = new ArrayList<double[]>();
 		this.clusters = new ArrayList<ArrayList<double[]>>();
+		this.noise = new ArrayList<double[]>();
 		this.clusterIndices = null;
 	}
 	
-	
-	public void generateClusteredDataSet(int dataObjectsPerClusterCount, int clusterCount, int noise, boolean scale, int shuffleLocation)
+	public void generateUniformNormalClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, double clusterRadius, boolean randomRadius)
 	{
-		this.data.ensureCapacity(dataObjectsPerClusterCount*clusterCount + noise);
-		this.clusterIndices = new int[dataObjectsPerClusterCount*clusterCount + noise];
-				
-		System.out.print("Generate data ... ");		
-		for(int i=0; i<clusterCount; i++)
-		{
-			this.clusters.add(this.generateRandomData(new int[]{dataObjectsPerClusterCount/2, dataObjectsPerClusterCount/2 + dataObjectsPerClusterCount%2}));
-		}
-		System.out.println(" done.");
-
-		int k=0;
-				
-		for(int i=0; i<clusterCount; i++)
-		{
-			System.out.println("======= Distort cluster " + i + " ======="); 		
-			this.distortCluster(clusters.get(i), scale, shuffleLocation);
-			this.data.addAll(clusters.get(i));
-			for(int j=0; j<dataObjectsPerClusterCount; j++, k++) this.clusterIndices[k] = i; 
-		}
-
-		System.out.print("Add noise ... ");
-
-		this.data.addAll((new HyperrectangleUniformGenerator(this.dim)).generateDataObjects(noise));
-
-//		double[] mean = SimpleStatistics.mean(data);
-//		double variance = SimpleStatistics.variance(data, mean);
-//		ArrayList<double[]> tmpData;
-//		DataDistorter distorter = new DataDistorter(this.dim);
-//		tmpData = (new SphericalNormalGenerator(mean, variance)).generateDataObjects(normalNiose);
-//		distorter.normalizeParallel(tmpData);		
-//		this.data.addAll(tmpData);
+		System.out.print("Generate Uniform Normal data ... ");
 		
-		for(int j=0; j<noise; j++, k++) this.clusterIndices[k] = -1; 
+		this.data.clear();
+		this.clusters.clear();
+		this.noise.clear();
+		
+		ArrayList<double[]> seeds = new ArrayList<double[]>(clusterCount);
+		UniformRealDistribution uniGen = new UniformRealDistribution(0.0d, 1.0d);
+		NormalDistribution normGen = new NormalDistribution(0.0d, 1.0d);
+		double radius;
+		int clusterSize;
+		int totalDataObjects = 0;
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			seeds.add(uniGen.sample(this.dim));			
+		}
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
+			radius = randomRadius? 2.0d*uniGen.sample()*clusterRadius : clusterRadius;
+			ArrayList<double[]> cluster = new ArrayList<double[]>(clusterSize);
+			
+			for(int j=0; j<clusterSize; j++)
+			{
+				double[] x = new double[this.dim];
+				
+				for(int k=0; k<this.dim; k++)
+				{
+					x[k] = radius*normGen.sample() + seeds.get(i)[k];
+				}
+				
+				cluster.add(x);
+			}
+			
+			this.clusters.add(cluster);
+			totalDataObjects += clusterSize;
+		}
 
+		for(int i=0; i<noiseCount; i++)
+		{
+			double[] x = uniGen.sample(this.dim);
+			this.noise.add(x);
+		}
+		totalDataObjects += noiseCount;				
+		
+		this.clusterIndices = new int[totalDataObjects];		
+		this.data.ensureCapacity(totalDataObjects);		
+		int dataIndex=0;
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			for(int j=0; j<this.clusters.get(i).size(); j++)
+			{
+				this.data.add(this.clusters.get(i).get(j));
+				this.clusterIndices[dataIndex] = i;
+				dataIndex++;
+			}
+		}
+		
+		for(int j=0; j<this.noise.size(); j++)
+		{
+			this.data.add(this.noise.get(j));
+			this.clusterIndices[dataIndex] = -1;
+			dataIndex++;
+		}
+				
+		System.out.println(" done.");
+	}
+	
+	public void generateDistortedClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, boolean scale, int shuffleLocation)
+	{
+		System.out.print("Generate distorted data ... ");
+		
+		this.data.clear();
+		this.clusters.clear();
+		this.noise.clear();
+		
+		ArrayList<double[]> seeds = new ArrayList<double[]>(clusterCount);
+		UniformRealDistribution uniGen = new UniformRealDistribution(0.0d, 1.0d);
+		int clusterSize;
+		int totalDataObjects = 0;
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			seeds.add(uniGen.sample(this.dim));			
+		}
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
+			ArrayList<double[]> cluster = this.generateRandomData(new int[]{clusterSize/2, clusterSize/2 + clusterSize%2});
+			
+			System.out.println("======= Distort cluster " + i + " ======="); 		
+			this.distortCluster(cluster, scale, shuffleLocation);
+						
+			this.clusters.add(cluster);
+			totalDataObjects += clusterSize;
+		}
+
+		for(int i=0; i<noiseCount; i++)
+		{
+			double[] x = uniGen.sample(this.dim);
+			this.noise.add(x);
+		}
+		totalDataObjects += noiseCount;				
+		
+		this.clusterIndices = new int[totalDataObjects];		
+		this.data.ensureCapacity(totalDataObjects);		
+		int dataIndex=0;
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			for(int j=0; j<this.clusters.get(i).size(); j++)
+			{
+				this.data.add(this.clusters.get(i).get(j));
+				this.clusterIndices[dataIndex] = i;
+				dataIndex++;
+			}
+		}
+		
+		for(int j=0; j<this.noise.size(); j++)
+		{
+			this.data.add(this.noise.get(j));
+			this.clusterIndices[dataIndex] = -1;
+			dataIndex++;
+		}
+				
 		System.out.println(" done.");
 	}
 	
@@ -159,6 +261,23 @@ public class ClusteredDataSetGenerator
 		System.out.println(" done. [" + ((System.currentTimeMillis() - start)/1000) + " s]");
 	}
 
+	public void shuffle()
+	{
+		RandomDataGenerator random = new RandomDataGenerator();
+		int[] permutation = random.nextPermutation(this.data.size(), this.data.size());
+		
+		ArrayList<double[]> shuffledData = new ArrayList<double[]>(this.data.size());
+		int[] shuffledIndices = new int[this.data.size()];
+		
+		for(int i=0; i<this.data.size(); i++)
+		{
+			shuffledData.add(this.data.get(permutation[i]));
+			shuffledIndices[i] = this.clusterIndices[permutation[i]];
+		}
+		
+		this.data = shuffledData;
+		this.clusterIndices = shuffledIndices;
+	}
 
 	/**
 	 * @return the dim
@@ -193,6 +312,14 @@ public class ClusteredDataSetGenerator
 	public int[] getClusterIndices()
 	{
 		return this.clusterIndices;
+	}
+
+	/**
+	 * @return the noise
+	 */
+	public ArrayList<double[]> getNoise()
+	{
+		return this.noise;
 	}
 	
 	

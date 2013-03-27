@@ -38,22 +38,20 @@ package datamining.validation;
  *
  * @author Roland Winkler
  */
-public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
+public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 {
 	protected boolean crisp;
 	
 	/**
 	 * @param clusterInfo
 	 */
-	public ClusterMaxRecallIndex(ClusteringInformation<T> clusterInfo, boolean crisp)
+	public ClusterMaxPrecisionIndex(ClusteringInformation<T> clusterInfo, boolean crisp)
 	{
 		super(clusterInfo);
 		
 		this.crisp = crisp;
 	}
 
-	
-	
 	/* (non-Javadoc)
 	 * @see datamining.clustering.validation.ClusterValidation#index()
 	 */
@@ -68,33 +66,34 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 		this.clusterInfo.checkCrispClusteringResult();
 		this.clusterInfo.checkTrueClusteringResult();
 		
-		int[][] clusterRecall = new int[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
+		int[][] clusterPrecision = new int[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
 		int dataObjectCount;
 		double max;
 		double sum;
-		int[] classSize = new int[this.clusterInfo.getClusterCount()];
-		int clas;
+		int[] clusterSize = new int[this.clusterInfo.getClusterCount()];
+		int clas, clus;
 
 		dataObjectCount = this.clusterInfo.getCrispClusteringResult().length;
 
 		int i, j, k;
 		for(j=0; j<dataObjectCount; j++)
 		{
+			clus = this.clusterInfo.getCrispClusteringResult()[j];
 			clas = this.clusterInfo.getTrueClusteringResult()[j];
-			if(clas >= 0 && this.clusterInfo.getCrispClusteringResult()[j] >= 0)
+			if(clas >= 0 && clus >= 0)
 			{
-				classSize[clas]++;			
-				clusterRecall[this.clusterInfo.getCrispClusteringResult()[j]][clas]++;
+				clusterSize[clus]++;
+				clusterPrecision[clus][clas]++;
 			}
 		}
 		
 		sum = 0.0d;
-		for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+		for(k=0; k<this.clusterInfo.getClusterCount(); k++)
 		{
 			max = 0.0d;
-			for(k=0; k<this.clusterInfo.getClusterCount(); k++)
+			for(i=0; i<this.clusterInfo.getClusterCount(); i++)
 			{
-				max = (max > ((double)clusterRecall[i][k])/((double)classSize[k]))? max : ((double)clusterRecall[i][k])/((double)classSize[k]);  
+				max = (max > ((double)clusterPrecision[i][k])/((double)clusterSize[i]))? max : ((double)clusterPrecision[i][k])/((double)clusterSize[i]);  
 			}
 			sum += max;
 		}
@@ -107,12 +106,12 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
 		this.clusterInfo.checkTrueClusteringResult();
 		
-		double[][] clusterRecall = new double[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
+		double[][] clusterPrecision = new double[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
 		double[] membershipValues;
 		int dataObjectCount;
 		double max;
 		double sum;
-		int[] classSize = new int[this.clusterInfo.getClusterCount()];
+		double[] clusterSize = new double[this.clusterInfo.getClusterCount()];
 		int clas;
 
 		dataObjectCount = (this.clusterInfo.getFuzzyClusteringResult() != null) ?
@@ -126,22 +125,23 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 				this.clusterInfo.getFuzzyClusteringResult().get(j) :
 				this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(this.clusterInfo.getFuzzyClusteringProvider().getDataSet().get(j));
 
+			for(i=0; i<this.clusterInfo.getClusterCount(); i++) clusterSize[i] += membershipValues[i];
+				
 			clas = this.clusterInfo.getTrueClusteringResult()[j];
 			if(clas >= 0)
 			{
-				classSize[clas]++;			
 				for(i=0; i<this.clusterInfo.getClusterCount(); i++)
-					clusterRecall[i][clas] += membershipValues[i];
+					clusterPrecision[i][clas] += membershipValues[i];
 			}
 		}
 		
 		sum = 0.0d;
-		for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+		for(k=0; k<this.clusterInfo.getClusterCount(); k++)
 		{
 			max = 0.0d;
-			for(k=0; k<this.clusterInfo.getClusterCount(); k++)
+			for(i=0; i<this.clusterInfo.getClusterCount(); i++)
 			{
-				max = (max > clusterRecall[i][k]/classSize[k])? max : clusterRecall[i][k]/classSize[k];  
+				max = (max > clusterPrecision[i][k]/clusterSize[i])? max : clusterPrecision[i][k]/clusterSize[i];  
 			}
 			sum += max;
 		}
