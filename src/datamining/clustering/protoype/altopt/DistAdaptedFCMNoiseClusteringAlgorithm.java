@@ -113,6 +113,12 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
 
+	/** It is often advantageous to start with a large noise distance in order to allow the prototypes to find all clouds of data objects.
+	 * this distance defines how high the noise distance shall be at the beginning of the iteration process.
+	 * The function of degration is dist = noiseDistance + (degradingNoiseDistance-noiseDistance)*e^-t
+	 */
+	protected double degradingNoiseDistance;
+
 
 	/**
 	 * Creates a new FuzzyCMeansNoiseClusteringAlgorithm with the specified data set, vector space and metric.
@@ -130,6 +136,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 		super(data, vs, dist);
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
 	}
 
 
@@ -150,6 +157,7 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 		super(c, useOnlyActivePrototypes);
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
 	}
 
 
@@ -250,7 +258,8 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 				}
 				
 				// influence of the noise cluster
-				distanceSum += MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent);
+				doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-t);
+				distanceSum += MyMath.pow(doubleTMP*doubleTMP, distanceExponent);
 
 				// special case handling: if one (or more) prototype sits on top of a data object
 				if(zeroDistanceCount>0)
@@ -877,5 +886,26 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 		if(noiseDistance <= 0.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
 		
 		this.noiseDistance = noiseDistance;
+		
+		if(this.degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+	}
+
+
+	/**
+	 * @return the degradingNoiseDistance
+	 */
+	public double getDegradingNoiseDistance()
+	{
+		return this.degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @param degradingNoiseDistance the degradingNoiseDistance to set
+	 */
+	public void setDegradingNoiseDistance(double degradingNoiseDistance)
+	{
+		if(degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+		else this.degradingNoiseDistance = degradingNoiseDistance;
 	}
 }

@@ -100,6 +100,12 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
 
+	/** It is often advantageous to start with a large noise distance in order to allow the prototypes to find all clouds of data objects.
+	 * this distance defines how high the noise distance shall be at the beginning of the iteration process.
+	 * The function of degration is dist = noiseDistance + (degradingNoiseDistance-noiseDistance)*e^-t
+	 */
+	protected double degradingNoiseDistance;
+
 	/**
 	 * Creates a new VoronoiPartitionFCMNoiseClusteringAlgorithm with the specified data set, vector space and metric.
 	 * The prototypes are not initialized by this method, it has to be done separately.
@@ -117,6 +123,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		super(data, vs, metric, sp);
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
 	}
 
 	/**
@@ -137,6 +144,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		super(c, sp, useOnlyActivePrototypes);
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
 	}
 
 	/* (non-Javadoc)
@@ -261,7 +269,8 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 						}
 					}
 					// influence of the noise cluster
-					distanceSum += MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent);
+					doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-t);
+					distanceSum += MyMath.pow(doubleTMP*doubleTMP, distanceExponent);
 										
 					for(i=0; i<this.getClusterCount(); i++)
 					{
@@ -971,6 +980,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		return fuzzNoiseDist/distanceSum;
 	}
 
+
 	/**
 	 * Returns the noise distance.
 	 * 
@@ -991,6 +1001,26 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		if(noiseDistance <= 0.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
 		
 		this.noiseDistance = noiseDistance;
+		
+		if(this.degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
 	}
 
+
+	/**
+	 * @return the degradingNoiseDistance
+	 */
+	public double getDegradingNoiseDistance()
+	{
+		return this.degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @param degradingNoiseDistance the degradingNoiseDistance to set
+	 */
+	public void setDegradingNoiseDistance(double degradingNoiseDistance)
+	{
+		if(degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+		else this.degradingNoiseDistance = degradingNoiseDistance;
+	}
 }

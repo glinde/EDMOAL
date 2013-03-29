@@ -92,8 +92,16 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 {	
 	/**  */
 	private static final long	serialVersionUID	= 6531335434133789423L;
-	/**  */
+	
+	/** The noise distance. The noise cluster is equally distant to all data objects and that distance is
+	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
+
+	/** It is often advantageous to start with a large noise distance in order to allow the prototypes to find all clouds of data objects.
+	 * this distance defines how high the noise distance shall be at the beginning of the iteration process.
+	 * The function of degration is dist = noiseDistance + (degradingNoiseDistance-noiseDistance)*e^-t
+	 */
+	protected double degradingNoiseDistance;
 	
 	/**
 	 * @param data
@@ -104,6 +112,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		super(data, vs, dist);
 		
 		this.noiseDistance = 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
 	}
 
 
@@ -116,6 +125,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		super(c, useOnlyActivePrototypes);
 
 		this.noiseDistance = 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
 	}
 	
 	
@@ -144,6 +154,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		double membershipHalfSum			= 0.0d;
 		int minDistIndex					= 0;
 		double noiseMembershipValue			= 0.0d;
+		double tNoiseDistSq					= 0.0d;
 		
 		
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
@@ -155,6 +166,9 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		for(t = 0; t < steps; t++)
 		{
 			System.out.print(".");
+
+			doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-t);
+			tNoiseDistSq = doubleTMP*doubleTMP;
 			
 			// reset values
 			maxPrototypeMovement = 0.0d;
@@ -184,7 +198,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 						minDistIndex = i;
 					}
 				}
-				if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+				if(minDistValue > tNoiseDistSq) minDistValue = tNoiseDistSq;
 				minDistValue *= this.distanceMultiplierConstant;
 				
 				for(i = 0; i < this.getClusterCount(); i++)
@@ -203,7 +217,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 						distanceSum += doubleTMP;
 					}
 				}				
-				distanceSum += 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+				distanceSum += 1.0d/(tNoiseDistSq - minDistValue);
 
 				// special case handling: if one (or more) prototype sits on top of a data object
 				if(zeroDistanceCount>0)
@@ -226,7 +240,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 						doubleTMP = fuzzDistances[i] / distanceSum;
 						membershipValues[i] = doubleTMP;
 					}
-					noiseMembershipValue = (this.noiseDistance*this.noiseDistance - minDistValue)/distanceSum;
+					noiseMembershipValue = (tNoiseDistSq - minDistValue)/distanceSum;
 				}
 				
 				membershipHalfSum = 0.0d;
@@ -737,6 +751,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		return noiseMembership;
 	}
 
+
 	/**
 	 * Returns the noise distance.
 	 * 
@@ -757,5 +772,26 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		if(noiseDistance <= 0.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
 		
 		this.noiseDistance = noiseDistance;
+		
+		if(this.degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+	}
+
+
+	/**
+	 * @return the degradingNoiseDistance
+	 */
+	public double getDegradingNoiseDistance()
+	{
+		return this.degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @param degradingNoiseDistance the degradingNoiseDistance to set
+	 */
+	public void setDegradingNoiseDistance(double degradingNoiseDistance)
+	{
+		if(degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+		else this.degradingNoiseDistance = degradingNoiseDistance;
 	}
 }
