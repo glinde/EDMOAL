@@ -100,11 +100,17 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
 
+
 	/** It is often advantageous to start with a large noise distance in order to allow the prototypes to find all clouds of data objects.
 	 * this distance defines how high the noise distance shall be at the beginning of the iteration process.
-	 * The function of degration is dist = noiseDistance + (degradingNoiseDistance-noiseDistance)*e^-t
+	 * The function of degration is dist = <code>noiseDistance</code> + (<code>degradingNoiseDistance</code>-<code>noiseDistance</code>)*e^(-<code>noiseDegrationFactor</code>*t)
 	 */
 	protected double degradingNoiseDistance;
+	
+	/** 
+	 * Controlls the speed at which the noise distance is degrading from its initial value. 
+	 *  */
+	protected double noiseDegrationFactor;
 
 	/**
 	 * Creates a new VoronoiPartitionFCMNoiseClusteringAlgorithm with the specified data set, vector space and metric.
@@ -124,6 +130,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 		this.degradingNoiseDistance		= this.noiseDistance;
+		this.noiseDegrationFactor		= 1.0d;
 	}
 
 	/**
@@ -145,6 +152,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 
 		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
 		this.degradingNoiseDistance		= this.noiseDistance;
+		this.noiseDegrationFactor		= 1.0d;
 	}
 
 	/* (non-Javadoc)
@@ -269,7 +277,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 						}
 					}
 					// influence of the noise cluster
-					doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-t);
+					doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-this.noiseDegrationFactor*t);
 					distanceSum += MyMath.pow(doubleTMP*doubleTMP, distanceExponent);
 										
 					for(i=0; i<this.getClusterCount(); i++)
@@ -1023,4 +1031,24 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		if(degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
 		else this.degradingNoiseDistance = degradingNoiseDistance;
 	}
+
+
+	/**
+	 * @return the noiseDegrationFactor
+	 */
+	public double getNoiseDegrationFactor()
+	{
+		return this.noiseDegrationFactor;
+	}
+
+
+	/**
+	 * @param noiseDegrationFactor the noiseDegrationFactor to set
+	 */
+	public void setNoiseDegrationFactor(double noiseDegrationFactor)
+	{
+		this.noiseDegrationFactor = (noiseDegrationFactor>=0.0d)? noiseDegrationFactor:0.0d;
+	}
+	
+	
 }
