@@ -69,7 +69,7 @@ import etc.MyMath;
 public class Main
 {
 	/**
-	 * Decide whether you want to visually test some algorithms or if zyou like to
+	 * Decide whether you want to visually test some algorithms or if you like to
 	 * perform a performance test of the various aspects of EDMOAL.
 	 * 
 	 * @param args The command arguments. They are ignored for now.
@@ -87,7 +87,7 @@ public class Main
 //		Main.distortionTest();
 //		Main.distortionClusteringTest();
 //		Main.clusterValidityTest();
-		Main.dissDataSets();
+		DissExperiments.genDissDataSets();
 	}
 	
 	
@@ -306,10 +306,13 @@ public class Main
 
 	public static void clusterValidityTest()
 	{
-		int dim = 2;
+		int dim = 100;
 		int dataPerCluster = 1000;
-		int clusterCount = 2*dim;
+		int clusterCount = (3*dim)/2;
 		int noise = dataPerCluster*clusterCount/10;
+		int cluster1 = (int)(Math.sqrt(dim));
+		int flip1 = (int)(Math.sqrt(cluster1));
+		int flip0 = (int)(Math.sqrt(cluster1))/2;
 		
 		ClusterAlgorithmTestCentre testCentre = new ClusterAlgorithmTestCentre(dim, clusterCount);
 
@@ -317,44 +320,52 @@ public class Main
 		testCentre.printJPG = false;
 		testCentre.printSVG = false;
 		testCentre.printPDF = false;
-		
-//		testCentre.generateDistortedData(dataPerCluster, true, noise, true, 4);
+
+//		testCentre.generateUniformDistributedNormalClusteres(dataPerCluster, false, 0, 0.01, false);
 		testCentre.generateUniformDistributedNormalClusteres(dataPerCluster, true, noise, 0.01, true);
+//		testCentre.generateDistortedData(dataPerCluster, true, noise, true, 4);
+//		testCentre.generateCornerCentricClusteres(dataPerCluster, false, clusterCount, noise, cluster1, false, flip1, flip0);
+		
 		testCentre.generateInitialPositionsRandomUniform();
 		testCentre.printDataStatistics();
-		testCentre.showDataSetClustered2DProjections(dim/2.0d, dim/2.0d, null);
+		testCentre.showDataSetClustered2DProjections(dim/1.0d, dim/1.0d, null);
 		
-		testCentre.testHardCMeans();
-		testCentre.validateLastCrispClusteringResult();
-//		testCentre.showCrispClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
-		
-		testCentre.testFuzzyCMeans(1.0d+1.0d/dim);
-		testCentre.validateLastFuzzyClusteringResult();
+//		testCentre.testHardCMeans();
+//		testCentre.validateLastCrispClusteringResult();
+//		
+//		testCentre.testFuzzyCMeans(1.0d+1.0d/dim);
+//		testCentre.validateLastFuzzyClusteringResult();
+
+//		testCentre.testFuzzyCMeans(2.0d);
+//		testCentre.validateLastClusteringResult();
 //		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
 		
-		testCentre.testFuzzyCMeans(2.0d);
-		testCentre.validateLastFuzzyClusteringResult();
+//		testCentre.testFuzzyCMeansNoise(2.0d, 0.1d);
+//		testCentre.validateLastClusteringResult();
 //		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
 		
-		testCentre.testPolynomialFuzzyCMeans(0.5d);
-		testCentre.validateLastFuzzyClusteringResult();
+//		testCentre.testPolynomialFuzzyCMeans(0.5d);
+//		testCentre.validateLastClusteringResult();
 //		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
+//		
+		testCentre.testPolynomialFuzzyCMeansNoise(0.5d, 0.2d);
+		testCentre.validateLastClusteringResult();
+		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
 		
-		testCentre.testRewardingCrispFCM(1.0d-1.0d/dim);
-		testCentre.validateLastFuzzyClusteringResult();
+//		testCentre.testRewardingCrispFCM(1.0d-1.0d/dim);
+//		testCentre.validateLastClusteringResult();
 //		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
 
-		testCentre.testVoronoiPartitionFCM();
-		testCentre.validateLastFuzzyClusteringResult();
-//		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
-		
-//		testCentre.testDBScan(10, 0.1d);
+		testCentre.testRewardingCrispFCMNoise(1.0d-1.0d/dim, 0.2d);
+		testCentre.validateLastClusteringResult();
+		testCentre.showFuzzyClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
+//
+//		testCentre.testExpectationMaximization();
+//		testCentre.validateLastFuzzyClusteringResult();
+
+//		testCentre.testDBScan(20, 1.0d);
 //		testCentre.validateLastCrispClusteringResult();
-//		testCentre.showCrispClusteringResult2DProjections(dim/2.0d, dim/2.0d, null);
-	}
-	
-	public static void dissDataSets()
-	{
-		DissExperiments.genDissDataSets();
+//		testCentre.showCrispClusteringResult2DProjections(dim/1.0d, dim/1.0d, null);
+		
 	}
 }

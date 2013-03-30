@@ -33,6 +33,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+
 /**
  * TODO Class Description
  *
@@ -68,12 +70,16 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 		this.clusterInfo.checkCrispClusteringResult();
 		this.clusterInfo.checkTrueClusteringResult();
 		
+		int clusterCount = this.clusterInfo.getClusterCount();
 		int[][] clusterRecall = new int[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
 		int dataObjectCount;
 		double max;
 		double sum;
 		int[] classSize = new int[this.clusterInfo.getClusterCount()];
 		int clas;
+		int clus;
+		int noiseCount = 0;
+		int trueNoiseCount = 0;
 
 		dataObjectCount = this.clusterInfo.getCrispClusteringResult().length;
 
@@ -81,10 +87,16 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 		for(j=0; j<dataObjectCount; j++)
 		{
 			clas = this.clusterInfo.getTrueClusteringResult()[j];
-			if(clas >= 0 && this.clusterInfo.getCrispClusteringResult()[j] >= 0)
+			clus = this.clusterInfo.getCrispClusteringResult()[j];
+			if(clas >= 0 && clus >= 0)
 			{
 				classSize[clas]++;			
-				clusterRecall[this.clusterInfo.getCrispClusteringResult()[j]][clas]++;
+				clusterRecall[clus][clas]++;
+			}
+			else if(clas < 0)
+			{
+				noiseCount++;
+				if(clus < 0) trueNoiseCount++;
 			}
 		}
 		
@@ -98,8 +110,14 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 			}
 			sum += max;
 		}
+
+		if(noiseCount > 0)
+		{
+			sum += ((double)trueNoiseCount)/((double)noiseCount);
+			clusterCount++;	
+		}
 		
-		return (sum - 1.0d)/(this.clusterInfo.getClusterCount() - 1.0d);
+		return (sum - 1.0d)/(clusterCount - 1.0d);
 	}
 	
 	public double fuzzyIndex()
@@ -107,6 +125,7 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
 		this.clusterInfo.checkTrueClusteringResult();
 		
+		int clusterCount = this.clusterInfo.getClusterCount();
 		double[][] clusterRecall = new double[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
 		double[] membershipValues;
 		int dataObjectCount;
@@ -114,7 +133,10 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 		double sum;
 		int[] classSize = new int[this.clusterInfo.getClusterCount()];
 		int clas;
-
+		int noiseDataCount = 0;
+		double noiseRec;
+		double[] noiseAssignments = null;
+		
 		dataObjectCount = (this.clusterInfo.getFuzzyClusteringResult() != null) ?
 			this.clusterInfo.getFuzzyClusteringResult().size() :
 			this.clusterInfo.getFuzzyClusteringProvider().getDataSet().size();
@@ -133,6 +155,7 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 				for(i=0; i<this.clusterInfo.getClusterCount(); i++)
 					clusterRecall[i][clas] += membershipValues[i];
 			}
+			else noiseDataCount++;
 		}
 		
 		sum = 0.0d;
@@ -146,7 +169,32 @@ public class ClusterMaxRecallIndex<T> extends ClusterValidation<T>
 			sum += max;
 		}
 		
-		return (sum - 1.0d)/(this.clusterInfo.getClusterCount() - 1.0d);
+		if(noiseDataCount > 0)
+		{
+			noiseRec = 0.0d;
+			
+			if(this.clusterInfo.getNoiseClusterMembershipValues() != null)
+			{
+				noiseAssignments = this.clusterInfo.getNoiseClusterMembershipValues();
+			}
+			else if(this.clusterInfo.getFuzzyClusteringProvider() instanceof FuzzyNoiseClusteringProvider)
+			{
+				noiseAssignments = ((FuzzyNoiseClusteringProvider<T>)this.clusterInfo.getFuzzyClusteringProvider()).getFuzzyNoiseAssignments();
+			}
+
+			if(noiseAssignments != null)
+			{
+				for(j=0; j<dataObjectCount; j++)
+				{
+					if(this.clusterInfo.getTrueClusteringResult()[j] < 0) noiseRec += noiseAssignments[j];
+				}
+			}
+							
+			sum += noiseRec / noiseDataCount;
+			clusterCount++;
+		}
+		
+		return (sum - 1.0d)/(clusterCount - 1.0d);
 	}
 
 }

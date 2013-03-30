@@ -36,7 +36,12 @@ package generation.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
+import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.PoissonDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.random.RandomData;
 import org.apache.commons.math3.random.RandomDataGenerator;
@@ -67,6 +72,134 @@ public class ClusteredDataSetGenerator
 		this.clusters = new ArrayList<ArrayList<double[]>>();
 		this.noise = new ArrayList<double[]>();
 		this.clusterIndices = null;
+	}
+
+	public void generateCornerClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, int cluster1Count, boolean randomCluster1Count, int cluster1FlipsCount, int cluster0FlipsCount)
+	{
+		System.out.print("Generate corner centric data ... ");
+		
+		this.data.clear();
+		this.clusters.clear();
+		this.noise.clear();
+
+		UniformRealDistribution uniGen = new UniformRealDistribution(0.0d, 1.0d);
+		RandomDataGenerator random = new RandomDataGenerator();
+		PoissonDistribution poissonC = new PoissonDistribution(cluster1Count);
+		int[] clusterPermutation; // = random.nextPermutation(this.data.size(), this.data.size());
+		int[] flips1Permutation;
+		int[] flips0Permutation;
+		int totalDataObjects = 0;
+		int clusterSize;
+		int cluster1C;
+		int cluster1FlipsC;
+		int cluster0FlipsC;
+		double[] x;
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			// basic cluster values
+			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
+			cluster1C = randomCluster1Count? poissonC.sample() : cluster1Count;
+			
+			// generate permutation of all dimensions. The first cluster1C elements belong to the cluster
+			clusterPermutation = random.nextPermutation(this.dim, this.dim);
+
+			// new distributions for this clusters flips.
+			PoissonDistribution poisson1 = new PoissonDistribution(cluster1FlipsCount+0.0001d);
+			PoissonDistribution poisson0 = new PoissonDistribution(cluster0FlipsCount+0.0001d);
+			
+			ArrayList<double[]> cluster = new ArrayList<double[]>(clusterSize);
+			
+			for(int j=0; j<clusterSize; j++)
+			{
+				x = new double[this.dim];
+
+				// number of flips in both directions
+				cluster1FlipsC = poisson1.sample();
+				cluster0FlipsC = poisson0.sample();
+				
+				// bound number of flips
+				cluster1FlipsC = (cluster1FlipsC>cluster1C)? cluster1C:cluster1FlipsC;
+				cluster0FlipsC = (cluster0FlipsC>(this.dim-cluster1C))? (this.dim-cluster1C):cluster0FlipsC;
+				
+				// generate flip-permutations.. 1-to-0 flips act on the first cluster1C elements of the clusterPermutation,
+				// the 0-to-1 flips act on the remaining dim-cluster1C elements of the clusterPermutation.
+				flips1Permutation = (cluster1FlipsC>0)? random.nextPermutation(cluster1C, cluster1FlipsC): new int[0];
+				flips0Permutation = (cluster0FlipsC>0)? random.nextPermutation(this.dim-cluster1C, cluster0FlipsC): new int[0];
+				
+				// setup standard cluster
+				for(int k=0; k<cluster1C; k++)
+				{
+					x[clusterPermutation[k]] = 1.0d;
+				}
+				// turn some of the 1's into 0's
+				for(int k=0; k<cluster1FlipsC; k++)
+				{
+					x[clusterPermutation[flips1Permutation[k]]] = 0.0d;
+				}
+				// turn some of the initially remaining 0's into 1's
+				for(int k=0; k<cluster0FlipsC; k++)
+				{
+					x[clusterPermutation[cluster1C+flips0Permutation[k]]] = 1.0d;
+				}
+				
+				cluster.add(x);
+//				for(int k=0; k<this.dim; k++)
+//				{
+//					System.out.print((int)x[k]);
+//				}
+//				System.out.println("");
+			}
+			
+			this.clusters.add(cluster);
+			totalDataObjects += clusterSize;
+		}
+		
+//		for(int k=0; k<this.dim; k++) System.out.print("-");
+//		System.out.println("");
+
+		for(int i=0; i<noiseCount; i++)
+		{
+			x = new double[this.dim];
+			
+			cluster1C = randomCluster1Count? poissonC.sample() : cluster1Count;
+			clusterPermutation = random.nextPermutation(this.dim, this.dim);
+			for(int k=0; k<cluster1C; k++)
+			{
+				x[clusterPermutation[k]] = 1.0d;
+			}
+			
+			this.noise.add(x);
+//			for(int k=0; k<this.dim; k++)
+//			{
+//				System.out.print((int)x[k]);
+//			}
+//			System.out.println("");
+		}
+		totalDataObjects += noiseCount;				
+		
+		this.clusterIndices = new int[totalDataObjects];		
+		this.data.ensureCapacity(totalDataObjects);		
+		int dataIndex=0;
+		
+		for(int i=0; i<clusterCount; i++)
+		{
+			for(int j=0; j<this.clusters.get(i).size(); j++)
+			{
+				this.data.add(this.clusters.get(i).get(j));
+				this.clusterIndices[dataIndex] = i;
+				dataIndex++;
+			}
+		}
+		
+		for(int j=0; j<this.noise.size(); j++)
+		{
+			this.data.add(this.noise.get(j));
+			this.clusterIndices[dataIndex] = -1;
+			dataIndex++;
+		}
+				
+		System.out.println(" done.");
 	}
 	
 	public void generateUniformNormalClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, double clusterRadius, boolean randomRadius)

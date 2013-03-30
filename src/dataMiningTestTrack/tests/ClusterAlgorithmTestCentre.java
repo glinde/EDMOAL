@@ -48,6 +48,7 @@ import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
+import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.density.DBScan;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.altopt.BallTreeFuzzyCMeansClusteringAlgorithm;
@@ -64,6 +65,10 @@ import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlg
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.CrispNoiseClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 import datamining.validation.ClusterMaxPrecisionIndex;
 import datamining.validation.ClusterMaxRecallIndex;
 import datamining.validation.ClusteringInformation;
@@ -112,11 +117,7 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	 */
 	private int[] correctClustering;
 	
-	/**  */
-	private ArrayList<double[]> lastFuzzyClusteringResult;
-
-	/**  */
-	private int[] lastCrispClusteringResult;
+	private ClusteringAlgorithm lastClusteringAlgorithm;
 	
 	/**
 	 * The initial positions of prototypes.
@@ -132,8 +133,9 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		this.dataSet = new IndexedDataSet<double[]>();
 		this.correctClustering = new int[0];
 		this.initialPositons = new ArrayList<double[]>();
-		this.lastFuzzyClusteringResult = new ArrayList<double[]>();
-		this.lastCrispClusteringResult = new int[0];
+//		this.lastFuzzyClusteringResult = new ArrayList<double[]>();
+//		this.lastCrispClusteringResult = new int[0];
+		this.lastClusteringAlgorithm = null;
 	}
 
 	/**
@@ -183,11 +185,16 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	{
 		if(filename == null) filename = "Crisp Clustering Result";
 		
+		int[] crispResult=null;
+		if(this.lastClusteringAlgorithm instanceof CrispClusteringProvider)
+			crispResult = ((CrispClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllCrispClusterAssignments();
+		else return;
+		
 		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
 		{
 			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
 			{
-				this.showDataSetClustered(i, j, this.lastCrispClusteringResult, filename + "_proj_" + i + "-" + j);
+				this.showDataSetClustered(i, j, crispResult, filename + "_proj_" + i + "-" + j);
 			}
 		}
 	}
@@ -195,12 +202,17 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	public void showFuzzyClusteringResult2DProjections(double addA, double addB, String filename)
 	{
 		if(filename == null) filename = "Fuzzy Clustering Result";
+
+		List<double[]> fuzzyResult=null;
+		if(this.lastClusteringAlgorithm instanceof FuzzyClusteringProvider)
+			fuzzyResult = ((FuzzyClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllFuzzyClusterAssignments(null);
+		else return;
 		
 		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
 		{
 			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
 			{
-				this.showDataSetClustered(i, j, this.lastFuzzyClusteringResult, filename + "_proj_" + i + "-" + j);
+				this.showDataSetClustered(i, j, fuzzyResult, filename + "_proj_" + i + "-" + j);
 			}
 		}
 	}
@@ -210,12 +222,25 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		this.clusterGen.generateDistortedClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, scale, shuffleLocation);
 		this.clusterGen.shuffle();
 		
-		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
-		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+		this.dataSet = new IndexedDataSet<double[]>(this.clusterGen.getData().size());
+		for(double[] x:this.clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
 		
 		this.dataSet.seal();
 		
-		this.correctClustering = clusterGen.getClusterIndices();
+		this.correctClustering = this.clusterGen.getClusterIndices();
+	}
+	
+	public void generateCornerCentricClusteres(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, int cluster1Count, boolean randomCluster1Count, int cluster1FlipsFreq, int cluster0FlipsFreq)
+	{		
+		this.clusterGen.generateCornerClusteredDataSet(dataObjectsPerClusterCount, randomDataObjectsCount, clusterCount, noiseCount, cluster1Count, randomCluster1Count, cluster1FlipsFreq, cluster0FlipsFreq);
+		this.clusterGen.shuffle();
+		
+		this.dataSet = new IndexedDataSet<double[]>(this.clusterGen.getData().size());
+		for(double[] x:this.clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+		
+		this.dataSet.seal();
+		
+		this.correctClustering = this.clusterGen.getClusterIndices();
 	}
 	
 	public void generateUniformDistributedNormalClusteres(int dataPerClusterCount, boolean randomClusterSize, int noise, double clusterRadius, boolean randomRadius)
@@ -223,12 +248,12 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		this.clusterGen.generateUniformNormalClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, clusterRadius, randomRadius);
 		this.clusterGen.shuffle();
 		
-		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
-		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+		this.dataSet = new IndexedDataSet<double[]>(this.clusterGen.getData().size());
+		for(double[] x:this.clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
 		
 		this.dataSet.seal();
 		
-		this.correctClustering = clusterGen.getClusterIndices();
+		this.correctClustering = this.clusterGen.getClusterIndices();
 	}
 	
 	public void generateInitialPositionsRandomUniform()
@@ -249,7 +274,7 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.apply(50);
 		
-		this.lastCrispClusteringResult = clusterAlgo.getAllCrispClusterAssignments();
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 
@@ -263,9 +288,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setFuzzifier(fuzzifier);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 	
@@ -278,11 +302,12 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(fuzzifier);
 		clusterAlgo.setNoiseDistance(noiseDist);
+		clusterAlgo.setDegradingNoiseDistance(100.0d*noiseDist);
+		clusterAlgo.setNoiseDegrationFactor(0.5d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 
 
@@ -296,9 +321,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setBeta(beta);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 
 
@@ -311,11 +335,12 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setBeta(beta);
 		clusterAlgo.setNoiseDistance(noiseDist);
+		clusterAlgo.setDegradingNoiseDistance(100.0d*noiseDist);
+		clusterAlgo.setNoiseDegrationFactor(0.5d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 
 
@@ -330,9 +355,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setDistanceMultiplierConstant(distMul);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 
 
@@ -346,11 +370,12 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setDistanceMultiplierConstant(distMul);
 		clusterAlgo.setNoiseDistance(noiseDist);
+		clusterAlgo.setDegradingNoiseDistance(100.0d*noiseDist);
+		clusterAlgo.setNoiseDegrationFactor(0.5d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 
@@ -365,9 +390,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 
@@ -381,11 +405,12 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setNoiseDistance(noiseDist);
+		clusterAlgo.setDegradingNoiseDistance(100.0d*noiseDist);
+		clusterAlgo.setNoiseDegrationFactor(0.5d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 
@@ -400,9 +425,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setDistanceCorrectionParameter(distCorr);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 
@@ -416,11 +440,12 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setFuzzifier(fuzzifier);
 		clusterAlgo.setDistanceCorrectionParameter(distCorr);
 		clusterAlgo.setNoiseDistance(noiseDist);
+		clusterAlgo.setDegradingNoiseDistance(100.0d*noiseDist);
+		clusterAlgo.setNoiseDegrationFactor(0.5d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 
 
@@ -435,9 +460,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setMaximalMembershipIntervalLength(membershipIntervalLength);
 		clusterAlgo.setEpsilon(0.01d);
 		clusterAlgo.apply(50);
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 
 
@@ -454,9 +478,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 //		for(SphericalNormalDistributionPrototype d:clusterAlgo.getActivePrototypes()) System.out.println(d.getClusterIndex() + ": " + d.getVariance());
-		
-		this.lastFuzzyClusteringResult.clear();
-		clusterAlgo.getAllFuzzyClusterAssignments(this.lastFuzzyClusteringResult);
+
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
 
@@ -469,34 +492,29 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		clusterAlgo.setCoreNum(coreNum);
 		clusterAlgo.setCoreDist(coreDist);
 		clusterAlgo.apply();
-		
-		this.lastCrispClusteringResult = clusterAlgo.getAllCrispClusterAssignments();
-	}
-	
-	public void validateLastCrispClusteringResult()
-	{
-		ClusteringInformation<double[]> info = new ClusteringInformation<double[]>(this.clusterCount);
-		
-		info.setDataSet(this.dataSet);
-		info.setCrispClusteringResult(this.lastCrispClusteringResult);
-		info.setTrueClusteringResult(this.correctClustering);
 
-		ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, true);		
-		double precisionIndex = maxPrecision.index();		
-		ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info, true);		
-		double recallIndex = maxRecall.index();		
-		
-		System.out.println("Max Precision Index: " + precisionIndex);
-		System.out.println("Max Recall    Index: " + recallIndex);
+		this.lastClusteringAlgorithm = clusterAlgo;
 	}
 	
-	public void validateLastFuzzyClusteringResult()
+	public void validateLastClusteringResult()
 	{
 		ClusteringInformation<double[]> info = new ClusteringInformation<double[]>(this.clusterCount);
 		
 		info.setDataSet(this.dataSet);
-		info.setFuzzyClusteringResult(this.lastFuzzyClusteringResult);
+//		info.setFuzzyClusteringResult(this.lastFuzzyClusteringResult);
 		info.setTrueClusteringResult(this.correctClustering);
+		if(this.lastClusteringAlgorithm instanceof CrispClusteringProvider)
+		{
+			info.setCrispClusteringResult(((CrispClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllCrispClusterAssignments());
+		}
+		if(this.lastClusteringAlgorithm instanceof FuzzyClusteringProvider)
+		{
+			info.setFuzzyClusteringResult(((FuzzyClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllFuzzyClusterAssignments(null));
+		}
+		if(this.lastClusteringAlgorithm instanceof FuzzyNoiseClusteringProvider)
+		{
+			info.setNoiseClusterMembershipValues(((FuzzyNoiseClusteringProvider<double[]>)this.lastClusteringAlgorithm).getFuzzyNoiseAssignments());
+		}
 
 		ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, false);		
 		double precisionIndex = maxPrecision.index();		

@@ -212,6 +212,19 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 		}
 	}
 	
+	public void generateCornerCentricClusteres(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, int cluster1Count, boolean randomCluster1Count, int cluster1FlipsFreq, int cluster0FlipsFreq)
+	{		
+		this.clusterGen.generateCornerClusteredDataSet(dataObjectsPerClusterCount, randomDataObjectsCount, clusterCount, noiseCount, cluster1Count, randomCluster1Count, cluster1FlipsFreq, cluster0FlipsFreq);
+		this.clusterGen.shuffle();
+		
+		this.dataSet = new IndexedDataSet<double[]>(this.clusterGen.getData().size());
+		for(double[] x:this.clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+		
+		this.dataSet.seal();
+		
+		this.correctClustering = this.clusterGen.getClusterIndices();
+	}
+	
 	public void generateDistortedData(int dataPerClusterCount, boolean randomClusterSize, int noise, boolean scale, int shuffleLocation)
 	{		
 		this.clusterGen.generateDistortedClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, scale, shuffleLocation);

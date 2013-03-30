@@ -33,6 +33,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+
 /**
  * TODO Class Description
  *
@@ -65,13 +67,16 @@ public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 	{
 		this.clusterInfo.checkCrispClusteringResult();
 		this.clusterInfo.checkTrueClusteringResult();
-		
+
+		int clusterCount = this.clusterInfo.getClusterCount();
 		int[][] clusterPrecision = new int[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
 		int dataObjectCount;
 		double max;
 		double sum;
 		int[] clusterSize = new int[this.clusterInfo.getClusterCount()];
 		int clas, clus;
+		int noiseRec = 0;
+		int noiseSum = 0;
 
 		dataObjectCount = this.clusterInfo.getCrispClusteringResult().length;
 
@@ -85,6 +90,14 @@ public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 				clusterSize[clus]++;
 				clusterPrecision[clus][clas]++;
 			}
+			else 
+			{
+				if(clus < 0)
+				{
+					noiseSum++;
+					if(clas < 0) noiseRec++;
+				}
+			}
 		}
 		
 		sum = 0.0d;
@@ -93,12 +106,21 @@ public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 			max = 0.0d;
 			for(i=0; i<this.clusterInfo.getClusterCount(); i++)
 			{
+				if(clusterSize[i] == 0) continue;
 				max = (max > ((double)clusterPrecision[i][k])/((double)clusterSize[i]))? max : ((double)clusterPrecision[i][k])/((double)clusterSize[i]);  
 			}
 			sum += max;
 		}
+
+		// noise handling	
 		
-		return (sum - 1.0d)/(this.clusterInfo.getClusterCount() - 1.0d);
+		if(noiseSum > 0)
+		{
+			sum += ((double)noiseRec) / ((double)noiseSum);
+			clusterCount++;
+		}
+
+		return (sum - 1.0d)/(clusterCount - 1.0d);
 	}
 	
 	public double fuzzyIndex()
@@ -106,6 +128,7 @@ public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
 		this.clusterInfo.checkTrueClusteringResult();
 		
+		int clusterCount = this.clusterInfo.getClusterCount();
 		double[][] clusterPrecision = new double[this.clusterInfo.getClusterCount()][this.clusterInfo.getClusterCount()];
 		double[] membershipValues;
 		int dataObjectCount;
@@ -113,6 +136,9 @@ public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 		double sum;
 		double[] clusterSize = new double[this.clusterInfo.getClusterCount()];
 		int clas;
+		double noiseRec;
+		double noiseSum;
+		double[] noiseAssignments = null;
 
 		dataObjectCount = (this.clusterInfo.getFuzzyClusteringResult() != null) ?
 			this.clusterInfo.getFuzzyClusteringResult().size() :
@@ -141,12 +167,39 @@ public class ClusterMaxPrecisionIndex<T> extends ClusterValidation<T>
 			max = 0.0d;
 			for(i=0; i<this.clusterInfo.getClusterCount(); i++)
 			{
+				if(clusterSize[i] == 0) continue;
 				max = (max > clusterPrecision[i][k]/clusterSize[i])? max : clusterPrecision[i][k]/clusterSize[i];  
 			}
 			sum += max;
 		}
 		
-		return (sum - 1.0d)/(this.clusterInfo.getClusterCount() - 1.0d);
+		
+		// noise handling
+		noiseRec = 0.0d;
+		noiseSum = 0.0d;		
+		if(this.clusterInfo.getNoiseClusterMembershipValues() != null)
+		{
+			noiseAssignments = this.clusterInfo.getNoiseClusterMembershipValues();
+		}
+		else if(this.clusterInfo.getFuzzyClusteringProvider() instanceof FuzzyNoiseClusteringProvider)
+		{
+			noiseAssignments = ((FuzzyNoiseClusteringProvider<T>)this.clusterInfo.getFuzzyClusteringProvider()).getFuzzyNoiseAssignments();
+		}
+		if(noiseAssignments != null)
+		{
+			for(j=0; j<dataObjectCount; j++)
+			{
+				noiseSum += noiseAssignments[j];
+				if(this.clusterInfo.getTrueClusteringResult()[j] < 0) noiseRec += noiseAssignments[j];
+			}
+			
+			noiseRec /= noiseSum;
+			
+			sum += noiseRec;
+			clusterCount++;
+		}
+		
+		return (sum - 1.0d)/(clusterCount - 1.0d);
 	}
 
 }

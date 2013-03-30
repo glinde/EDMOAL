@@ -66,11 +66,11 @@ public class ClusteringInformation<T>
 	
 	protected Metric<T> metric;
 	
-	protected ArrayList<Prototype<T>> prototypes;
+	protected List<Prototype<T>> prototypes;
 	
 	protected FuzzyClusteringProvider<T> fuzzyClusteringProvider;
 	
-	protected ArrayList<double[]> fuzzyClusteringResult;
+	protected List<double[]> fuzzyClusteringResult;
 	
 	protected double[] noiseClusterMembershipValues;
 	
@@ -693,7 +693,7 @@ public class ClusteringInformation<T>
 	/**
 	 * @return the prototypes
 	 */
-	public ArrayList<Prototype<T>> getPrototypes()
+	public List<Prototype<T>> getPrototypes()
 	{
 		return this.prototypes;
 	}
@@ -701,7 +701,7 @@ public class ClusteringInformation<T>
 	/**
 	 * @param prototypes the prototypes to set
 	 */
-	public void setPrototypes(ArrayList<Prototype<T>> prototypes)
+	public void setPrototypes(List<Prototype<T>> prototypes)
 	{
 		this.prototypes = prototypes;
 	}
@@ -725,7 +725,7 @@ public class ClusteringInformation<T>
 	/**
 	 * @return the fuzzyClusteringResult
 	 */
-	public ArrayList<double[]> getFuzzyClusteringResult()
+	public List<double[]> getFuzzyClusteringResult()
 	{
 		return this.fuzzyClusteringResult;
 	}
@@ -733,7 +733,7 @@ public class ClusteringInformation<T>
 	/**
 	 * @param fuzzyClusteringResult the fuzzyClusteringResult to set
 	 */
-	public void setFuzzyClusteringResult(ArrayList<double[]> fuzzyClusteringResult)
+	public void setFuzzyClusteringResult(List<double[]> fuzzyClusteringResult)
 	{
 		this.fuzzyClusteringResult = fuzzyClusteringResult;
 	}
