@@ -141,11 +141,11 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	/**
 	 * Shows the generated data set.
 	 */
-	public void showDataSet(int x, int y)
+	public void showDataSet(int x, int y, String filename)
 	{
 		this.xIndex = x;
 		this.yIndex = y;
-		this.showDataSet(this.dataSet, null);
+		this.showDataSet(this.dataSet, filename);
 	}
 
 	/**

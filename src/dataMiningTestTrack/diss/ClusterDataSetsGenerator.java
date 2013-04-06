@@ -238,9 +238,9 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 		this.correctClustering = clusterGen.getClusterIndices();
 	}
 	
-	public void generateUniformDistributedNormalClusteres(int dataPerClusterCount, boolean randomClusterSize, int noise, double clusterRadius, boolean randomRadius)
+	public void generateUniformDistributedNormalClusteres(int dataPerClusterCount, boolean randomClusterSize, int noise, double clusterVariance, boolean randomVariance)
 	{		
-		this.clusterGen.generateUniformNormalClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, clusterRadius, randomRadius);
+		this.clusterGen.generateUniformNormalClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, clusterVariance, randomVariance);
 		this.clusterGen.shuffle();
 		
 		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());

@@ -125,20 +125,19 @@ public class DissExperiments
 			
 			dissFiles=null;
 			System.gc();
-			try{Thread.sleep(100);} catch(InterruptedException e){}
+			try{Thread.sleep(dim);} catch(InterruptedException e){}
 		}
 	}
 	
 	public static void genDissDataSets()
 	{
-		int[] dims = new int[]{2, 3, 4, 5, 7, 10, 15, 20, 50, 100};
+		int[] dims = new int[]{/*2, 3, 4, 5, 7,*/ 10, 15, 20, 50, 100};
 		int dataPerCluster = 1000;
 		int repetitions = 100;
 		
 //		for(int i=0; i<dims.length; i++) genMixOfGauss(dims[i], (3*dims[i])/2, dataPerCluster, repetitions);
-//		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
+		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
 //		for(int i=0; i<dims.length; i++) genDistorted(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
-			genDistorted(dims[9], (3*dims[9])/2, dataPerCluster, 2*dims[9]*dataPerCluster/10, repetitions);
 		for(int i=0; i<dims.length; i++) genCorner(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
 	}
 }

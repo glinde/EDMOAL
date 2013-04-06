@@ -100,6 +100,7 @@ public class ClusteredDataSetGenerator
 			// basic cluster values
 			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
 			cluster1C = randomCluster1Count? poissonC.sample() : cluster1Count;
+			if(cluster1C > this.dim / 2) cluster1C = this.dim / 2; 
 			
 			// generate permutation of all dimensions. The first cluster1C elements belong to the cluster
 			clusterPermutation = random.nextPermutation(this.dim, this.dim);
@@ -119,9 +120,9 @@ public class ClusteredDataSetGenerator
 				cluster0FlipsC = poisson0.sample();
 				
 				// bound number of flips
-				cluster1FlipsC = (cluster1FlipsC>cluster1C)? cluster1C:cluster1FlipsC;
-				cluster0FlipsC = (cluster0FlipsC>(this.dim-cluster1C))? (this.dim-cluster1C):cluster0FlipsC;
-				
+				cluster1FlipsC = (cluster1FlipsC>cluster1C/2)? cluster1C/2:cluster1FlipsC;
+				cluster0FlipsC = (cluster0FlipsC>(this.dim-cluster1C)/2)? (this.dim-cluster1C)/2:cluster0FlipsC;
+								
 				// generate flip-permutations.. 1-to-0 flips act on the first cluster1C elements of the clusterPermutation,
 				// the 0-to-1 flips act on the remaining dim-cluster1C elements of the clusterPermutation.
 				flips1Permutation = (cluster1FlipsC>0)? random.nextPermutation(cluster1C, cluster1FlipsC): new int[0];
@@ -164,6 +165,7 @@ public class ClusteredDataSetGenerator
 			
 			cluster1C = randomCluster1Count? poissonC.sample() : cluster1Count;
 			clusterPermutation = random.nextPermutation(this.dim, this.dim);
+			if(cluster1C > this.dim) cluster1C = this.dim; 
 			for(int k=0; k<cluster1C; k++)
 			{
 				x[clusterPermutation[k]] = 1.0d;
@@ -202,7 +204,7 @@ public class ClusteredDataSetGenerator
 		System.out.println(" done.");
 	}
 	
-	public void generateUniformNormalClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, double clusterRadius, boolean randomRadius)
+	public void generateUniformNormalClusteredDataSet(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, double clusterVariance, boolean randomVariance)
 	{
 		System.out.print("Generate Uniform Normal data ... ");
 		
@@ -213,7 +215,7 @@ public class ClusteredDataSetGenerator
 		ArrayList<double[]> seeds = new ArrayList<double[]>(clusterCount);
 		UniformRealDistribution uniGen = new UniformRealDistribution(0.0d, 1.0d);
 		NormalDistribution normGen = new NormalDistribution(0.0d, 1.0d);
-		double radius;
+		double variance;
 		int clusterSize;
 		int totalDataObjects = 0;
 		
@@ -225,7 +227,7 @@ public class ClusteredDataSetGenerator
 		for(int i=0; i<clusterCount; i++)
 		{
 			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
-			radius = randomRadius? 2.0d*uniGen.sample()*clusterRadius : clusterRadius;
+			variance = randomVariance? 2.0d*uniGen.sample()*clusterVariance : clusterVariance;
 			ArrayList<double[]> cluster = new ArrayList<double[]>(clusterSize);
 			
 			for(int j=0; j<clusterSize; j++)
@@ -234,7 +236,7 @@ public class ClusteredDataSetGenerator
 				
 				for(int k=0; k<this.dim; k++)
 				{
-					x[k] = radius*normGen.sample() + seeds.get(i)[k];
+					x[k] = variance*normGen.sample() + seeds.get(i)[k];
 				}
 				
 				cluster.add(x);

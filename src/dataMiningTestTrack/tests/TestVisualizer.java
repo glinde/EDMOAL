@@ -493,7 +493,7 @@ public abstract class TestVisualizer implements Serializable
 		
 		sv.screen.setFileName(filename);
 		sv.screen.addDrawableObject(gCluster);
-		sv.screen.addDrawableObject(new GScale());
+//		sv.screen.addDrawableObject(new GScale());
 //		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
 //		sv.screen.zoomToDisplay(data);
 		sv.screen.setScreenToDisplayAllIndexed(dataSet);
