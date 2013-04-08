@@ -85,9 +85,9 @@ public class Main
 //		Main.symmetricalGgradientAlgorithmVisualTest();
 //		Main.dataGenerationAlgorithmTest();
 //		Main.distortionTest();
-//		Main.distortionClusteringTest();
+		Main.distortionClusteringTest();
 //		Main.clusterValidityTest();
-		DissExperiments.genDissDataSets();
+//		DissExperiments.genDissDataSets();
 	}
 	
 	
@@ -285,7 +285,7 @@ public class Main
 
 	public static void distortionClusteringTest()
 	{
-		int dim = 20;		
+		int dim = 50;		
 		int dataPerCluster = 5000;
 		int clusterCount = 1;
 		int noise = dataPerCluster*clusterCount/10;
@@ -297,8 +297,8 @@ public class Main
 		testCentre.printSVG = false;
 		testCentre.printPDF = false;
 		
-		testCentre.generateDistortedData(dataPerCluster, false, 0, true, 4);
-		testCentre.generateInitialPositionsRandomUniform();
+		testCentre.generateDistortedData(dataPerCluster, false, 0, true, 0);
+//		testCentre.generateInitialPositionsRandomUniform();
 //		testCentre.showDataSetClustered2DProjections(dim/3.0d, dim/2.0d, null);
 		for(int i=0; i<dim; i+=Math.max(dim/3, 1.0d))
 		{

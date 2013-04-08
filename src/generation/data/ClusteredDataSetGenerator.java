@@ -300,7 +300,7 @@ public class ClusteredDataSetGenerator
 			clusterSize = randomDataObjectsCount? dataObjectsPerClusterCount/5+(int)(9.0d/5.0d*uniGen.sample()*dataObjectsPerClusterCount) : dataObjectsPerClusterCount;
 			ArrayList<double[]> cluster = this.generateRandomData(new int[]{clusterSize/2, clusterSize/2 + clusterSize%2});
 			
-//			System.out.println("======= Distort cluster " + i + " ======="); 		
+			System.out.println("======= Distort cluster " + i + " ======="); 		
 			this.distortCluster(cluster, scale, shuffleLocation);
 						
 			this.clusters.add(cluster);
