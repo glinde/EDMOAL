@@ -75,10 +75,8 @@ public class ClusteringInformation<T>
 	protected double[] noiseClusterMembershipValues;
 	
 	protected int[] crispClusteringResult;
-
 	
 	protected int[] trueClusteringResult;
-	
 	
 	/**	 */
 	public ClusteringInformation(int clusterCount)

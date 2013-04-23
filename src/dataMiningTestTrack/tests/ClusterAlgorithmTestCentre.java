@@ -44,6 +44,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.math3.distribution.UniformIntegerDistribution;
+import org.apache.commons.math3.random.RandomData;
+
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
@@ -67,8 +70,10 @@ import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringA
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
 import datamining.resultProviders.CrispClusteringProvider;
 import datamining.resultProviders.CrispNoiseClusteringProvider;
+import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 import datamining.resultProviders.FuzzyClusteringProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+import datamining.validation.ClusterF1Measure;
 import datamining.validation.ClusterMaxPrecisionIndex;
 import datamining.validation.ClusterMaxRecallIndex;
 import datamining.validation.ClusteringInformation;
@@ -117,7 +122,7 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	 */
 	private int[] correctClustering;
 	
-	private ClusteringAlgorithm lastClusteringAlgorithm;
+	private ClusteringAlgorithm<double[]> lastClusteringAlgorithm;
 	
 	/**
 	 * The initial positions of prototypes.
@@ -503,25 +508,45 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		info.setDataSet(this.dataSet);
 //		info.setFuzzyClusteringResult(this.lastFuzzyClusteringResult);
 		info.setTrueClusteringResult(this.correctClustering);
+
+		System.out.println(this.lastClusteringAlgorithm.algorithmName());
+				
 		if(this.lastClusteringAlgorithm instanceof CrispClusteringProvider)
 		{
 			info.setCrispClusteringResult(((CrispClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllCrispClusterAssignments());
+
+			ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, true);		
+			double precisionIndex = maxPrecision.index();		
+			System.out.println("Max Precision Index: " + precisionIndex);
+			ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info, true);		
+			double recallIndex = maxRecall.index();		
+			System.out.println("Max Recall    Index: " + recallIndex);
+			ClusterF1Measure<double[]> f1Measure = new ClusterF1Measure<double[]>(info, true);		
+			double f1Index = f1Measure.index();		
+			System.out.println("F1 Measure    Index: " + f1Index);
 		}
-		if(this.lastClusteringAlgorithm instanceof FuzzyClusteringProvider)
+		
+		else if(this.lastClusteringAlgorithm instanceof FuzzyClusteringProvider)
 		{
 			info.setFuzzyClusteringResult(((FuzzyClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllFuzzyClusterAssignments(null));
-		}
-		if(this.lastClusteringAlgorithm instanceof FuzzyNoiseClusteringProvider)
-		{
-			info.setNoiseClusterMembershipValues(((FuzzyNoiseClusteringProvider<double[]>)this.lastClusteringAlgorithm).getFuzzyNoiseAssignments());
-		}
 
-		ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, false);		
-		double precisionIndex = maxPrecision.index();		
-		ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info, false);		
-		double recallIndex = maxRecall.index();		
-		System.out.println("Max Precision Index: " + precisionIndex);
-		System.out.println("Max Recall    Index: " + recallIndex);
+			if(this.lastClusteringAlgorithm instanceof FuzzyNoiseClusteringProvider)
+			{
+				info.setNoiseClusterMembershipValues(((FuzzyNoiseClusteringProvider<double[]>)this.lastClusteringAlgorithm).getFuzzyNoiseAssignments());
+			}
+
+			ClusterMaxPrecisionIndex<double[]> maxPrecision = new ClusterMaxPrecisionIndex<double[]>(info, false);		
+			double precisionIndex = maxPrecision.index();		
+			System.out.println("Max Precision Index: " + precisionIndex);
+			ClusterMaxRecallIndex<double[]> maxRecall = new ClusterMaxRecallIndex<double[]>(info, false);		
+			double recallIndex = maxRecall.index();		
+			System.out.println("Max Recall    Index: " + recallIndex);
+			ClusterF1Measure<double[]> f1Measure = new ClusterF1Measure<double[]>(info, false);		
+			double f1Index = f1Measure.index();		
+			System.out.println("F1 Measure    Index: " + f1Index);
+		}
+		
+		System.out.println("");
 	}
 	
 	public void printDataStatistics()
@@ -535,5 +560,18 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 		}
 			
 		System.out.println("Number of noise data Objects: " + this.clusterGen.getNoise().size());
+	}
+	
+	public void setCrispClusteringResultToTrueClusteringResult()
+	{
+		this.lastClusteringAlgorithm = new DummyCrispClusteringAlgorithm<double[]>(this.dataSet, this.correctClustering, this.clusterCount);
+	}
+
+	public void setCrispClusteringResultToRandomClusteringResult()
+	{
+		UniformIntegerDistribution uniform = new UniformIntegerDistribution(-1, this.clusterCount-1); 
+		int[] randomClusteringResult = uniform.sample(this.dataSet.size());
+				
+		this.lastClusteringAlgorithm = new DummyCrispClusteringAlgorithm<double[]>(this.dataSet, randomClusteringResult, this.clusterCount);
 	}
 }
