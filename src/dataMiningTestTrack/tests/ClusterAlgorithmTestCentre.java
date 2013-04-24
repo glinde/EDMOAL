@@ -509,8 +509,9 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 //		info.setFuzzyClusteringResult(this.lastFuzzyClusteringResult);
 		info.setTrueClusteringResult(this.correctClustering);
 
-		System.out.println(this.lastClusteringAlgorithm.algorithmName());
-				
+		System.out.println("Validation of " + this.lastClusteringAlgorithm.algorithmName() + " result:");
+
+		long timeStart = System.currentTimeMillis();
 		if(this.lastClusteringAlgorithm instanceof CrispClusteringProvider)
 		{
 			info.setCrispClusteringResult(((CrispClusteringProvider<double[]>)this.lastClusteringAlgorithm).getAllCrispClusterAssignments());
@@ -545,8 +546,7 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 			double f1Index = f1Measure.index();		
 			System.out.println("F1 Measure    Index: " + f1Index);
 		}
-		
-		System.out.println("");
+		System.out.println("Validation done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 	public void printDataStatistics()
