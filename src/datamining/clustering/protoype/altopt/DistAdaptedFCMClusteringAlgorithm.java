@@ -263,6 +263,14 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 					else
 					{
 						doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
@@ -405,6 +413,14 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -497,6 +513,14 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -583,6 +607,14 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -670,6 +702,14 @@ public class DistAdaptedFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteringA
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				fuzzDistances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}

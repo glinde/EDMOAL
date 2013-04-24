@@ -136,7 +136,6 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		this.noiseDegrationFactor		= 1.0d;
 	}
 	
-	
 	@Override
 	public void apply(int steps)
 	{
@@ -221,6 +220,14 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 					else
 					{
 						doubleTMP = 1.0d/doubleTMP;
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
@@ -506,6 +513,14 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				else
 				{
 					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -584,6 +599,14 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			else
 			{
 				doubleTMP = 1.0/doubleTMP;
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				fuzzDistances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}
@@ -622,7 +645,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	@Override
 	public String algorithmName()
 	{
-		return "Rewarding Crisp Memberships FcM";
+		return "Rewarding Crisp Memberships Noise FcM";
 	}
 
 	/* (non-Javadoc)
@@ -680,7 +703,15 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				}
 				else
 				{
-					distanceSum += 1.0d/doubleTMP;
+					doubleTMP = 1.0d/doubleTMP;
+					
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceCount++;
+					}
+					
+					distanceSum += doubleTMP;
 				}
 			}
 			noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
@@ -740,7 +771,15 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			}
 			else
 			{
-				distanceSum += 1.0d/doubleTMP;
+				doubleTMP = 1.0d/doubleTMP;
+				
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceCount++;
+				}
+				
+				distanceSum += doubleTMP;
 			}
 		}
 		noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);

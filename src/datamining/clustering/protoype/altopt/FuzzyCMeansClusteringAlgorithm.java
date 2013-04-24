@@ -190,6 +190,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -199,11 +200,19 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 					else
 					{
 						doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
 				}
-
+				
 				// special case handling: if one (or more) prototype sits on top of a data object
 				if(zeroDistanceCount>0)
 				{
@@ -230,7 +239,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				{
 					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
 					membershipSum[i] += doubleTMP;
-
+					
 					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
@@ -308,6 +317,13 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				{ 
 					distancesSq[i] = doubleTMP;
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistance = true;
+					}
+				
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -361,6 +377,14 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -418,6 +442,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -427,6 +452,14 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -494,6 +527,14 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				distances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}

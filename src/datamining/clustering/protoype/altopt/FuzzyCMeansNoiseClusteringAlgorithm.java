@@ -208,6 +208,14 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 					else
 					{
 						doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
@@ -316,11 +324,19 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
+					zeroDistance = true;
 				}
 				else
 				{
 					distancesSq[i] = doubleTMP;
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistance = true;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -380,6 +396,14 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -447,6 +471,14 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -515,6 +547,14 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				distances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}
@@ -595,6 +635,14 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				distanceSum += doubleTMP;
 			}
 		}
@@ -657,6 +705,14 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}

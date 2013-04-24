@@ -214,6 +214,14 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 					else
 					{
 						doubleTMP = 1.0d/doubleTMP;
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
@@ -348,6 +356,16 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				else
 				{
 					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						for(k=0; k<this.getClusterCount(); k++) fuzzDistances[k] = 0.0d;
+						fuzzDistances[i] = 1.0d;
+						distanceSum = 1.0d;
+						break;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -413,6 +431,14 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				else
 				{
 					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -494,6 +520,14 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 				else
 				{
 					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -565,6 +599,14 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 			else
 			{
 				doubleTMP = 1.0d/doubleTMP;
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				fuzzDistances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}

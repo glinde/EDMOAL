@@ -258,6 +258,14 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 					else
 					{
 						doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
@@ -404,6 +412,14 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -502,6 +518,14 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -590,6 +614,14 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -680,6 +712,14 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				fuzzDistances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}
@@ -768,6 +808,13 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceCount++;
+					}
+					
 					distanceSum += doubleTMP;
 				}
 			}
@@ -842,6 +889,13 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceCount++;
+				}
+				
 				distanceSum += doubleTMP;
 			}
 		}
