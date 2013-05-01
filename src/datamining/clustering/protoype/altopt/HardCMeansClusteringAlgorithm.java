@@ -243,6 +243,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			
 			for(i=0; i<this.getClusterCount();i++)
 			{
+				if(clusterWeight[i] <= 0) continue;
 				doubleTMP = 1.0d/((double)clusterWeight[i]);				
 				this.vs.mul(newPrototypePosition.get(i), doubleTMP);
 
