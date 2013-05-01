@@ -48,13 +48,13 @@ public class DissExperiments
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
 		ClusterDataSetsGenerator dissFiles;
-		String path = "data/MixNormal/";
+		String path = "experiments/data/MixNormal/";
 		
 		for(int i=0; i<repititions; i++)
 		{
 			dissFiles = new ClusterDataSetsGenerator(dim, clusterCount);
 			dissFiles.generateUniformDistributedNormalClusteres(dataPerCluster, false, 0, 0.01d, false);
-			dissFiles.generateInitialPositionsRandomUniform();
+			dissFiles.generateInitialPositionsRandomUniform(10*clusterCount);
 			dissFiles.store(path + format.format(dim) + "D/" + format.format(i) + "/");
 			
 			dissFiles=null;
@@ -69,13 +69,13 @@ public class DissExperiments
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
 		ClusterDataSetsGenerator dissFiles;
-		String path = "data/MixNormalNoise/";
+		String path = "experiments/data/MixNormalNoise/";
 		
 		for(int i=0; i<repititions; i++)
 		{
 			dissFiles = new ClusterDataSetsGenerator(dim, clusterCount);
 			dissFiles.generateUniformDistributedNormalClusteres(dataPerCluster, true, noiseCount, 0.01d, true);
-			dissFiles.generateInitialPositionsRandomUniform();
+			dissFiles.generateInitialPositionsRandomUniform(10*clusterCount);
 			dissFiles.store(path + format.format(dim) + "D/" + format.format(i) + "/");
 			
 			dissFiles=null;
@@ -90,13 +90,13 @@ public class DissExperiments
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
 		ClusterDataSetsGenerator dissFiles;
-		String path = "data/Distorted/";
+		String path = "experiments/data/Distorted/";
 		
-		for(int i=78; i<repititions; i++)
+		for(int i=0; i<repititions; i++)
 		{
 			dissFiles = new ClusterDataSetsGenerator(dim, clusterCount);
 			dissFiles.generateDistortedData(dataPerCluster, true, noiseCount, true, 4);
-			dissFiles.generateInitialPositionsRandomUniform();
+			dissFiles.generateInitialPositionsRandomUniform(10*clusterCount);
 			dissFiles.store(path + format.format(dim) + "D/" + format.format(i) + "/");
 			
 			dissFiles=null;
@@ -111,7 +111,7 @@ public class DissExperiments
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
 		ClusterDataSetsGenerator dissFiles;
-		String path = "data/Corner/";
+		String path = "experiments/data/Corner/";
 		int cluster1 = (int)(Math.sqrt(dim));
 		int flip1 = (int)(Math.sqrt(cluster1));
 		int flip0 = (int)(Math.sqrt(cluster1))/2;
@@ -119,8 +119,8 @@ public class DissExperiments
 		for(int i=0; i<repititions; i++)
 		{
 			dissFiles = new ClusterDataSetsGenerator(dim, clusterCount);			
-			dissFiles.generateCornerCentricClusteres(dataPerCluster, true, clusterCount, noiseCount, cluster1, true, flip1, flip0);					
-			dissFiles.generateInitialPositionsRandomUniform();			
+			dissFiles.generateCornerCentricClusteres(dataPerCluster, true, clusterCount, noiseCount, cluster1, true, flip1, flip0);		
+			dissFiles.generateInitialPositionsRandomUniform(10*clusterCount);
 			dissFiles.store(path + format.format(dim) + "D/" + format.format(i) + "/");
 			
 			dissFiles=null;
@@ -131,13 +131,44 @@ public class DissExperiments
 	
 	public static void genDissDataSets()
 	{
-		int[] dims = new int[]{/*2, 3, 4, 5, 7,*/ 10, 15, 20, 50, 100};
+		int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20/*, 30, 50, 70, 100*/};
+		int clusters = 250;
 		int dataPerCluster = 1000;
-		int repetitions = 100;
+		int repetitions = 20;
 		
-//		for(int i=0; i<dims.length; i++) genMixOfGauss(dims[i], (3*dims[i])/2, dataPerCluster, repetitions);
-		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
-//		for(int i=0; i<dims.length; i++) genDistorted(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
-		for(int i=0; i<dims.length; i++) genCorner(dims[i], (3*dims[i])/2, dataPerCluster, 2*dims[i]*dataPerCluster/10, repetitions);
+		for(int i=0; i<dims.length; i++) genMixOfGauss(dims[i], clusters, dataPerCluster, repetitions);
+//		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+//		for(int i=0; i<dims.length; i++) genDistorted(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+//		for(int i=4; i<dims.length; i++) genCorner(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+	}
+	
+	public static void clusterDissDataSets()
+	{
+		int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20/*, 30, 50, 70, 100*/};
+		ExperimentPerformer expPerformer;
+		String experimentSelectionPath;
+		DecimalFormat format = new DecimalFormat();
+		format.setMinimumIntegerDigits(3);
+		format.setGroupingUsed(false);
+		
+		
+		for(int i=0; i<dims.length; i++)
+		{
+			for(int k=0; k<20; k++)
+			{
+				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
+				
+				expPerformer = new ExperimentPerformer("experiments/data/MixNormal/"+experimentSelectionPath, "experiments/results/MixNormal/", "experiments/results/MixNormal/"+experimentSelectionPath);
+				
+				expPerformer.loadExperimentData();
+				expPerformer.loadExperimentSetup();
+				expPerformer.generateExperiments();
+				expPerformer.performExperiments();
+				expPerformer.storeResults();
+				
+				System.gc();
+				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+			}
+		}		
 	}
 }

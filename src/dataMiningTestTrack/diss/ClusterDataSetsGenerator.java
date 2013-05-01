@@ -44,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,7 +106,9 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 	/**
 	 * The data set to be clustered
 	 */
-	private IndexedDataSet<double[]> dataSet;
+//	private IndexedDataSet<double[]> dataSet;
+	private ArrayList<ArrayList<double[]>> clusteredData;
+	private ArrayList<double[]> noiseData;
 	
 	/**  */
 	private int dim;
@@ -113,17 +116,19 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 	 * The number of clusters
 	 */
 	private int clusterCount;
+	
+	private int dataSetSize;
 			
 	/**
 	 * The correct clustering (partitioning) according to the data generation process.
 	 */
-	private int[] correctClustering;
+//	private int[] correctClustering;
 	
 	/**  */
-	private ArrayList<double[]> lastFuzzyClusteringResult;
+//	private ArrayList<double[]> lastFuzzyClusteringResult;
 
 	/**  */
-	private int[] lastCrispClusteringResult;
+//	private int[] lastCrispClusteringResult;
 	
 	/**
 	 * The initial positions of prototypes.
@@ -135,129 +140,144 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 	{
 		this.dim = dim;
 		this.clusterCount = clusterCount;
+		this.dataSetSize = 0;
 		this.clusterGen = new ClusteredDataSetGenerator(this.dim);
-		this.dataSet = new IndexedDataSet<double[]>();
-		this.correctClustering = new int[0];
+//		this.dataSet = new IndexedDataSet<double[]>();
+//		this.correctClustering = new int[0];
 		this.initialPositons = new ArrayList<double[]>();
-		this.lastFuzzyClusteringResult = new ArrayList<double[]>();
-		this.lastCrispClusteringResult = new int[0];
+		this.clusteredData = null;
+		this.noiseData = null;
+//		this.lastFuzzyClusteringResult = new ArrayList<double[]>();
+//		this.lastCrispClusteringResult = new int[0];
 	}
-
-	/**
-	 * Shows the generated data set.
-	 */
-	public void showDataSet(int x, int y)
-	{
-		this.xIndex = x;
-		this.yIndex = y;
-		this.showDataSet(this.dataSet, null);
-	}
-
-	/**
-	 * Shows the generated data set.
-	 */
-	public void showDataSetClustered(int x, int y, int[] clustering, String filename)
-	{
-		this.xIndex = x;
-		this.yIndex = y;
-		this.showCrispDataSetClustering(this.dataSet, this.clusterCount, clustering, filename);
-	}
-	
-	/**
-	 * Shows the generated data set.
-	 */
-	public void showDataSetClustered(int x, int y, Collection<double[]> clustering, String filename)
-	{
-		this.xIndex = x;
-		this.yIndex = y;
-		this.showFuzzyDataSetClustering(this.dataSet, clustering, filename);
-	}
-	
-	public void showDataSetClustered2DProjections(double addA, double addB, String filename)
-	{
-		if(filename == null) filename = "Clustered Data Set";
-		
-		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
-		{
-			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
-			{
-				this.showDataSetClustered(i, j, this.correctClustering, filename + "_proj_" + i + "-" + j);
-			}
-		}
-	}
-
-	public void showCrispClusteringResult2DProjections(double addA, double addB, String filename)
-	{
-		if(filename == null) filename = "Crisp Clustering Result";
-		
-		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
-		{
-			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
-			{
-				this.showDataSetClustered(i, j, this.lastCrispClusteringResult, filename + "_proj_" + i + "-" + j);
-			}
-		}
-	}
-
-	public void showFuzzyClusteringResult2DProjections(double addA, double addB, String filename)
-	{
-		if(filename == null) filename = "Fuzzy Clustering Result";
-		
-		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
-		{
-			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
-			{
-				this.showDataSetClustered(i, j, this.lastFuzzyClusteringResult, filename + "_proj_" + i + "-" + j);
-			}
-		}
-	}
+//
+//	/**
+//	 * Shows the generated data set.
+//	 */
+//	public void showDataSet(int x, int y)
+//	{
+//		this.xIndex = x;
+//		this.yIndex = y;
+//		this.showDataSet(this.dataSet, null);
+//	}
+//
+//	/**
+//	 * Shows the generated data set.
+//	 */
+//	public void showDataSetClustered(int x, int y, int[] clustering, String filename)
+//	{
+//		this.xIndex = x;
+//		this.yIndex = y;
+//		this.showCrispDataSetClustering(this.dataSet, this.clusterCount, clustering, filename);
+//	}
+//	
+//	/**
+//	 * Shows the generated data set.
+//	 */
+//	public void showDataSetClustered(int x, int y, Collection<double[]> clustering, String filename)
+//	{
+//		this.xIndex = x;
+//		this.yIndex = y;
+//		this.showFuzzyDataSetClustering(this.dataSet, clustering, filename);
+//	}
+//	
+//	public void showDataSetClustered2DProjections(double addA, double addB, String filename)
+//	{
+//		if(filename == null) filename = "Clustered Data Set";
+//		
+//		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
+//		{
+//			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
+//			{
+//				this.showDataSetClustered(i, j, this.correctClustering, filename + "_proj_" + i + "-" + j);
+//			}
+//		}
+//	}
+//
+//	public void showCrispClusteringResult2DProjections(double addA, double addB, String filename)
+//	{
+//		if(filename == null) filename = "Crisp Clustering Result";
+//		
+//		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
+//		{
+//			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
+//			{
+//				this.showDataSetClustered(i, j, this.lastCrispClusteringResult, filename + "_proj_" + i + "-" + j);
+//			}
+//		}
+//	}
+//
+//	public void showFuzzyClusteringResult2DProjections(double addA, double addB, String filename)
+//	{
+//		if(filename == null) filename = "Fuzzy Clustering Result";
+//		
+//		for(int i=0; i<this.dim; i+=Math.max(addA, 1.0d))
+//		{
+//			for(int j=i+1; j<this.dim; j+=Math.max(addB, 1.0d))
+//			{
+//				this.showDataSetClustered(i, j, this.lastFuzzyClusteringResult, filename + "_proj_" + i + "-" + j);
+//			}
+//		}
+//	}
 	
 	public void generateCornerCentricClusteres(int dataObjectsPerClusterCount, boolean randomDataObjectsCount, int clusterCount, int noiseCount, int cluster1Count, boolean randomCluster1Count, int cluster1FlipsFreq, int cluster0FlipsFreq)
 	{		
 		this.clusterGen.generateCornerClusteredDataSet(dataObjectsPerClusterCount, randomDataObjectsCount, clusterCount, noiseCount, cluster1Count, randomCluster1Count, cluster1FlipsFreq, cluster0FlipsFreq);
-		this.clusterGen.shuffle();
+//		this.clusterGen.shuffle();
+//		
+//		this.dataSet = new IndexedDataSet<double[]>(this.clusterGen.getData().size());
+//		for(double[] x:this.clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+//		
+//		this.dataSet.seal();
+//		
+//		this.correctClustering = this.clusterGen.getClusterIndices();
 		
-		this.dataSet = new IndexedDataSet<double[]>(this.clusterGen.getData().size());
-		for(double[] x:this.clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
-		
-		this.dataSet.seal();
-		
-		this.correctClustering = this.clusterGen.getClusterIndices();
+		this.clusteredData = this.clusterGen.getClusters();
+		this.noiseData = this.clusterGen.getNoise();
+		this.dataSetSize = this.clusterGen.getData().size();
 	}
 	
 	public void generateDistortedData(int dataPerClusterCount, boolean randomClusterSize, int noise, boolean scale, int shuffleLocation)
 	{		
 		this.clusterGen.generateDistortedClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, scale, shuffleLocation);
-		this.clusterGen.shuffle();
-		
-		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
-		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
-		
-		this.dataSet.seal();
-		
-		this.correctClustering = clusterGen.getClusterIndices();
+//		this.clusterGen.shuffle();
+//		
+//		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
+//		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+//		
+//		this.dataSet.seal();
+//		
+//		this.correctClustering = clusterGen.getClusterIndices();
+
+		this.clusteredData = this.clusterGen.getClusters();
+		this.noiseData = this.clusterGen.getNoise();
+		this.dataSetSize = this.clusterGen.getData().size();
 	}
 	
 	public void generateUniformDistributedNormalClusteres(int dataPerClusterCount, boolean randomClusterSize, int noise, double clusterVariance, boolean randomVariance)
 	{		
 		this.clusterGen.generateUniformNormalClusteredDataSet(dataPerClusterCount, randomClusterSize, this.clusterCount, noise, clusterVariance, randomVariance);
-		this.clusterGen.shuffle();
+//		this.clusterGen.shuffle();
+//		
+//		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
+//		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
+//		
+//		this.dataSet.seal();
+//		
+//		this.correctClustering = clusterGen.getClusterIndices();
 		
-		this.dataSet = new IndexedDataSet<double[]>(clusterGen.getData().size());
-		for(double[] x:clusterGen.getData()) this.dataSet.add(new IndexedDataObject<double[]>(x));
-		
-		this.dataSet.seal();
-		
-		this.correctClustering = clusterGen.getClusterIndices();
+		this.clusteredData = this.clusterGen.getClusters();
+		this.noiseData = this.clusterGen.getNoise();
+		this.dataSetSize = this.clusterGen.getData().size();
 	}
 	
-	public void generateInitialPositionsRandomUniform()
+	public void generateInitialPositionsRandomUniform(int initPosCount)
 	{
 		this.initialPositons = new ArrayList<double[]>();
 				
 		HyperrectangleUniformGenerator gen = new HyperrectangleUniformGenerator(this.dim);
 		
-		this.initialPositons.addAll(gen.generateDataObjects(this.clusterCount));
+		this.initialPositons.addAll(gen.generateDataObjects(initPosCount));
 	}
 
 	public void store(String foldername)
@@ -265,6 +285,9 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 		System.out.println("Store in " + foldername);
 		File folder = new File(foldername);		
 		if(!folder.exists()) folder.mkdirs();
+		DecimalFormat format = new DecimalFormat();
+		format.setMinimumIntegerDigits(3);
+		format.setGroupingUsed(false);
 		
 		// store meta information
 		try
@@ -272,12 +295,13 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 			FileWriter writer;
 			writer = new FileWriter(foldername + "/meta.ini");
 			writer.write("dim="+this.dim+"\n");
-			writer.write("size="+this.dataSet.size()+"\n");
+			writer.write("availableClusterCount="+this.clusterCount+"\n");
+			writer.write("availableDataCount="+this.dataSetSize+"\n");
 			for(int i=0; i<this.clusterCount; i++)
 			{
-				writer.write("\tclusterSize_"+i+": " + this.clusterGen.getClusters().get(i).size()+"\n");
+				writer.write("clusterSize_"+i+"="+this.clusteredData.get(i).size()+"\n");
 			}
-			writer.write("noise="+this.clusterGen.getNoise().size()+"\n");
+			writer.write("availableNoiseCount="+this.clusterGen.getNoise().size()+"\n");
 			writer.flush();
 			writer.close();
 		}
@@ -290,12 +314,21 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 		try
 		{
 			CSVFileWriter csvWriter = new CSVFileWriter();
-			csvWriter.openFile(new File(foldername + "/data.csv"));
 			csvWriter.setAddFirstAttributeAsID(true);
 			csvWriter.setFirstLineAsAtributeNames(true);
 			csvWriter.setDefaultAttributeName("");
-			csvWriter.writeDoubleDataTableIndexed(this.dataSet, null);
-			csvWriter.closeFile();
+			for(int i=0; i<this.clusterCount; i++)
+			{
+				csvWriter.openFile(new File(foldername + "/cluster_"+format.format(i)+".csv"));
+				csvWriter.writeDoubleDataTable(this.clusteredData.get(i), null);
+				csvWriter.closeFile();
+			}
+			if(this.noiseData != null && this.noiseData.size() > 0)
+			{
+				csvWriter.openFile(new File(foldername + "/noise.csv"));
+				csvWriter.writeDoubleDataTable(this.noiseData, null);
+				csvWriter.closeFile();
+			}
 		}
 		catch(IOException e)
 		{
@@ -319,30 +352,30 @@ public class ClusterDataSetsGenerator extends TestVisualizer implements Serializ
 		}
 
 		// store cluster result
-		try
-		{
-			FileWriter writer;
-			writer = new FileWriter(foldername + "/res.csv");
-			writer.write("ID;Cluster\n");
-			for(int j=0; j<this.correctClustering.length; j++)
-			{
-				writer.write(j+";"+this.correctClustering[j]+"\n");
-				if((j+1) % 1000 == 0) writer.flush();
-			}
-			writer.flush();
-			writer.close();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
+//		try
+//		{
+//			FileWriter writer;
+//			writer = new FileWriter(foldername + "/res.csv");
+//			writer.write("ID;Cluster\n");
+//			for(int j=0; j<this.correctClustering.length; j++)
+//			{
+//				writer.write(j+";"+this.correctClustering[j]+"\n");
+//				if((j+1) % 1000 == 0) writer.flush();
+//			}
+//			writer.flush();
+//			writer.close();
+//		}
+//		catch(IOException e)
+//		{
+//			e.printStackTrace();
+//		}
 	}
 	
 	public void printDataStatistics()
 	{
 		System.out.println("========== Data Statistics ==========");
 		System.out.println("Dimensionality: " + this.dim);
-		System.out.println("Number of data Objects: " + this.dataSet.size());
+		System.out.println("Number of data Objects: " + this.dataSetSize);
 		for(int i=0; i<this.clusterCount; i++)
 		{
 			System.out.println("\tSize of cluster "+i+": " + this.clusterGen.getClusters().get(i).size());
