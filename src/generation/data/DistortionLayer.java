@@ -314,7 +314,7 @@ public class DistortionLayer
 		}
 
 		
-		// apply unary functions in parallel
+		// apply unary functions in parallel		
 		Parallel.ForFJ(distortDataList, 
 			 new Parallel.Operation<DistortData>()
 			 {
