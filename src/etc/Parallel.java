@@ -34,12 +34,12 @@ import java.util.logging.Logger;
 
 public class Parallel
 {
-	private static final int				NUM_CORES	= Runtime.getRuntime().availableProcessors();
+	private static final int		NUM_CORES	= Runtime.getRuntime().availableProcessors();
 
-	private static final ExecutorService	forPool		= Executors.newFixedThreadPool(NUM_CORES * 2);
+	private static final ExecutorService	forPool = Executors.newFixedThreadPool(NUM_CORES);
 
-	private static final ForkJoinPool		fjPool		= new ForkJoinPool(NUM_CORES, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
-
+	private static final ForkJoinPool		fjPool = new ForkJoinPool(NUM_CORES, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
+	
 	public static <T> void For(final Iterable<T> elements, final Operation<T> operation)
 	{
 		for(final T element : elements)
