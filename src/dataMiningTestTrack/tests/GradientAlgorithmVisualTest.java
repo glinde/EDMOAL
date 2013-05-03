@@ -456,8 +456,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		
 		RelativeVarianceOfDistancesObjectiveFunction relVarFunction = new RelativeVarianceOfDistancesObjectiveFunction(this.dataSet);
 		SingleCentroidGradientOptimizationAlgorithm<double[]> algo = new SingleCentroidGradientOptimizationAlgorithm<double[]>(this.dataSet, evs, evs, relVarFunction, null); 
-		
-		
+				
 		algo.setAscOrDesc(true);
 		algo.initializeWithParameter(this.initialPositons.get(0));
 		algo.setLearningFactor(0.1d);

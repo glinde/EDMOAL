@@ -171,11 +171,11 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 		P nextPara = this.parameterVS.getNewAddNeutralElement();
 		double distSq = Double.MAX_VALUE;
 		
-		System.out.print(this.algorithmName() + ": ");
+//		System.out.print(this.algorithmName() + ": ");
 		
 		for(int t=0; t<iterations; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 						
 			// get the gradient, takes also care of having a new instance of the parameter.
 			this.objectiveFunction.setParameter(this.parameter);
@@ -207,7 +207,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 			if(distSq < this.epsilon*this.epsilon) break;
 		}
 		
-		System.out.println(" finished.");
+//		System.out.println(" finished.");
 	}
 
 	/* (non-Javadoc)

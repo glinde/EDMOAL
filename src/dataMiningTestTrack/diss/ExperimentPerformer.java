@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeMap;
 
+import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 import data.objects.doubleArray.DAEuclideanMetric;
@@ -66,6 +67,8 @@ import datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.PolynomFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlgorithm;
+import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
+import datamining.gradient.functions.RelativeVarianceOfDistancesObjectiveFunction;
 import etc.Parallel;
 
 /**
@@ -76,9 +79,7 @@ import etc.Parallel;
 public class ExperimentPerformer
 {
 	private String dataDirectory;
-	
-	private String setupDirectory;
-	
+		
 	private String experimentDirectory;
 		
 	
@@ -96,9 +97,7 @@ public class ExperimentPerformer
 	private int maxIterations;
 	
 	private int dataSetRepitition;
-	
-	private int analyseClusterCount;
-	
+		
 	private int[] analyseClusterList;
 	
 	private double noiseFraction;
@@ -112,25 +111,20 @@ public class ExperimentPerformer
 	
 	private ArrayList<Experiment> experiments;
 	
-	private ArrayList<Experiment> EMGMM_Experiments;
+	private ArrayList<ArrayList<ArrayList<Experiment>>> experimentsByDataSet;
 	
 	
-	public ExperimentPerformer(String dataDirectory, String setupDirectory, String experimentDirectory)
+	public ExperimentPerformer(String dataDirectory, String experimentDirectory, int maxIterations, int dataSetRepitition, int[] analyseClusterList, double noiseFraction)
 	{
 		super();
 		
 		this.dataDirectory = dataDirectory;
-		this.setupDirectory = setupDirectory;
 		this.experimentDirectory = experimentDirectory;
 
 
 //		System.out.println("Load data from " + this.dataDirectory);
 		File dir = new File(this.dataDirectory);		
 		if(!dir.exists() || !dir.isDirectory()) throw new IllegalArgumentException("The path " + this.dataDirectory + " does not exist or is not a directory.");
-
-//		System.out.println("Setup is loaded from " + this.setupDirectory);
-		dir = new File(this.setupDirectory);		
-		if(!dir.exists() || !dir.isDirectory()) throw new IllegalArgumentException("The path " + this.setupDirectory + " does not exist or is not a directory.");
 		
 		dir = new File(this.experimentDirectory);		
 //		if(!dir.isDirectory()) throw new IllegalArgumentException("The path " + this.experimentDirectory + " is not a directory.");
@@ -144,10 +138,10 @@ public class ExperimentPerformer
 		this.clusterSize = null;
 		
 		// filled by experiment setup file
-		this.maxIterations = 0;
-		this.dataSetRepitition = 0;
-		this.analyseClusterCount = 0;
-		this.analyseClusterList = null;
+		this.maxIterations = maxIterations;
+		this.dataSetRepitition = dataSetRepitition;
+		this.analyseClusterList = analyseClusterList;
+		this.noiseFraction = noiseFraction;
 		
 		// filled by cluster data files
 		this.clusteredData = new ArrayList<ArrayList<double[]>>();
@@ -156,7 +150,7 @@ public class ExperimentPerformer
 		
 		// filled by generate experiments
 		this.experiments = new ArrayList<Experiment>();
-		this.EMGMM_Experiments = new ArrayList<Experiment>();
+		this.experimentsByDataSet = new ArrayList<ArrayList<ArrayList<Experiment>>>(); // clustercount, repititions, experiments
 	}
 
 	private void loadMetaData() throws IOException
@@ -270,43 +264,6 @@ public class ExperimentPerformer
 		}
 		csvReader.closeFile();
 	}
-
-	public void loadSetup() throws IOException
-	{
-		TreeMap<String, String> metaDataMap = new TreeMap<String, String>();
-		File file = new File(this.setupDirectory + "/setup.ini");
-		if(!file.exists()) throw new FileNotFoundException("Setup file not readable. " + file.getAbsolutePath() + " does not exists.");
-		FileLineReader flReader = new FileLineReader();
-		
-		flReader.openFile(file);
-		flReader.setSeperatorChar('=');
-		ArrayList<String> lineList;
-		try
-		{
-			while(flReader.ready())
-			{	
-				lineList = flReader.readStringListLine();
-				if(lineList.size() == 2) metaDataMap.put(lineList.get(0), lineList.get(1));
-			};
-		}
-		catch(IOException e)
-		{
-			flReader.closeFile();
-			throw new IOException(e);
-		}
-		flReader.closeFile();
-		
-		this.maxIterations = Integer.parseInt(metaDataMap.get("maxIterations"));
-		this.dataSetRepitition = Integer.parseInt(metaDataMap.get("dataSetRepitition"));
-		this.analyseClusterCount = Integer.parseInt(metaDataMap.get("clusterConfig"));
-		this.noiseFraction = Double.parseDouble(metaDataMap.get("noiseFraction"));
-		this.analyseClusterList = new int[analyseClusterCount];
-		
-		for(int i=0; i<this.analyseClusterCount; i++)
-		{
-			this.analyseClusterList[i] = Integer.parseInt(metaDataMap.get("cluster" + i));
-		}
-	}
 	
 	public void loadExperimentData()
 	{
@@ -316,32 +273,15 @@ public class ExperimentPerformer
 			this.loadClusterData();
 			this.loadInitials();
 			
-			System.out.println("dim = " + this.dim);
-			System.out.println("availableClusterCount = " + this.availableClusterCount);
-			System.out.println("dataCount = " + this.availableDataCount);
-			System.out.println("noiseCount = " + this.availableNoiseCount);
-			System.out.println("clusterSize = " + Arrays.toString(this.clusterSize));
-						
-			System.out.println("clusteredData (cluster count) = " + this.clusteredData.size());
-			System.out.println("initialPositions (initial count) = " + this.availableInitialPositions.size());
-			System.out.println("noiseData (noise data count) = " + this.noiseData.size());			
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
-	public void loadExperimentSetup()
-	{
-		try
-		{
-			this.loadSetup();
-						
-			System.out.println("dataSetRepitition = " + this.dataSetRepitition);
-			System.out.println("noiseFraction = " + this.noiseFraction);
-			System.out.println("analyseClusterCount = " + this.analyseClusterCount);			
-			System.out.println("analyseClusterList = " + Arrays.toString(this.analyseClusterList));
-			
+//			System.out.println("dim = " + this.dim);
+//			System.out.println("availableClusterCount = " + this.availableClusterCount);
+//			System.out.println("dataCount = " + this.availableDataCount);
+//			System.out.println("noiseCount = " + this.availableNoiseCount);
+//			System.out.println("clusterSize = " + Arrays.toString(this.clusterSize));
+//						
+//			System.out.println("clusteredData (cluster count) = " + this.clusteredData.size());
+//			System.out.println("initialPositions (initial count) = " + this.availableInitialPositions.size());
+//			System.out.println("noiseData (noise data count) = " + this.noiseData.size());			
 		}
 		catch(IOException e)
 		{
@@ -357,9 +297,10 @@ public class ExperimentPerformer
 		format.setGroupingUsed(false);
 		
 		// start with large data sets, going down to small data sets
-		for(int i=0; i<this.analyseClusterCount; i++)
+		for(int i=0; i<this.analyseClusterList.length; i++)
 		{
 			int clusterCount = this.analyseClusterList[i];
+			this.experimentsByDataSet.add(new ArrayList<ArrayList<Experiment>>());
 			
 			// repeat any experiment 5 times, using different initial values each time
 			for(int k=0; k<this.dataSetRepitition; k++)
@@ -372,6 +313,7 @@ public class ExperimentPerformer
 				IndexedDataSet<double[]> dataSet = new IndexedDataSet<double[]>();
 				ArrayList<double[]> data = new ArrayList<double[]>(1100*clusterCount);
 
+				// add data from clusters
 				for(int cluster=0; cluster<clusterCount; cluster++)
 				{
 					for(double[] x : this.clusteredData.get(clusterPermutation[cluster]))
@@ -383,6 +325,7 @@ public class ExperimentPerformer
 				int noiseCount = 0;
 				int[] noisePermutation=null;
 				
+				// add noise if available
 				if(this.noiseData.size() > 0) 
 				{
 					noiseCount = (int)(data.size() * this.noiseFraction);
@@ -393,9 +336,32 @@ public class ExperimentPerformer
 						data.add(this.noiseData.get(noisePermutation[n]));
 					}
 				}
-
-				Collections.shuffle(data);				
-				for(double[] x:data) dataSet.add(new IndexedDataObject<double[]>(x));
+				
+				// rememer correct clustering
+				int[] correctClustering = new int[data.size()];
+				int[] permuttedCorrectClustering = new int[data.size()];
+				int dataObjIndex = 0;
+				for(int cluster=0; cluster<clusterCount; cluster++)
+				{
+					for(int n=0; n<this.clusteredData.get(clusterPermutation[cluster]).size(); n++)
+					{
+						correctClustering[dataObjIndex] = cluster;
+						dataObjIndex++;
+					}
+				}
+				for(int n=0; n<noiseCount; n++)
+				{
+					correctClustering[dataObjIndex] = -1;
+					dataObjIndex++;
+				}
+				
+				// shuffle the data
+				int[] dataPermutation = random.nextPermutation(data.size(), data.size());
+				for(int n=0; n<data.size(); n++)
+				{
+					dataSet.add(new IndexedDataObject<double[]>(data.get(dataPermutation[n])));
+					permuttedCorrectClustering[n] = correctClustering[dataPermutation[n]];
+				}
 				dataSet.seal();
 
 				// select initial positions
@@ -405,26 +371,64 @@ public class ExperimentPerformer
 				{
 					initialPositions.add(this.availableInitialPositions.get(initialPermutation[n]));
 				}
+				
+				// calculate relative variance of data set
+				double maxRV = this.calculateExperimentRV(dataSet, 10*this.dim);
 
 				// store data setup information
-				this.saveExperimentSetup(clusterPermutation, noisePermutation, initialPermutation, experimentSubdirectory);
+				this.saveExperimentSetup(clusterPermutation, noisePermutation, initialPermutation, maxRV, experimentSubdirectory);
 				
 				// generate experiment objects
-				this.addExperiments(dataSet, initialPositions, experimentSubdirectory);
+				this.addExperiments(dataSet, permuttedCorrectClustering, initialPositions, experimentSubdirectory);
 			}
 		}
 	}
 	
-	private void addExperiments(IndexedDataSet<double[]> dataSet, ArrayList<double[]> initPos, String resultDir)
+	private double calculateExperimentRV(IndexedDataSet<double[]> dataSet, int repetitions)
+	{
+		ArrayList<RVExperiment> rvExperimentList = new ArrayList<RVExperiment>();
+		UniformIntegerDistribution randomValue = new UniformIntegerDistribution(0, this.availableInitialPositions.size()-1);
+		double maxRV = 0.0d;
+		
+		for(int i=0; i<repetitions; i++)
+		{
+			rvExperimentList.add(new RVExperiment(this.dim, dataSet, this.availableInitialPositions.get(randomValue.sample()), 100));
+		}
+		
+//		for(RVExperiment rvExp:rvExperimentList)
+//		{
+//			rvExp.applyAlgorithm();
+//		}
+		
+		Parallel.ForFJ(rvExperimentList, new Parallel.Operation<RVExperiment>(){
+			public void perform(RVExperiment exp)
+			{
+				exp.applyAlgorithm();
+			}
+		});
+
+		for(int i=0; i<repetitions; i++)
+		{
+			if(rvExperimentList.get(i).getMaxRV() > maxRV) maxRV = rvExperimentList.get(i).getMaxRV();
+		}
+		
+		return maxRV;
+	}
+	
+	private void addExperiments(IndexedDataSet<double[]> dataSet, int[] correctClustering, ArrayList<double[]> initPos, String resultDir)
 	{
 		DAEuclideanVectorSpace vs = new DAEuclideanVectorSpace(this.dim);
 		DAEuclideanMetric metric = new DAEuclideanMetric();
-		
+				
+		ArrayList<Experiment> group = new ArrayList<Experiment>(10);
+				
 		// HCM
 		{
 			HardCMeansClusteringAlgorithm<double[]> algo = new HardCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "HCM", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "HCM", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// FCM 2
@@ -432,7 +436,9 @@ public class ExperimentPerformer
 			FuzzyCMeansClusteringAlgorithm<double[]> algo = new FuzzyCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setFuzzifier(2.0d);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "FCM2", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "FCM2", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// NFCM 2
@@ -443,7 +449,9 @@ public class ExperimentPerformer
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.2d);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCM2", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCM2", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// FCM 1+1/m
@@ -451,7 +459,9 @@ public class ExperimentPerformer
 			FuzzyCMeansClusteringAlgorithm<double[]> algo = new FuzzyCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setFuzzifier(1.0d+1.0d/this.dim);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "FCMdim", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "FCMdim", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// NFCM 1+1/m
@@ -462,7 +472,9 @@ public class ExperimentPerformer
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.2d);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCMdim", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCMdim", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// PFCM
@@ -470,7 +482,9 @@ public class ExperimentPerformer
 			PolynomFCMClusteringAlgorithm<double[]> algo = new PolynomFCMClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setBeta(0.5d);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "PFCM", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "PFCM", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// PNFCM
@@ -481,7 +495,9 @@ public class ExperimentPerformer
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.2d);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "PNFCM", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "PNFCM", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// RCFCM
@@ -490,7 +506,9 @@ public class ExperimentPerformer
 			algo.setFuzzifier(2.0d);
 			algo.setDistanceMultiplierConstant(1.0d-1.0d/this.dim);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "RCFCM", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "RCFCM", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// RCNFCM
@@ -502,19 +520,25 @@ public class ExperimentPerformer
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.2d);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "RCNFCM", this.experiments.size()));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "RCNFCM", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
 		
 		// EM-GMM
 		{
 			ExpectationMaximizationSGMMClusteringAlgorithm algo = new ExpectationMaximizationSGMMClusteringAlgorithm(dataSet, vs, metric);
 			algo.setEpsilon(0.001d);
-			this.experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir, "EMGMM", this.experiments.size()));
-//			this.EMGMM_Experiments.add(new Experiment(algo, initPos, this.maxIterations, resultDir));
+			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "EMGMM", this.experiments.size(), correctClustering);
+			this.experiments.add(exp);
+			group.add(exp);
 		}
+		
+
+		this.experimentsByDataSet.get(this.experimentsByDataSet.size()-1).add(group);
 	}
 	
-	private void saveExperimentSetup(int[] clusters, int[] noiseIds, int[] initialPermutation, String experimentDirectory)
+	private void saveExperimentSetup(int[] clusters, int[] noiseIds, int[] initialPermutation, double maxRV, String experimentDirectory)
 	{
 		FileWriter writer;
 		File dir = new File(experimentDirectory);
@@ -523,22 +547,14 @@ public class ExperimentPerformer
 		try
 		{
 			writer = new FileWriter(experimentDirectory + "/dataSetup.ini");
+			writer.write("maxRelativeVariance="+maxRV+"\n");
 			writer.write("clusterCount="+clusters.length+"\n");
-			for(int i=0; i<clusters.length; i++)
-			{
-				writer.write("clusterID_"+i+"="+clusters[i]+"\n");
-			}
-			for(int i=0; i<clusters.length; i++)
-			{
-				writer.write("initialID_"+i+"="+initialPermutation[i]+"\n");
-			}
+			writer.write("clusterIDs="+Arrays.toString(clusters)+"\n");
+			writer.write("initialIDs="+Arrays.toString(initialPermutation)+"\n");
 			if(noiseIds != null)
 			{
 				writer.write("noiseCount="+noiseIds.length+"\n");
-				for(int i=0; i<clusters.length; i++)
-				{
-					writer.write("noiseID"+i+"="+noiseIds[i]+"\n");
-				}
+				writer.write("noiseIDs="+Arrays.toString(noiseIds)+"\n");
 			}
 			writer.flush();
 			writer.close();
@@ -551,12 +567,19 @@ public class ExperimentPerformer
 	
 	public void performExperiments()
 	{		
+//		for(Experiment exp : this.experiments)
+//		{
+//			exp.applyAlgorithm();
+//			exp.analyseResult();
+//			exp.clean();
+//		}
+		 
 		Parallel.ForFJ(this.experiments, new Parallel.Operation<Experiment>(){
 			public void perform(Experiment exp)
 			{
-				exp.initialize();
 				exp.applyAlgorithm();
-//				exp.storeResult();
+				exp.analyseResult();
+				exp.clean();
 			}
 		});
 	}
@@ -564,6 +587,31 @@ public class ExperimentPerformer
 	public void storeResults()
 	{
 		for(Experiment exp:this.experiments) exp.storeResult();
+				
+		for(int i=0; i<this.analyseClusterList.length;i++)
+		{
+			for(int r=0; r<this.dataSetRepitition; r++)
+			{
+				File dir = new File(this.experimentsByDataSet.get(i).get(r).get(0).resultDir);
+				if(!dir.exists()) dir.mkdirs();
+				
+				try
+				{
+					FileWriter writer = new FileWriter(this.experimentsByDataSet.get(i).get(r).get(0).resultDir + "/score.ini");
+									
+					for(int e=0; e<this.experimentsByDataSet.get(i).get(r).size(); e++)
+					{
+						writer.write(this.experimentsByDataSet.get(i).get(r).get(e).algoName+"_score="+Arrays.toString(this.experimentsByDataSet.get(i).get(r).get(e).indexValues)+"\n");
+					}					
+					writer.flush();
+					writer.close();
+				}
+				catch(IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	/**
@@ -598,14 +646,6 @@ public class ExperimentPerformer
 	public int getAvailableClusterCount()
 	{
 		return this.availableClusterCount;
-	}
-
-	/**
-	 * @return the analyseClusterCount
-	 */
-	public int getAnalyseClusterCount()
-	{
-		return this.analyseClusterCount;
 	}
 
 	/**

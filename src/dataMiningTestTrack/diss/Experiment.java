@@ -39,10 +39,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import data.objects.doubleArray.DAEuclideanMetric;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
+import datamining.validation.BezdecSeperationIndex;
+import datamining.validation.ClusterF1Measure;
+import datamining.validation.ClusteringInformation;
+import datamining.validation.DaviesBouldinIndex;
+import datamining.validation.NonFuzzynessIndex;
+import datamining.validation.XieBeniIndex;
 
 /**
  * TODO Class Description
@@ -56,6 +65,7 @@ public class Experiment//<S extends Prototype<double[]>>
 	protected ArrayList<double[]> initialPositions;
 	
 	protected ArrayList<double[]> centroidPositions;
+	
 	protected ArrayList<double[]> variances;
 	
 	protected int maxIterations;
@@ -66,13 +76,20 @@ public class Experiment//<S extends Prototype<double[]>>
 	
 	protected int id;
 	
+	protected ClusteringInformation<double[]> info;
+	
+	protected int[] correctClustering;
+	
+	
+	protected double[] indexValues;
+	
 	/**
 	 * @param clusteringAlgo
 	 * @param initialPositions
 	 * @param maxIterations
 	 * @param resultDir
 	 */
-	public Experiment(AbstractPrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> clusteringAlgo, ArrayList<double[]> initialPositions, int maxIterations, String resultDir, String algoName, int id)
+	public Experiment(AbstractPrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> clusteringAlgo, ArrayList<double[]> initialPositions, int maxIterations, String resultDir, String algoName, int id, int[] correctClustering)
 	{
 		this.clusteringAlgo = clusteringAlgo;
 		this.initialPositions = initialPositions;
@@ -80,34 +97,77 @@ public class Experiment//<S extends Prototype<double[]>>
 		this.resultDir = resultDir;
 		this.algoName = algoName;
 		this.id = id;
+		this.info = null;
 		this.centroidPositions = new ArrayList<double[]>();
 		this.variances = new ArrayList<double[]>();
+		this.correctClustering = correctClustering;
 
 		File dir = new File(this.resultDir);		
 		if(!dir.isDirectory()) throw new IllegalArgumentException("The path " + this.resultDir + " is not a directory.");
 		if(!dir.exists()) dir.mkdirs();
-	}
-
-	public void initialize()
-	{
-		this.clusteringAlgo.initializeWithPositions(this.initialPositions);
+		
+		this.indexValues = new double[5]; 
 	}
 	
 	public void applyAlgorithm()
 	{
-//		System.out.println("### "+id+" ### " + this.algoName + "\t" + resultDir);
-		this.clusteringAlgo.apply(this.maxIterations);		
+		// initialize
+		this.clusteringAlgo.initializeWithPositions(this.initialPositions);
 		
+		// apply algorithm
+		this.clusteringAlgo.apply(this.maxIterations);
+		
+		// store prototype positions
 		for(Centroid<double[]> proto:this.clusteringAlgo.getPrototypes())
 		{
-			this.centroidPositions.add(proto.getPosition());
+			this.centroidPositions.add(proto.getPosition().clone());
 			if(proto instanceof SphericalNormalDistributionPrototype)
 			{
 				this.variances.add(new double[]{((SphericalNormalDistributionPrototype)proto).getVariance()});
 			}
 		}
-				
+	}
+	
+	public void analyseResult()
+	{
+		this.info = new ClusteringInformation<double[]>(this.clusteringAlgo.getClusterCount());
+		
+		this.info.setDataSet(this.clusteringAlgo.getDataSet());
+		this.info.setPrototypes(this.clusteringAlgo.getPrototypes());
+		this.info.setMetric(new DAEuclideanMetric());
+		this.info.setTrueClusteringResult(this.correctClustering);
+		
+		if(this.clusteringAlgo instanceof FuzzyClusteringProvider)
+		{
+			this.info.setFuzzyClusteringProvider((FuzzyClusteringProvider<double[]>)this.clusteringAlgo);
+			this.info.calculateClusterDiameters_Fuzzy_Prototype();
+			this.info.calculateClusterDistances_Prototype();
+
+			this.indexValues[0] = (new ClusterF1Measure<double[]>(this.info, false)).index();
+			this.indexValues[1] = (new BezdecSeperationIndex<double[]>(this.info)).index();
+			this.indexValues[2] = (new DaviesBouldinIndex<double[]>(this.info)).index();
+			this.indexValues[3] = (new XieBeniIndex<double[]>(this.info, 1.5d, false)).index();
+			this.indexValues[4] = (new NonFuzzynessIndex<double[]>(this.info)).index();
+		}
+		else if(this.clusteringAlgo instanceof CrispClusteringProvider)
+		{
+			this.info.setCrispClusteringResult(((CrispClusteringProvider<double[]>)this.clusteringAlgo).getAllCrispClusterAssignments());
+			this.info.calculateClusterDiameters_Crisp_Prototype();
+			this.info.calculateClusterDistances_Prototype();
+
+			this.indexValues[0] = (new ClusterF1Measure<double[]>(this.info, true)).index();
+			this.indexValues[1] = (new BezdecSeperationIndex<double[]>(this.info)).index();
+			this.indexValues[2] = (new DaviesBouldinIndex<double[]>(this.info)).index();
+			this.indexValues[3] = (new XieBeniIndex<double[]>(this.info, 1.5d, true)).index();
+			this.indexValues[4] = -1.0d;
+		}
+	}
+	
+	public void clean()
+	{
+		
 		this.clusteringAlgo = null;
+		this.info = null;
 	}
 	
 	public void storeResult()

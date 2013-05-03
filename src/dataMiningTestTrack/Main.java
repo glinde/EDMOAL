@@ -89,6 +89,7 @@ public class Main
 //		Main.distortionClusteringTest();
 //		Main.clusterValidityTest();
 //		DissExperiments.genDissDataSets();
+//		DissExperiments.showSomeDataSets();
 		DissExperiments.clusterDissDataSets();
 	}
 	

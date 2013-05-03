@@ -33,6 +33,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package dataMiningTestTrack.diss;
 
+import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
 
 /**
@@ -42,6 +43,14 @@ import java.text.DecimalFormat;
  */
 public class DissExperiments
 {
+	public static final int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100};
+	public static final int[] analyseClusters = new int[]{2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 120, 150, 170, 200, 250};
+
+	public static final int clusters = 250;
+	public static final int dataPerCluster = 1000;
+	public static final int repetitions = 20;
+	
+	
 	public static void genMixOfGauss(int dim, int clusterCount, int dataPerCluster, int repititions)
 	{
 		DecimalFormat format = new DecimalFormat();
@@ -95,7 +104,7 @@ public class DissExperiments
 		for(int i=0; i<repititions; i++)
 		{
 			dissFiles = new ClusterDataSetsGenerator(dim, clusterCount);
-			dissFiles.generateDistortedData(dataPerCluster, true, noiseCount, true, 4);
+			dissFiles.generateDistortedData(dataPerCluster, true, noiseCount, true, 6);
 			dissFiles.generateInitialPositionsRandomUniform(10*clusterCount);
 			dissFiles.store(path + format.format(dim) + "D/" + format.format(i) + "/");
 			
@@ -131,44 +140,154 @@ public class DissExperiments
 	
 	public static void genDissDataSets()
 	{
-		int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20/*, 30, 50, 70, 100*/};
-		int clusters = 250;
-		int dataPerCluster = 1000;
-		int repetitions = 20;
 		
 		for(int i=0; i<dims.length; i++) genMixOfGauss(dims[i], clusters, dataPerCluster, repetitions);
-//		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
-//		for(int i=0; i<dims.length; i++) genDistorted(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
-//		for(int i=4; i<dims.length; i++) genCorner(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+		for(int i=0; i<dims.length; i++) genDistorted(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+		for(int i=4; i<dims.length; i++) genCorner(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+	}
+	
+	
+	public static void showSomeDataSets()
+	{
+		DissDataViewer dataViewer = new DissDataViewer();
+		try
+		{
+			dataViewer.viewDissDataFile("experiments/data/Corner/070D/009/cluster_211.csv");
+			dataViewer.viewDissDataFile("experiments/data/Corner/070D/009/cluster_156.csv");
+			dataViewer.viewDissDataFile("experiments/data/Corner/070D/009/cluster_006.csv");
+			dataViewer.viewDissDataFile("experiments/data/Corner/070D/009/cluster_234.csv");
+		}
+		catch (FileNotFoundException e)	{e.printStackTrace();}
 	}
 	
 	public static void clusterDissDataSets()
 	{
-		int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20/*, 30, 50, 70, 100*/};
 		ExperimentPerformer expPerformer;
 		String experimentSelectionPath;
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
-		
+		long time;
 		
 		for(int i=0; i<dims.length; i++)
 		{
-			for(int k=0; k<20; k++)
+			for(int k=0; k<repetitions; k++)
 			{
 				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
 				
-				expPerformer = new ExperimentPerformer("experiments/data/MixNormal/"+experimentSelectionPath, "experiments/results/MixNormal/", "experiments/results/MixNormal/"+experimentSelectionPath);
+				expPerformer = new ExperimentPerformer("experiments/data/MixNormal/"+experimentSelectionPath,
+						"experiments/clusterings/MixNormal/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
 				
+				System.out.print("load data.. "); time = System.currentTimeMillis(); 
 				expPerformer.loadExperimentData();
-				expPerformer.loadExperimentSetup();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
 				expPerformer.generateExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
 				expPerformer.performExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("save results.. "); time = System.currentTimeMillis();
 				expPerformer.storeResults();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
 				
 				System.gc();
 				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
 			}
-		}		
+		}
+
+		for(int i=0; i<dims.length; i++)
+		{
+			for(int k=0; k<repetitions; k++)
+			{
+				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
+				
+				expPerformer = new ExperimentPerformer("experiments/data/MixNormalNoise/"+experimentSelectionPath,
+						"experiments/clusterings/MixNormalNoise/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
+
+				System.out.print("load data.. "); time = System.currentTimeMillis(); 
+				expPerformer.loadExperimentData();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
+				expPerformer.generateExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
+				expPerformer.performExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("save results.. "); time = System.currentTimeMillis();
+				expPerformer.storeResults();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.gc();
+				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+			}
+		}	
+
+		for(int i=0; i<dims.length; i++)
+		{
+			for(int k=0; k<repetitions; k++)
+			{
+				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
+				
+				expPerformer = new ExperimentPerformer("experiments/data/Distorted/"+experimentSelectionPath,
+						"experiments/clusterings/Distorted/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
+
+				System.out.print("load data.. "); time = System.currentTimeMillis(); 
+				expPerformer.loadExperimentData();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
+				expPerformer.generateExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
+				expPerformer.performExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("save results.. "); time = System.currentTimeMillis();
+				expPerformer.storeResults();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.gc();
+				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+			}
+		}	
+
+		for(int i=4; i<dims.length; i++)
+		{
+			for(int k=0; k<repetitions; k++)
+			{
+				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
+				
+				expPerformer = new ExperimentPerformer("experiments/data/Corner/"+experimentSelectionPath,
+						"experiments/clusterings/Corner/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
+
+				System.out.print("load data.. "); time = System.currentTimeMillis(); 
+				expPerformer.loadExperimentData();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
+				expPerformer.generateExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
+				expPerformer.performExperiments();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.out.print("save results.. "); time = System.currentTimeMillis();
+				expPerformer.storeResults();
+				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				
+				System.gc();
+				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+			}
+		}	
 	}
 }
