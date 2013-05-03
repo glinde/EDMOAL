@@ -204,12 +204,12 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 		ArrayList<T> newPrototypePosition = new ArrayList<T>(this.getClusterCount());
 		for(i=0; i<this.getClusterCount(); i++) newPrototypePosition.add(this.vs.getNewAddNeutralElement()); 
 
-		System.out.print(this.algorithmName());
+//		System.out.print(this.algorithmName());
 		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 			
 			// reset
 			for(i = 0; i < this.getClusterCount(); i++)
@@ -263,7 +263,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			if(t>0 && !assignmentChanged)	break;
 		}
 
-		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 	/* (non-Javadoc)

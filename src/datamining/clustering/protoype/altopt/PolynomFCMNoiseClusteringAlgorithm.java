@@ -57,7 +57,7 @@ import datamining.resultProviders.FuzzyNoiseClusteringProvider;
  * clustering becomes crisp (in the two-cluster case), if the relative distances to the prototypes is equal to <code>beta</code>.
  * See the papers for more information on the algorithm and the theory connected to it. <br> 
  * 
- * Paper: Klawonn, F. & Höppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264<br>
+ * Paper: Klawonn, F. & Hï¿½ppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264<br>
  * 
  * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
  * values of one data object are independent of all other objects, given the position of the prototypes. However,
@@ -196,12 +196,12 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		SortablePrototype sortedNoise = new SortablePrototype(null);
 		
 
-		System.out.print(this.algorithmName());
+//		System.out.print(this.algorithmName());
 		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 			doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-this.noiseDegrationFactor*t);
 			sortedNoise.squareDistance = doubleTMP*doubleTMP;
 			
@@ -325,7 +325,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
-		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 	/* (non-Javadoc)

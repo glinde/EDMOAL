@@ -57,7 +57,7 @@ import etc.MyMath;
  * objective function, hence the tendency to produce membership values, that give a clear tendency to which cluster a
  * data object belongs. See the paper for more information.<br> 
  * 
- * Paper: Höppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102<br>
+ * Paper: Hï¿½ppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102<br>
  * 
  * The additional term in the objective function leads to a value that is removed from all distances
  * when calculating the membership values w.r.t. one data object. Other than in the paper, in this implementation
@@ -167,12 +167,12 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
 
-		System.out.print(this.algorithmName());
+//		System.out.print(this.algorithmName());
 		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 
 			doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-this.noiseDegrationFactor*t);
 			tNoiseDistSq = doubleTMP*doubleTMP;
@@ -312,7 +312,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
-		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 	

@@ -71,8 +71,8 @@ import etc.MyMath;
  * or not to perform a recursion is in O(c^2). Also building the data structure takes O(n*log(n)).
  * See the papers for more information on the algorithm and the theory connected to it. <br> 
  * 
- * Paper: Höppner, F. Speeding up fuzzy c-means: using a hierarchical data organisation to control the precision of membership calculation Fuzzy Sets and Systems, 2002, 128, 365 - 376
- * Paper: Winkler, R.; Klawonn, F.; Höppner, F. & Kruse, R. A. Laurent, M.-J. L. (Ed.) Scalable Fuzzy Algorithms for Data Management and Analysis: Methods and Design Fuzzy Cluster Analysis of Larger Data Sets IGI Global: Information Science Reference, 2010, 302-331
+ * Paper: Hï¿½ppner, F. Speeding up fuzzy c-means: using a hierarchical data organisation to control the precision of membership calculation Fuzzy Sets and Systems, 2002, 128, 365 - 376
+ * Paper: Winkler, R.; Klawonn, F.; Hï¿½ppner, F. & Kruse, R. A. Laurent, M.-J. L. (Ed.) Scalable Fuzzy Algorithms for Data Management and Analysis: Methods and Design Fuzzy Cluster Analysis of Larger Data Sets IGI Global: Information Science Reference, 2010, 302-331
  *
  * Of course, the membership matrix is not stored as this would demilish the advantage this algorithm provides w.r.t. the
  * normal implementation of FCM. The effectiveness of this algorithm depends very strongly on the number of data objects
@@ -423,12 +423,12 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
 		double maxPrototypeMovement;
 		
-		System.out.print(this.algorithmName());
+//		System.out.print(this.algorithmName());
 		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 			
 			maxPrototypeMovement = 0.0d;
 			//System.out.println("");
@@ -471,7 +471,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
-		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 

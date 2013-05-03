@@ -165,12 +165,12 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
 
-		System.out.print(this.algorithmName());
+//		System.out.print(this.algorithmName());
 		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 			
 			// reset values
 			maxPrototypeMovement = 0.0d;
@@ -275,7 +275,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
-		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 	

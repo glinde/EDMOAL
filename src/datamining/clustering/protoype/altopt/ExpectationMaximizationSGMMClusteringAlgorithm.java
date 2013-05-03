@@ -264,12 +264,12 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		for(i=0; i<this.getClusterCount(); i++) newExpectationValues.add(this.vs.getNewAddNeutralElement());
 		
 
-		System.out.print(this.algorithmName());
+//		System.out.print(this.algorithmName());
 		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
-			System.out.print(".");
+//			System.out.print(".");
 			
 			prototypeMovement = 0.0d;
 
@@ -377,7 +377,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			if(prototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
-		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 
@@ -417,7 +417,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
 		
-		return this.conditionalProbabilities.get(obj.getID()).clone();
+		return this.conditionalProbabilities.get(obj.getID());
 	}
 
 
