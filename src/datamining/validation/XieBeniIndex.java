@@ -43,6 +43,7 @@ import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.MembershipFunctionProvider;
 import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
 import datamining.resultProviders.CrispNoiseClusteringProvider;
 import datamining.resultProviders.FuzzyClusteringProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
@@ -56,7 +57,7 @@ import etc.MyMath;
  * Complexity for pairwise data object calculations: O(n^2*c^2), 
  *  with n being the number of data objects and c being the number of clusters.<br> 
  * 
- * See paper: X.L. Xie and G.A. Beni. Validity Measure for Fuzzy Clustering.IEEE Transactions on Pattern Analysis and Machine Intel-ligence (PAMI) 3(8):841–846. IEEE Press, Piscataway, NJ, USA 1991. Reprinted in [Bezdek and Pal 1992], 219–226
+ * See paper: X.L. Xie and G.A. Beni. Validity Measure for Fuzzy Clustering.IEEE Transactions on Pattern Analysis and Machine Intel-ligence (PAMI) 3(8):841ï¿½846. IEEE Press, Piscataway, NJ, USA 1991. Reprinted in [Bezdek and Pal 1992], 219ï¿½226
  * 
  * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
  * @param vs The vector space used for the clustering process
@@ -68,6 +69,8 @@ public class XieBeniIndex<T> extends ClusterValidation<T>
 	protected AbstractPrototypeClusteringAlgorithm<T, ? extends Prototype<T>> clusterAlgo;
 		
 	protected double fuzzifier;
+	
+	protected boolean crisp;
 	/**
 	 * @param clusterInfo
 	 */
@@ -77,20 +80,67 @@ public class XieBeniIndex<T> extends ClusterValidation<T>
 		
 		this.clusterAlgo = clusterAlgo;
 		this.fuzzifier = 2.0d;
+		this.crisp = clusterAlgo instanceof CrispClusteringProvider;
 	}
 	
 	/**
 	 * @param clusterInfo
 	 */
-	public XieBeniIndex(ClusteringInformation<T> clusterInfo, double fuzzifier)
+	public XieBeniIndex(ClusteringInformation<T> clusterInfo, double fuzzifier, boolean crisp)
 	{
 		super(clusterInfo);
 		
 		this.clusterAlgo = null;
 		this.fuzzifier = fuzzifier;
+		this.crisp = crisp;
 	}
 	
 	public double index()
+	{
+		return this.crisp? this.crispIndex(): this.fuzzyIndex();
+	}
+	
+	public double crispIndex()
+	{
+		this.clusterInfo.checkClusterDistances();
+		
+		int i, j, k;
+		double objectiveFunctionValue;
+		
+		if(this.clusterAlgo != null)
+		{
+			objectiveFunctionValue = clusterAlgo.getObjectiveFunctionValue();
+		}
+		else
+		{
+			this.clusterInfo.checkCrispClusteringResult();
+			this.clusterInfo.checkPrototypes();
+			this.clusterInfo.checkDataSet();
+			this.clusterInfo.checkMetric();
+			
+			objectiveFunctionValue = 0.0d;
+									
+			for(j=0; j<this.clusterInfo.getDataSet().size(); j++)
+			{
+				IndexedDataObject<T> obj = this.clusterInfo.getDataSet().get(j);
+				
+				if(this.clusterInfo.getCrispClusteringResult()[j] >= 0) objectiveFunctionValue += this.clusterInfo.getMetric().distanceSq(obj.x, this.clusterInfo.getPrototypes().get(this.clusterInfo.getCrispClusteringResult()[j]).getPosition());
+			}	
+		}
+		
+		double minClusterDistance = Double.POSITIVE_INFINITY;
+		for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			for(k=i+1; k<this.clusterInfo.getClusterCount(); k++)
+			{
+				if(this.clusterInfo.getClusterDistances()[i][k] < minClusterDistance) minClusterDistance = this.clusterInfo.getClusterDistances()[i][k];
+			}
+		}
+			
+		return objectiveFunctionValue/(this.clusterInfo.getDataSet().size()*minClusterDistance*minClusterDistance);
+	}
+
+	public double fuzzyIndex()
 	{
 		this.clusterInfo.checkClusterDistances();
 		
