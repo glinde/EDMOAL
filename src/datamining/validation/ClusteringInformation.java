@@ -66,7 +66,7 @@ public class ClusteringInformation<T>
 	
 	protected Metric<T> metric;
 	
-	protected List<Prototype<T>> prototypes;
+	protected ArrayList<Prototype<T>> prototypes;
 	
 	protected FuzzyClusteringProvider<T> fuzzyClusteringProvider;
 	
@@ -94,19 +94,6 @@ public class ClusteringInformation<T>
 		this.trueClusteringResult = null;
 	}
 	
-	/**
-	 * Calculates the pairwise distance of clusters using the position of the data objects and the
-	 * the fuzzy membership value. The result is a distance matrix, each entry corresponding to
-	 * a pair of clusters. The equation for calculating the distance between cluster A and Cluster B is as follows:<br>
-	 * 
-	 * cluster_dist(A, B) = \frac{1}{(\sum_{i=0}^n u_{Ai})*(\sum_{i=0}^n u_{Bi})} \sum_{i=0}^n \sum_{j=0}^n u_{Ai} u_{Bj} dist(x_i, x_j)<br>
-	 * 
-	 * The complexity of this method is therefore: O(n^2 * c^2) with n being the number of data objects and c being the number of clusters. 
-	 * 
-	 * @param dataSet The data set.
-	 * @param fuzzyResult The fuzzy clustering result.
-	 * @param dist The distance function
-	 */
 	public void calculateClusterDistances_Fuzzy()
 	{
 		int i, j, k, l;
@@ -220,17 +207,6 @@ public class ClusteringInformation<T>
 		}
 	}
 
-	/**
-	 * Calculates the pairwise distance of clusters using the position of the prototypes.
-	 * The result is a distance matrix, each entry corresponding to a pair of clusters.
-	 * The equation for calculating the distance between cluster A and Cluster B is as follows:<br>
-	 * 
-	 * cluster_dist(A, B) = dist(y_A, y_B)<br>
-	 * 
-	 * The complexity of this method is therefore: O(c^2) with c being the number of clusters. 
-	 * 
-	 * @param prototypes The prototypes for the corresponding clusters
-	 */
 	public void calculateClusterDistances_Prototype()
 	{
 		int i, k;
@@ -253,19 +229,6 @@ public class ClusteringInformation<T>
 		}
 	}
 
-	/**
-	 * Calculates the diameter of a cluster, using the distance of the data objects within the cluster.
-	 * The equation for calculating the diameter of cluster A is:
-	 * 
-	 * cluster_diameter(A) = 2 \frac{\sum_{i=0}^n u_{Ai} dist(xcluster di_i, y_A)}{\sum_{i=0}^n u_{Ai}} <br>
-	 * 
-	 * Hence the complexity for calculating this value is in O(n) with n being the number of data objects.
-	 *  
-	 * @param dataSet The data set.
-	 * @param fuzzyResult The fuzzy clustering result.
-	 * @param prototypes The location of the prototypes
-	 * @param dist The distance function 
-	 */
 	public void calculateClusterDiameters_Fuzzy()
 	{
 		int i, j, l;
@@ -300,20 +263,6 @@ public class ClusteringInformation<T>
 		}
 	}
 	
-	/**
-	 * Calculates the diameter of a cluster, using the distance of the data objects to the prototype of the cluster. The
-	 * equation for calculating the diameter of cluster A is:
-	 * 
-	 * cluster_diameter(A) = 2 \frac{\sum_{i=0}^n u_{Ai} dist(x_i, y_A)}{\sum_{i=0}^n u_{Ai}} <br>
-	 * 
-	 * Hence the complexity for calculating this value is in O(n) with n being the number of data objects.
-	 *  
-	 * @param dataSet The data set.
-	 * @param fuzzyResult The fuzzy clustering result.
-	 * @param prototypes The location of the prototypes
-	 * @param dist The distance function 
-	 * @return A diameter of the cluster.
-	 */
 	public void calculateClusterDiameters_Fuzzy_Prototype()
 	{
 		int i, j;
@@ -691,7 +640,7 @@ public class ClusteringInformation<T>
 	/**
 	 * @return the prototypes
 	 */
-	public List<Prototype<T>> getPrototypes()
+	public ArrayList<Prototype<T>> getPrototypes()
 	{
 		return this.prototypes;
 	}
@@ -699,9 +648,11 @@ public class ClusteringInformation<T>
 	/**
 	 * @param prototypes the prototypes to set
 	 */
-	public void setPrototypes(List<Prototype<T>> prototypes)
+	public void setPrototypes(List<? extends Prototype<T>> prototypes)
 	{
-		this.prototypes = prototypes;
+		if(this.prototypes != null) this.prototypes.clear();
+		else this.prototypes = new ArrayList< Prototype<T>>();
+		this.prototypes.addAll(prototypes);
 	}
 
 	/**
