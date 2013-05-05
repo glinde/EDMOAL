@@ -33,6 +33,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package generation.data;
 
+import generation.distributions.CollapsedRealDistribution;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -59,7 +61,8 @@ public class HyperrectangleUniformGenerator extends DADataGenerator
 		
 		for(int k=0; k<lower.length; k++)
 		{
-			this.addDistribution(new UniformRealDistribution(lower[k], upper[k]));
+			if(lower[k] < upper[k]) this.addDistribution(new UniformRealDistribution(lower[k], upper[k]));
+			else this.addDistribution(new CollapsedRealDistribution(lower[k]));
 		}
 	}
 	
