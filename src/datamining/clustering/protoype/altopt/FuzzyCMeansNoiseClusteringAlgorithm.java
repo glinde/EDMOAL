@@ -283,8 +283,8 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 			}
 
 			this.iterationComplete();
-			
-			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
+
+			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
 //		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");

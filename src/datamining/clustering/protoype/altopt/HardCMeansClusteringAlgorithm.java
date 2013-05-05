@@ -260,7 +260,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 			this.iterationComplete();
 			
 //			System.out.println("assignmentChanged = " + assignmentChanged);
-			if(t>0 && !assignmentChanged)	break;
+			if(this.iterationCount >= this.minIterations && !assignmentChanged)	break;
 		}
 
 //		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");

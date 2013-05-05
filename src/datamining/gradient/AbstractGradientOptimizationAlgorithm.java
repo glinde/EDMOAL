@@ -82,9 +82,12 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	 *  False if the prototypes have not been initialised yet or if they have been reseted.
 	 */
 	protected boolean initialized;
-	
+
 	/** The number of iteration steps the algorithm has performed. */
 	protected int iterationCount;
+	
+	/** Specifies how many iterations the algorithm must go through to consider the result as valid. */
+	protected int minIterations;
 		
 	/** If true, the objective function values are recorded. */
 	protected boolean monitorObjectiveFunctionValues;
@@ -204,7 +207,7 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 			this.iterationComplete();
 			
 			// break if algorithm converged
-			if(distSq < this.epsilon*this.epsilon) break;
+			if(this.minIterations > this.iterationCount && distSq < this.epsilon*this.epsilon) break;
 		}
 		
 //		System.out.println(" finished.");
@@ -351,6 +354,22 @@ public abstract class AbstractGradientOptimizationAlgorithm<D, P> extends Abstra
 	{
 		return this.initialized;
 	}	
+
+	/**
+	 * @return the minIterations
+	 */
+	public int getMinIterations()
+	{
+		return this.minIterations;
+	}
+
+	/**
+	 * @param minIterations the minIterations to set
+	 */
+	public void setMinIterations(int minIterations)
+	{
+		this.minIterations = minIterations;
+	}
 
 	/**
 	 * Returns the parameter that specifies whether this is a gradient ascending or a gradient descending algorithm.<br>

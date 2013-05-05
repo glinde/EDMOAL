@@ -339,8 +339,8 @@ public class DistAdaptedFCMNoiseClusteringAlgorithm<T> extends DistAdaptedFCMClu
 			}
 			
 			this.iterationComplete();
-			
-			if(!prototypesMerged && maxPrototypeMovement < this.epsilon*this.epsilon) break;
+
+			if(!prototypesMerged && this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}		
 
 		if(this.removeEmptyPrototypes)

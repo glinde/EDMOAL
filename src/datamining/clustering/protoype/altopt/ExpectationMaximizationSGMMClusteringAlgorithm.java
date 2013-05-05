@@ -256,7 +256,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		// t: index for iterations
 		 
 		double doubleTMP = 0.0d;									// a temporal variable for multiple purposes
-		double prototypeMovement = 0.0d;
+		double maxPrototypeMovement = 0.0d;
 		double[] invCondDOProbSum = new double[this.getClusterCount()];
 		double[] tmpX = this.vs.getNewAddNeutralElement();
 
@@ -271,7 +271,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		{
 //			System.out.print(".");
 			
-			prototypeMovement = 0.0d;
+			maxPrototypeMovement = 0.0d;
 
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
@@ -343,7 +343,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 				}
 				
 				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newExpectationValues.get(i));
-				if(doubleTMP > prototypeMovement) prototypeMovement = doubleTMP;
+				if(doubleTMP > maxPrototypeMovement) maxPrototypeMovement = doubleTMP;
 				
 				this.prototypes.get(i).moveTo(newExpectationValues.get(i));
 			}
@@ -373,8 +373,8 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			}
 
 			this.iterationComplete();
-			
-			if(prototypeMovement < this.epsilon*this.epsilon) break;
+
+			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 
 //		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
@@ -398,13 +398,35 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		{
 			doubleTMP = Math.log(this.clusterProbability[i]);
 			doubleTMP -= ln2Pi;
-			doubleTMP += 0.5d*((double)this.vs.getDimension())*Math.log(1.0d/this.prototypes.get(i).getVariance());
+			doubleTMP -= 0.5d*((double)this.vs.getDimension())*Math.log(this.prototypes.get(i).getVariance());
 
 			for(j=0; j<this.getDataCount(); j++)	
 			{
 				objectiveFunctionValue += this.conditionalProbabilities.get(j)[i] * (doubleTMP - 0.5d*this.metric.distanceSq(this.prototypes.get(i).getPosition(), this.data.get(j).x)/this.prototypes.get(i).getVariance());
 			}
 		}
+		
+//		if(objectiveFunctionValue < 0.0d)
+//		{
+//			double[] marginalProbabilities = new double[this.getDataCount()];
+//			for(j=0; j<this.getDataCount(); j++)
+//			{
+//				for(i=0; i<this.getClusterCount(); i++)
+//				{
+//					marginalProbabilities[j] += this.conditionalProbabilities.get(j)[i];
+//				}
+//			}
+//
+//			double clusterProbSum=0.0d;
+//			for(i=0; i<this.getClusterCount(); i++)
+//			{
+//				clusterProbSum += this.clusterProbability[i];
+//			}
+//			
+//			System.out.println("Warning: negative OFV");
+//		}
+		
+		
 		
 		return objectiveFunctionValue;
 	}
