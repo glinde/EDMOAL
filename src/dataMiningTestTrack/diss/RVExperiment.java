@@ -38,6 +38,7 @@ import io.CSVFileWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
@@ -71,6 +72,22 @@ public class RVExperiment//<S extends Prototype<double[]>>
 	protected int maxIterations;
 		
 	protected double maxRV;
+	
+	public RVExperiment(int dim, Collection<double[]> data, double[] initialPosition, int maxIterations)
+	{
+		DAEuclideanVectorSpace evs = new DAEuclideanVectorSpace(dim);
+		
+		IndexedDataSet<double[]> dataSet = new IndexedDataSet<double[]>(data);
+		dataSet.seal();
+		
+		RelativeVarianceOfDistancesObjectiveFunction relVarFunction = new RelativeVarianceOfDistancesObjectiveFunction(dataSet);
+		this.rvAlgo = new SingleCentroidGradientOptimizationAlgorithm<double[]>(dataSet, evs, evs, relVarFunction, null); 
+		this.rvAlgo.setAscOrDesc(true);
+		this.rvAlgo.setLearningFactor(0.1d);
+				
+		this.initialPosition = initialPosition;
+		this.maxIterations = maxIterations; 
+	}
 	
 	public RVExperiment(int dim, IndexedDataSet<double[]> dataSet, double[] initialPosition, int maxIterations)
 	{

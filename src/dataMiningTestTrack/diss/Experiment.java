@@ -106,7 +106,7 @@ public class Experiment//<S extends Prototype<double[]>>
 		if(!dir.isDirectory()) throw new IllegalArgumentException("The path " + this.resultDir + " is not a directory.");
 		if(!dir.exists()) dir.mkdirs();
 		
-		this.indexValues = new double[5]; 
+		this.indexValues = new double[7]; 
 	}
 	
 	public void applyAlgorithm()
@@ -137,17 +137,20 @@ public class Experiment//<S extends Prototype<double[]>>
 		this.info.setMetric(new DAEuclideanMetric());
 		this.info.setTrueClusteringResult(this.correctClustering);
 		
+		this.indexValues[0] = this.clusteringAlgo.getIterationCount();
+		this.indexValues[1] = this.clusteringAlgo.getObjectiveFunctionValue()/this.clusteringAlgo.getDataCount();
+		
 		if(this.clusteringAlgo instanceof FuzzyClusteringProvider)
 		{
 			this.info.setFuzzyClusteringProvider((FuzzyClusteringProvider<double[]>)this.clusteringAlgo);
 			this.info.calculateClusterDiameters_Fuzzy_Prototype();
 			this.info.calculateClusterDistances_Prototype();
 
-			this.indexValues[0] = (new ClusterF1Measure<double[]>(this.info, false)).index();
-			this.indexValues[1] = (new BezdecSeperationIndex<double[]>(this.info)).index();
-			this.indexValues[2] = (new DaviesBouldinIndex<double[]>(this.info)).index();
-			this.indexValues[3] = (new XieBeniIndex<double[]>(this.info, 1.5d, false)).index();
-			this.indexValues[4] = (new NonFuzzynessIndex<double[]>(this.info)).index();
+			this.indexValues[2] = (new ClusterF1Measure<double[]>(this.info, false)).index();
+			this.indexValues[3] = (new BezdecSeperationIndex<double[]>(this.info)).index();
+			this.indexValues[4] = (new DaviesBouldinIndex<double[]>(this.info)).index();
+			this.indexValues[5] = (new XieBeniIndex<double[]>(this.info, 1.5d, false)).index();
+			this.indexValues[6] = (new NonFuzzynessIndex<double[]>(this.info)).index();
 		}
 		else if(this.clusteringAlgo instanceof CrispClusteringProvider)
 		{
@@ -155,11 +158,11 @@ public class Experiment//<S extends Prototype<double[]>>
 			this.info.calculateClusterDiameters_Crisp_Prototype();
 			this.info.calculateClusterDistances_Prototype();
 
-			this.indexValues[0] = (new ClusterF1Measure<double[]>(this.info, true)).index();
-			this.indexValues[1] = (new BezdecSeperationIndex<double[]>(this.info)).index();
-			this.indexValues[2] = (new DaviesBouldinIndex<double[]>(this.info)).index();
-			this.indexValues[3] = (new XieBeniIndex<double[]>(this.info, 1.5d, true)).index();
-			this.indexValues[4] = -1.0d;
+			this.indexValues[2] = (new ClusterF1Measure<double[]>(this.info, true)).index();
+			this.indexValues[3] = (new BezdecSeperationIndex<double[]>(this.info)).index();
+			this.indexValues[4] = (new DaviesBouldinIndex<double[]>(this.info)).index();
+			this.indexValues[5] = (new XieBeniIndex<double[]>(this.info, 1.5d, true)).index();
+			this.indexValues[6] = 1.0d;
 		}
 	}
 	

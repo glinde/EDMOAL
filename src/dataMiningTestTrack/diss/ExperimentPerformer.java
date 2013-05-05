@@ -301,69 +301,70 @@ public class ExperimentPerformer
 		{
 			int clusterCount = this.analyseClusterList[i];
 			this.experimentsByDataSet.add(new ArrayList<ArrayList<Experiment>>());
+			int[] clusterPermutation = random.nextPermutation(this.availableClusterCount, clusterCount);
+			// build data set for all algorithms
+			IndexedDataSet<double[]> dataSet = new IndexedDataSet<double[]>();
+			ArrayList<double[]> data = new ArrayList<double[]>(1100*clusterCount);
+
+			// add data from clusters
+			for(int cluster=0; cluster<clusterCount; cluster++)
+			{
+				for(double[] x : this.clusteredData.get(clusterPermutation[cluster]))
+				{
+					data.add(x);
+				}
+			}
 			
-			// repeat any experiment 5 times, using different initial values each time
+			int noiseCount = 0;
+			int[] noisePermutation=null;
+			
+			// add noise if available
+			if(this.noiseData.size() > 0) 
+			{
+				noiseCount = (int)(data.size() * this.noiseFraction);
+				noisePermutation = random.nextPermutation(this.noiseData.size(), noiseCount);
+				
+				for(int n=0; n<noiseCount; n++)
+				{
+					data.add(this.noiseData.get(noisePermutation[n]));
+				}
+			}			
+			// rememer correct clustering
+			int[] correctClustering = new int[data.size()];
+			int[] permuttedCorrectClustering = new int[data.size()];
+			int dataObjIndex = 0;
+			for(int cluster=0; cluster<clusterCount; cluster++)
+			{
+				for(int n=0; n<this.clusteredData.get(clusterPermutation[cluster]).size(); n++)
+				{
+					correctClustering[dataObjIndex] = cluster;
+					dataObjIndex++;
+				}
+			}
+			for(int n=0; n<noiseCount; n++)
+			{
+				correctClustering[dataObjIndex] = -1;
+				dataObjIndex++;
+			}
+			
+			// shuffle the data
+			int[] dataPermutation = random.nextPermutation(data.size(), data.size());
+			for(int n=0; n<data.size(); n++)
+			{
+				dataSet.add(new IndexedDataObject<double[]>(data.get(dataPermutation[n])));
+				permuttedCorrectClustering[n] = correctClustering[dataPermutation[n]];
+			}
+			dataSet.seal();
+
+			// calculate relative variance of data set
+			double maxRV = this.calculateExperimentRV(dataSet, 10*this.dim);
+			
+			// repeat any experiment several times, using different initial values each time
 			for(int k=0; k<this.dataSetRepitition; k++)
 			{
 				// subdirectory for the results of this experiment batch
 				String experimentSubdirectory = this.experimentDirectory + "C"+format.format(clusterCount) + "/R"+format.format(k) + "/";
-												
-				// build data set for all algorithms
-				int[] clusterPermutation = random.nextPermutation(this.availableClusterCount, clusterCount);
-				IndexedDataSet<double[]> dataSet = new IndexedDataSet<double[]>();
-				ArrayList<double[]> data = new ArrayList<double[]>(1100*clusterCount);
-
-				// add data from clusters
-				for(int cluster=0; cluster<clusterCount; cluster++)
-				{
-					for(double[] x : this.clusteredData.get(clusterPermutation[cluster]))
-					{
-						data.add(x);
-					}
-				}
-				
-				int noiseCount = 0;
-				int[] noisePermutation=null;
-				
-				// add noise if available
-				if(this.noiseData.size() > 0) 
-				{
-					noiseCount = (int)(data.size() * this.noiseFraction);
-					noisePermutation = random.nextPermutation(this.noiseData.size(), noiseCount);
 					
-					for(int n=0; n<noiseCount; n++)
-					{
-						data.add(this.noiseData.get(noisePermutation[n]));
-					}
-				}
-				
-				// rememer correct clustering
-				int[] correctClustering = new int[data.size()];
-				int[] permuttedCorrectClustering = new int[data.size()];
-				int dataObjIndex = 0;
-				for(int cluster=0; cluster<clusterCount; cluster++)
-				{
-					for(int n=0; n<this.clusteredData.get(clusterPermutation[cluster]).size(); n++)
-					{
-						correctClustering[dataObjIndex] = cluster;
-						dataObjIndex++;
-					}
-				}
-				for(int n=0; n<noiseCount; n++)
-				{
-					correctClustering[dataObjIndex] = -1;
-					dataObjIndex++;
-				}
-				
-				// shuffle the data
-				int[] dataPermutation = random.nextPermutation(data.size(), data.size());
-				for(int n=0; n<data.size(); n++)
-				{
-					dataSet.add(new IndexedDataObject<double[]>(data.get(dataPermutation[n])));
-					permuttedCorrectClustering[n] = correctClustering[dataPermutation[n]];
-				}
-				dataSet.seal();
-
 				// select initial positions
 				ArrayList<double[]> initialPositions = new ArrayList<double[]>();
 				int[] initialPermutation = random.nextPermutation(this.availableInitialPositions.size(), clusterCount);
@@ -372,9 +373,6 @@ public class ExperimentPerformer
 					initialPositions.add(this.availableInitialPositions.get(initialPermutation[n]));
 				}
 				
-				// calculate relative variance of data set
-				double maxRV = this.calculateExperimentRV(dataSet, 10*this.dim);
-
 				// store data setup information
 				this.saveExperimentSetup(clusterPermutation, noisePermutation, initialPermutation, maxRV, experimentSubdirectory);
 				
@@ -425,6 +423,7 @@ public class ExperimentPerformer
 		// HCM
 		{
 			HardCMeansClusteringAlgorithm<double[]> algo = new HardCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "HCM", this.experiments.size(), correctClustering);
 			this.experiments.add(exp);
@@ -444,10 +443,11 @@ public class ExperimentPerformer
 		// NFCM 2
 		{
 			FuzzyCMeansNoiseClusteringAlgorithm<double[]> algo = new FuzzyCMeansNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setFuzzifier(2.0d);
 			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
-			algo.setNoiseDegrationFactor(0.2d);
+			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCM2", this.experiments.size(), correctClustering);
 			this.experiments.add(exp);
@@ -457,6 +457,7 @@ public class ExperimentPerformer
 		// FCM 1+1/m
 		{
 			FuzzyCMeansClusteringAlgorithm<double[]> algo = new FuzzyCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setFuzzifier(1.0d+1.0d/this.dim);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "FCMdim", this.experiments.size(), correctClustering);
@@ -467,10 +468,11 @@ public class ExperimentPerformer
 		// NFCM 1+1/m
 		{
 			FuzzyCMeansNoiseClusteringAlgorithm<double[]> algo = new FuzzyCMeansNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setFuzzifier(1.0d+1.0d/this.dim);
 			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
-			algo.setNoiseDegrationFactor(0.2d);
+			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCMdim", this.experiments.size(), correctClustering);
 			this.experiments.add(exp);
@@ -480,6 +482,7 @@ public class ExperimentPerformer
 		// PFCM
 		{
 			PolynomFCMClusteringAlgorithm<double[]> algo = new PolynomFCMClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setBeta(0.5d);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "PFCM", this.experiments.size(), correctClustering);
@@ -490,10 +493,11 @@ public class ExperimentPerformer
 		// PNFCM
 		{
 			PolynomFCMNoiseClusteringAlgorithm<double[]> algo = new PolynomFCMNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setBeta(0.5d);
 			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
-			algo.setNoiseDegrationFactor(0.2d);
+			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "PNFCM", this.experiments.size(), correctClustering);
 			this.experiments.add(exp);
@@ -503,6 +507,7 @@ public class ExperimentPerformer
 		// RCFCM
 		{
 			RewardingCrispFCMClusteringAlgorithm<double[]> algo = new RewardingCrispFCMClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setFuzzifier(2.0d);
 			algo.setDistanceMultiplierConstant(1.0d-1.0d/this.dim);
 			algo.setEpsilon(0.001d);
@@ -514,11 +519,12 @@ public class ExperimentPerformer
 		// RCNFCM
 		{
 			RewardingCrispFCMNoiseClusteringAlgorithm<double[]> algo = new RewardingCrispFCMNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
+			algo.setMinIterations(10);
 			algo.setFuzzifier(2.0d);
 			algo.setDistanceMultiplierConstant(1.0d-1.0d/this.dim);
 			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
-			algo.setNoiseDegrationFactor(0.2d);
+			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "RCNFCM", this.experiments.size(), correctClustering);
 			this.experiments.add(exp);
@@ -528,6 +534,10 @@ public class ExperimentPerformer
 		// EM-GMM
 		{
 			ExpectationMaximizationSGMMClusteringAlgorithm algo = new ExpectationMaximizationSGMMClusteringAlgorithm(dataSet, vs, metric);
+			algo.setMinIterations(10);
+			algo.setVarianceBounded(true);
+			algo.setVarianceLowerBound(0.001d);
+			algo.setVarianceUpperBound(100.0d);
 			algo.setEpsilon(0.001d);
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "EMGMM", this.experiments.size(), correctClustering);
 			this.experiments.add(exp);

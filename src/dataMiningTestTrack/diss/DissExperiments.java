@@ -33,8 +33,20 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package dataMiningTestTrack.diss;
 
+import io.CSVFileWriter;
+import io.FileLineReader;
+
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
+
+import etc.SimpleStatistics;
 
 /**
  * TODO Class Description
@@ -43,15 +55,20 @@ import java.text.DecimalFormat;
  */
 public class DissExperiments
 {
+	public static final String progressFilePath = "experiments/progress.txt";
+	
 	public static final int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100};
 	public static final int[] analyseClusters = new int[]{2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 120, 150, 170, 200, 250};
 
-	public static final int clusters = 250;
+	public static final int clusters = analyseClusters[analyseClusters.length-1];
 	public static final int dataPerCluster = 1000;
-	public static final int repetitions = 20;
+	public static final int setsPerConfig = 5;
+	public static final int repititions = 2;
+	public static final int maxIterations = 30;
+	public static final double noiseFreq = 1.0d/9.0d;
 	
 	
-	public static void genMixOfGauss(int dim, int clusterCount, int dataPerCluster, int repititions)
+	private static void genMixOfGauss(int dim, int clusterCount, int dataPerCluster, int repititions)
 	{
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
@@ -72,7 +89,7 @@ public class DissExperiments
 		}
 	}
 	
-	public static void genMixOfGaussNoise(int dim, int clusterCount, int dataPerCluster, int noiseCount, int repititions)
+	private static void genMixOfGaussNoise(int dim, int clusterCount, int dataPerCluster, int noiseCount, int repititions)
 	{
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
@@ -93,7 +110,7 @@ public class DissExperiments
 		}
 	}
 	
-	public static void genDistorted(int dim, int clusterCount, int dataPerCluster, int noiseCount, int repititions)
+	private static void genDistorted(int dim, int clusterCount, int dataPerCluster, int noiseCount, int repititions)
 	{
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
@@ -114,7 +131,7 @@ public class DissExperiments
 		}
 	}
 	
-	public static void genCorner(int dim, int clusterCount, int dataPerCluster, int noiseCount, int repititions)
+	private static void genCorner(int dim, int clusterCount, int dataPerCluster, int noiseCount, int repititions)
 	{
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
@@ -140,13 +157,11 @@ public class DissExperiments
 	
 	public static void genDissDataSets()
 	{
-		
-		for(int i=0; i<dims.length; i++) genMixOfGauss(dims[i], clusters, dataPerCluster, repetitions);
-		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
-		for(int i=0; i<dims.length; i++) genDistorted(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
-		for(int i=4; i<dims.length; i++) genCorner(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, repetitions);
+		for(int i=0; i<dims.length; i++) genMixOfGauss(dims[i], clusters, dataPerCluster, setsPerConfig);
+		for(int i=0; i<dims.length; i++) genMixOfGaussNoise(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, setsPerConfig);
+		for(int i=0; i<dims.length; i++) genDistorted(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, setsPerConfig);
+		for(int i=0; i<dims.length; i++) if(dims[i] >= 10) genCorner(dims[i], clusters, dataPerCluster, clusters*dataPerCluster/5, setsPerConfig);
 	}
-	
 	
 	public static void showSomeDataSets()
 	{
@@ -161,133 +176,174 @@ public class DissExperiments
 		catch (FileNotFoundException e)	{e.printStackTrace();}
 	}
 	
+	private static void performExperiments(String experimentSelectionPath, File progressFile, Set<String> progressSet)
+	{		
+		System.out.print("Perform Experiments in: " + experimentSelectionPath);
+		
+		if(progressSet.contains(experimentSelectionPath))
+		{
+			System.out.println(" .. skipped.");
+			return;
+		}
+		else
+		{
+			System.out.println("");
+		}
+		
+		long time;
+		ExperimentPerformer expPerformer = new ExperimentPerformer("experiments/data/"+experimentSelectionPath,
+				"experiments/clusterings/"+experimentSelectionPath, maxIterations, repititions, analyseClusters, noiseFreq);
+		
+		System.out.print("load data.. "); time = System.currentTimeMillis(); 
+		expPerformer.loadExperimentData();
+		System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+		
+		System.out.print("generate experiments.. "); time = System.currentTimeMillis();
+		expPerformer.generateExperiments();
+		System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+		
+		System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
+		expPerformer.performExperiments();
+		System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+		
+		System.out.print("save results.. "); time = System.currentTimeMillis();
+		expPerformer.storeResults();
+		System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+		
+		try
+		{
+			FileWriter writer = new FileWriter(progressFile, true);
+			writer.write(experimentSelectionPath + "\n");
+			writer.flush();
+			writer.close();
+			progressSet.add(experimentSelectionPath);
+		}
+		catch(IOException e1)
+		{
+			e1.printStackTrace();
+		}
+		
+		System.gc();
+		try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+	}
+	
 	public static void clusterDissDataSets()
 	{
-		ExperimentPerformer expPerformer;
-		String experimentSelectionPath;
+		String experimentSubSelectionPath;
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
-		long time;
 		
-		for(int i=0; i<dims.length; i++)
+		TreeSet<String> progressSet = new TreeSet<String>();
+		File progressFile = new File(progressFilePath);
+		
+		try
 		{
-			for(int k=0; k<repetitions; k++)
+			if(progressFile.exists() && progressFile.isFile())
 			{
-				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
-				
-				expPerformer = new ExperimentPerformer("experiments/data/MixNormal/"+experimentSelectionPath,
-						"experiments/clusterings/MixNormal/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
-				
-				System.out.print("load data.. "); time = System.currentTimeMillis(); 
-				expPerformer.loadExperimentData();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
-				expPerformer.generateExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
-				expPerformer.performExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("save results.. "); time = System.currentTimeMillis();
-				expPerformer.storeResults();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.gc();
-				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+				FileLineReader reader = new FileLineReader();
+				reader.openFile(progressFile);
+				while(reader.ready()) progressSet.add(reader.readStringLine());
+				reader.closeFile();
+			}
+			else
+			{
+				if(!progressFile.isFile()) throw new IOException("progress file path is not a normal file. " + progressFilePath);
+				progressFile.getParentFile().mkdirs();
+				progressFile.createNewFile();
 			}
 		}
-
-		for(int i=0; i<dims.length; i++)
+		catch(IOException e)
 		{
-			for(int k=0; k<repetitions; k++)
-			{
-				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
-				
-				expPerformer = new ExperimentPerformer("experiments/data/MixNormalNoise/"+experimentSelectionPath,
-						"experiments/clusterings/MixNormalNoise/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
+			e.printStackTrace();
+		}
 
-				System.out.print("load data.. "); time = System.currentTimeMillis(); 
-				expPerformer.loadExperimentData();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+		for(int k=0; k<setsPerConfig; k++)
+		{
+			for(int i=0; i<dims.length; i++)
+			{
+				experimentSubSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
 				
-				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
-				expPerformer.generateExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
-				expPerformer.performExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("save results.. "); time = System.currentTimeMillis();
-				expPerformer.storeResults();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.gc();
-				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+				performExperiments("MixNormal/" + experimentSubSelectionPath, progressFile, progressSet);
+				performExperiments("MixNormalNoise/" + experimentSubSelectionPath, progressFile, progressSet);
+				performExperiments("Distorted/" + experimentSubSelectionPath, progressFile, progressSet);
+				if(dims[i] >= 10) performExperiments("Corner/" + experimentSubSelectionPath, progressFile, progressSet);
 			}
 		}	
+	}
+	
+	public static void calculateClusterProperties()
+	{
+		DecimalFormat format = new DecimalFormat();
+		format.setMinimumIntegerDigits(3);
+		format.setGroupingUsed(false);
+				
+		ArrayList<String> algorithmDirs = new ArrayList<String>();
+		algorithmDirs.add("experiments/data/MixNormal/");
+		algorithmDirs.add("experiments/data/MixNormalNoise/");
+		algorithmDirs.add("experiments/data/Distorted/");
+		algorithmDirs.add("experiments/data/Corner/");
+		
+		CSVFileWriter writer = new CSVFileWriter();
+		writer.setAddFirstAttributeAsID(true);
+		writer.setFirstLineAsAtributeNames(false);
 
-		for(int i=0; i<dims.length; i++)
+		for(String s:algorithmDirs)
 		{
-			for(int k=0; k<repetitions; k++)
+			File algoDir = new File(s);
+			if(!algoDir.exists() || !algoDir.isDirectory())
 			{
-				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
-				
-				expPerformer = new ExperimentPerformer("experiments/data/Distorted/"+experimentSelectionPath,
-						"experiments/clusterings/Distorted/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
-
-				System.out.print("load data.. "); time = System.currentTimeMillis(); 
-				expPerformer.loadExperimentData();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
-				expPerformer.generateExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
-				expPerformer.performExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.out.print("save results.. "); time = System.currentTimeMillis();
-				expPerformer.storeResults();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.gc();
-				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+				System.out.println("Warning: The path \""+s+"\" does not exist or is not a directory. Ignoring.");
+				continue;
 			}
-		}	
-
-		for(int i=4; i<dims.length; i++)
-		{
-			for(int k=0; k<repetitions; k++)
+			File[] dimDirs = algoDir.listFiles();
+			
+			for(int i=0; i<dimDirs.length; i++)
 			{
-				experimentSelectionPath = format.format(dims[i]) + "D/" + format.format(k) + "/";
+				if(!dimDirs[i].isDirectory()) continue;
+													
+				ArrayList<double[]> valueList = ClusterPropertyTester.analyseClusters(dimDirs[i]);
 				
-				expPerformer = new ExperimentPerformer("experiments/data/Corner/"+experimentSelectionPath,
-						"experiments/clusterings/Corner/"+experimentSelectionPath, 50, 5, analyseClusters, 1.0d/9.0d);
-
-				System.out.print("load data.. "); time = System.currentTimeMillis(); 
-				expPerformer.loadExperimentData();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				try
+				{
+					writer.openFile(new File(dimDirs[i].getPath()+"/clusterProperties.csv"));
+					writer.writeDoubleDataTable(valueList, null);
+					writer.closeFile();
+				}
+				catch(IOException e)
+				{
+					writer.closeFile();
+					e.printStackTrace();
+				}
 				
-				System.out.print("generate experiments.. "); time = System.currentTimeMillis();
-				expPerformer.generateExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				double[][] valueMatrix = new double[valueList.get(0).length][valueList.size()];
 				
-				System.out.print("perform Experiments.. "); time = System.currentTimeMillis();
-				expPerformer.performExperiments();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
+				for(int j=0; j<valueList.size(); j++)
+				{
+					for(int k=0; k<valueMatrix.length; k++)
+					{
+						valueMatrix[k][j] = valueList.get(j)[k];
+					}
+				}
 				
-				System.out.print("save results.. "); time = System.currentTimeMillis();
-				expPerformer.storeResults();
-				System.out.println(" done. [" + (System.currentTimeMillis() - time) + "]");
-				
-				System.gc();
-				try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
+				try
+				{
+					writer.openFile(new File(dimDirs[i]+"/clusterStatistics.ini"));
+					writer.writeStringLine("Interpretation=" + "[mean, sample standard deviation]");
+					writer.writeStringLine("DataObjects=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[0])));
+					writer.writeStringLine("DistanceMax=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[1])));
+					writer.writeStringLine("DistanceMean=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[2])));
+					writer.writeStringLine("DistanceVariance=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[3])));
+					writer.writeStringLine("CentreRV=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[4])));
+					writer.writeStringLine("MaxRV=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[5])));
+					writer.closeFile();
+				}
+				catch(IOException e)
+				{
+					writer.closeFile();
+					e.printStackTrace();
+				}
 			}
-		}	
+		}
 	}
 }
