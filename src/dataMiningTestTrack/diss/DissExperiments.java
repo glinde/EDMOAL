@@ -62,8 +62,8 @@ public class DissExperiments
 
 	public static final int clusters = analyseClusters[analyseClusters.length-1];
 	public static final int dataPerCluster = 1000;
-	public static final int setsPerConfig = 5;
-	public static final int repititions = 2;
+	public static final int setsPerConfig = 20;
+	public static final int repititions = 5;
 	public static final int maxIterations = 30;
 	public static final double noiseFreq = 1.0d/9.0d;
 	
@@ -272,6 +272,92 @@ public class DissExperiments
 		}	
 	}
 	
+//	public static void calculateClusterProperties()
+//	{
+//		DecimalFormat format = new DecimalFormat();
+//		format.setMinimumIntegerDigits(3);
+//		format.setGroupingUsed(false);
+//				
+//		ArrayList<String> algorithmDirs = new ArrayList<String>();
+//		algorithmDirs.add("experiments/data/MixNormal/");
+//		algorithmDirs.add("experiments/data/MixNormalNoise/");
+//		algorithmDirs.add("experiments/data/Distorted/");
+//		algorithmDirs.add("experiments/data/Corner/");
+//		
+//		ArrayList<String> attrNames = new ArrayList<String>();
+////		attrNames.add("id");
+//		attrNames.add("size");
+//		attrNames.add("RadiusMax");
+//		attrNames.add("RadiusMean");
+//		attrNames.add("RadiusDeviation");
+//		attrNames.add("CentreRV");
+//		attrNames.add("MaxRV");
+//		
+//		
+//		CSVFileWriter writer = new CSVFileWriter();
+//		writer.setAddFirstAttributeAsID(true);
+//		writer.setFirstLineAsAtributeNames(true);
+//		
+//		for(String s:algorithmDirs)
+//		{
+//			File algoDir = new File(s);
+//			if(!algoDir.exists() || !algoDir.isDirectory())
+//			{
+//				System.out.println("Warning: The path \""+s+"\" does not exist or is not a directory. Ignoring.");
+//				continue;
+//			}
+//			File[] dimDirs = algoDir.listFiles();
+//			Arrays.sort(dimDirs);
+//			
+//			for(int i=0; i<dimDirs.length; i++)
+//			{
+//				if(!dimDirs[i].isDirectory()) continue;
+//													
+//				ArrayList<double[]> valueList = ClusterPropertyTester.analyseClusters(dimDirs[i]);
+//				
+//				try
+//				{
+//					writer.openFile(new File(dimDirs[i].getPath()+"/properties.csv"));
+//					writer.writeDoubleDataTable(valueList, attrNames);
+//					writer.closeFile();
+//				}
+//				catch(IOException e)
+//				{
+//					writer.closeFile();
+//					e.printStackTrace();
+//				}
+//				
+//				double[][] valueMatrix = new double[valueList.get(0).length][valueList.size()];
+//				
+//				for(int j=0; j<valueList.size(); j++)
+//				{
+//					for(int k=0; k<valueMatrix.length; k++)
+//					{
+//						valueMatrix[k][j] = valueList.get(j)[k];
+//					}
+//				}
+//				
+//				try
+//				{
+//					writer.openFile(new File(dimDirs[i]+"/statistics.ini"));
+//					writer.writeStringLine("Interpretation=" + "[min, max, mean, sample standard deviation]");
+//					writer.writeStringLine("DataObjects=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[0])));
+//					writer.writeStringLine("RadiusMax=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[1])));
+//					writer.writeStringLine("RadiusMean=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[2])));
+//					writer.writeStringLine("RadiusDeviation=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[3])));
+//					writer.writeStringLine("CentreRV=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[4])));
+//					writer.writeStringLine("MaxRV=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[5])));
+//					writer.closeFile();
+//				}
+//				catch(IOException e)
+//				{
+//					writer.closeFile();
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//	}
+	
 	public static void calculateClusterProperties()
 	{
 		DecimalFormat format = new DecimalFormat();
@@ -312,47 +398,56 @@ public class DissExperiments
 			for(int i=0; i<dimDirs.length; i++)
 			{
 				if(!dimDirs[i].isDirectory()) continue;
-													
-				ArrayList<double[]> valueList = ClusterPropertyTester.analyseClusters(dimDirs[i]);
 				
-				try
+
+				File[] subDirList = dimDirs[i].listFiles();
+				Arrays.sort(subDirList);		
+
+				for(int k=0; k<subDirList.length; k++)
 				{
-					writer.openFile(new File(dimDirs[i].getPath()+"/clusterProperties.csv"));
-					writer.writeDoubleDataTable(valueList, attrNames);
-					writer.closeFile();
-				}
-				catch(IOException e)
-				{
-					writer.closeFile();
-					e.printStackTrace();
-				}
-				
-				double[][] valueMatrix = new double[valueList.get(0).length][valueList.size()];
-				
-				for(int j=0; j<valueList.size(); j++)
-				{
-					for(int k=0; k<valueMatrix.length; k++)
+					if(!subDirList[k].isDirectory()) continue;
+										
+					ArrayList<double[]> valueList = ClusterPropertyTester.analyseClusterConfig(subDirList[k]);
+					
+					try
 					{
-						valueMatrix[k][j] = valueList.get(j)[k];
+						writer.openFile(new File(subDirList[k].getPath()+"/properties.csv"));
+						writer.writeDoubleDataTable(valueList, attrNames);
+						writer.closeFile();
 					}
-				}
-				
-				try
-				{
-					writer.openFile(new File(dimDirs[i]+"/clusterStatistics.ini"));
-					writer.writeStringLine("Interpretation=" + "[min, max, mean, sample standard deviation]");
-					writer.writeStringLine("DataObjects=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[0])));
-					writer.writeStringLine("RadiusMax=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[1])));
-					writer.writeStringLine("RadiusMean=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[2])));
-					writer.writeStringLine("RadiusDeviation=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[3])));
-					writer.writeStringLine("CentreRV=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[4])));
-					writer.writeStringLine("MaxRV=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[5])));
-					writer.closeFile();
-				}
-				catch(IOException e)
-				{
-					writer.closeFile();
-					e.printStackTrace();
+					catch(IOException e)
+					{
+						writer.closeFile();
+						e.printStackTrace();
+					}
+					
+					double[][] valueMatrix = new double[valueList.get(0).length][valueList.size()];
+					
+					for(int j=0; j<valueList.size(); j++)
+					{
+						for(int l=0; l<valueMatrix.length; l++)
+						{
+							valueMatrix[l][j] = valueList.get(j)[l];
+						}
+					}
+					
+					try
+					{
+						writer.openFile(new File(subDirList[k]+"/statistics.ini"));
+						writer.writeStringLine("Interpretation  =" + "[min, max, mean, standard deviation]");
+						writer.writeStringLine("DataObjects     =" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[0])));
+						writer.writeStringLine("RadiusMax       =" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[1])));
+						writer.writeStringLine("RadiusMean      =" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[2])));
+						writer.writeStringLine("RadiusDeviation =" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[3])));
+						writer.writeStringLine("CentreRV        =" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[4])));
+						writer.writeStringLine("MaxRV           =" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[5])));
+						writer.closeFile();
+					}
+					catch(IOException e)
+					{
+						writer.closeFile();
+						e.printStackTrace();
+					}
 				}
 			}
 		}

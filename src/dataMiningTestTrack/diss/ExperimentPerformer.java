@@ -61,6 +61,7 @@ import datamining.clustering.protoype.altopt.PolynomFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlgorithm;
 import etc.Parallel;
+import etc.StringService;
 
 /**
  * TODO Class Description
@@ -83,6 +84,9 @@ public class ExperimentPerformer
 	private int availableNoiseCount;
 	
 	private int[] clusterSize;
+	
+	
+	private double noiseDistance;
 	
 	
 	private int maxIterations;
@@ -128,6 +132,9 @@ public class ExperimentPerformer
 		this.availableNoiseCount = 0;
 		this.clusterSize = null;
 		
+		// filled by cluster statistics
+		this.noiseDistance = 0.0d;
+		
 		// filled by experiment setup file
 		this.maxIterations = maxIterations;
 		this.dataSetRepitition = dataSetRepitition;
@@ -159,7 +166,7 @@ public class ExperimentPerformer
 			while(flReader.ready())
 			{	
 				lineList = flReader.readStringListLine();
-				if(lineList.size() == 2) metaDataMap.put(lineList.get(0), lineList.get(1));
+				if(lineList.size() == 2) metaDataMap.put(lineList.get(0).trim(), lineList.get(1));
 			};
 		}
 		catch(IOException e)
@@ -236,7 +243,32 @@ public class ExperimentPerformer
 	
 	private void loadClusterProperties() throws IOException
 	{
+		TreeMap<String, String> iniMap = new TreeMap<String, String>();
+		File file = new File(this.dataDirectory + "/statistics.ini");
+		if(!file.exists()) throw new FileNotFoundException("Meta file not readable. " + file.getAbsolutePath() + " does not exists.");
+		FileLineReader flReader = new FileLineReader();
 		
+		flReader.openFile(file);
+		flReader.setSeperatorChar('=');
+		ArrayList<String> lineList;
+		try
+		{
+			while(flReader.ready())
+			{	
+				lineList = flReader.readStringListLine();
+				if(lineList.size() == 2) iniMap.put(lineList.get(0).trim(), lineList.get(1).trim());
+			};
+		}
+		catch(IOException e)
+		{
+			flReader.closeFile();
+			throw new IOException(e);
+		}
+		flReader.closeFile();
+		
+		double[] statistics = StringService.parseDoubleArray(iniMap.get("RadiusMax"));
+		
+		this.noiseDistance = statistics[1];
 	}
 	
 	private void loadInitials() throws IOException
@@ -326,7 +358,7 @@ public class ExperimentPerformer
 					data.add(this.noiseData.get(noisePermutation[n]));
 				}
 			}			
-			// rememer correct clustering
+			// remember correct clustering
 			int[] correctClustering = new int[data.size()];
 			int[] permuttedCorrectClustering = new int[data.size()];
 			int dataObjIndex = 0;
@@ -442,7 +474,7 @@ public class ExperimentPerformer
 			FuzzyCMeansNoiseClusteringAlgorithm<double[]> algo = new FuzzyCMeansNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setMinIterations(10);
 			algo.setFuzzifier(2.0d);
-			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
+			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
@@ -466,7 +498,7 @@ public class ExperimentPerformer
 		{
 			FuzzyCMeansNoiseClusteringAlgorithm<double[]> algo = new FuzzyCMeansNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setMinIterations(10);
-			algo.setFuzzifier(1.0d+1.0d/this.dim);
+			algo.setFuzzifier(this.noiseDistance);
 			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
@@ -492,7 +524,7 @@ public class ExperimentPerformer
 			PolynomFCMNoiseClusteringAlgorithm<double[]> algo = new PolynomFCMNoiseClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setMinIterations(10);
 			algo.setBeta(0.5d);
-			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
+			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
@@ -519,7 +551,7 @@ public class ExperimentPerformer
 			algo.setMinIterations(10);
 			algo.setFuzzifier(2.0d);
 			algo.setDistanceMultiplierConstant(1.0d-1.0d/this.dim);
-			algo.setNoiseDistance(0.1d*Math.sqrt(this.dim));
+			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
 			algo.setEpsilon(0.001d);
@@ -555,6 +587,7 @@ public class ExperimentPerformer
 		{
 			writer = new FileWriter(experimentDirectory + "/dataSetup.ini");
 			writer.write("maxRelativeVariance="+maxRV+"\n");
+			writer.write("noiseDisance="+this.noiseDistance+"\n");
 			writer.write("clusterCount="+clusters.length+"\n");
 			writer.write("clusterIDs="+Arrays.toString(clusters)+"\n");
 			writer.write("initialIDs="+Arrays.toString(initialPermutation)+"\n");

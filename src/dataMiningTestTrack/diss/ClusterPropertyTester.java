@@ -33,6 +33,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package dataMiningTestTrack.diss;
 
+import data.objects.doubleArray.DAEuclideanMetric;
+import etc.Parallel;
+import etc.SimpleStatistics;
 import generation.data.HyperrectangleUniformGenerator;
 import io.CSVFileReader;
 
@@ -41,10 +44,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import data.objects.doubleArray.DAEuclideanMetric;
-import etc.Parallel;
-import etc.SimpleStatistics;
 
 /**
  * TODO Class Description
@@ -114,7 +113,69 @@ public class ClusterPropertyTester
 		return new double[]{cluster.size(), stats[1], stats[2], stats[3], statsSq[1]/statsSq[0]*statsSq[0], calculatMaxRV(cluster, 10)};
 	}
 	
-	public static ArrayList<double[]> analyseClusters(File clusterDir)
+//	public static ArrayList<double[]> analyseClusters(File clusterDir)
+//	{
+//		System.out.println("Analyse clusters in " + clusterDir);
+//		
+//		ArrayList<double[]> clusterPropertyList = new ArrayList<double[]>(1000);
+//		
+//		if(!clusterDir.exists() || !clusterDir.isDirectory()) throw new IllegalArgumentException("The path \"" + clusterDir.getPath() + "\" is does not exist or is not a directory.");
+//		
+//		File[] subDirList = clusterDir.listFiles();
+//		Arrays.sort(subDirList);
+//				
+//		// filter for finding cluster files.
+//		FilenameFilter filter = new FilenameFilter()
+//			{
+//				@Override
+//				public boolean accept(File file, String name)
+//				{
+//					if(name.startsWith("cluster") && name.endsWith(".csv")) return true;
+//					return false;
+//				}
+//			};
+//		
+//		ArrayList<ArrayList<double[]>> clusterList=new ArrayList<ArrayList<double[]>>(250);
+//		CSVFileReader reader = new CSVFileReader();
+//		reader.setFirstLineAsAtributeNames(true);
+//		reader.setIgnoreFirstAttribute(true);
+//		
+//		for(int i=0; i<subDirList.length; i++)
+//		{
+//			if(!subDirList[i].isDirectory()) continue;
+//			File[] clusterFileList = subDirList[i].listFiles(filter);
+//			Arrays.sort(clusterFileList);
+////			System.out.println(Arrays.toString(clusterFileList));
+//			
+//			for(int j=0; j<clusterFileList.length; j++)
+//			{
+//				try
+//				{
+//					reader.openFile(clusterFileList[j]);
+//					clusterList.add(reader.readDoubleDataTable());
+//					reader.closeFile();
+//				}
+//				catch(IOException e)
+//				{
+//					reader.closeFile();
+//					e.printStackTrace();
+//				}
+//			}
+//			
+//			for(ArrayList<double[]> cluster : clusterList)
+//			{
+//				clusterPropertyList.add(ClusterPropertyTester.clusterProperties(cluster));
+//			}
+//			
+//			clusterList.clear();
+//			System.gc();
+//			try {Thread.sleep(1000);} catch (InterruptedException e1) {e1.printStackTrace();}
+//		}
+//				
+//		return clusterPropertyList;
+//	}
+
+	public static ArrayList<double[]> analyseClusterConfig(File clusterDir)
 	{
 		System.out.println("Analyse clusters in " + clusterDir);
 		
@@ -122,8 +183,6 @@ public class ClusterPropertyTester
 		
 		if(!clusterDir.exists() || !clusterDir.isDirectory()) throw new IllegalArgumentException("The path \"" + clusterDir.getPath() + "\" is does not exist or is not a directory.");
 		
-		File[] subDirList = clusterDir.listFiles();
-		Arrays.sort(subDirList);
 				
 		// filter for finding cluster files.
 		FilenameFilter filter = new FilenameFilter()
@@ -141,38 +200,31 @@ public class ClusterPropertyTester
 		reader.setFirstLineAsAtributeNames(true);
 		reader.setIgnoreFirstAttribute(true);
 		
-		for(int i=0; i<subDirList.length; i++)
-		{
-			if(!subDirList[i].isDirectory()) continue;
-			File[] clusterFileList = subDirList[i].listFiles(filter);
-			Arrays.sort(clusterFileList);
+		
+		File[] clusterFileList = clusterDir.listFiles(filter);
+		Arrays.sort(clusterFileList);
 //			System.out.println(Arrays.toString(clusterFileList));
-			
-			for(int j=0; j<clusterFileList.length; j++)
+		
+		for(int j=0; j<clusterFileList.length; j++)
+		{
+			try
 			{
-				try
-				{
-					reader.openFile(clusterFileList[j]);
-					clusterList.add(reader.readDoubleDataTable());
-					reader.closeFile();
-				}
-				catch(IOException e)
-				{
-					reader.closeFile();
-					e.printStackTrace();
-				}
+				reader.openFile(clusterFileList[j]);
+				clusterList.add(reader.readDoubleDataTable());
+				reader.closeFile();
 			}
-			
-			for(ArrayList<double[]> cluster : clusterList)
+			catch(IOException e)
 			{
-				clusterPropertyList.add(ClusterPropertyTester.clusterProperties(cluster));
+				reader.closeFile();
+				e.printStackTrace();
 			}
-			
-			clusterList.clear();
-			System.gc();
-			try {Thread.sleep(1000);} catch (InterruptedException e1) {e1.printStackTrace();}
 		}
-				
+		
+		for(ArrayList<double[]> cluster : clusterList)
+		{
+			clusterPropertyList.add(ClusterPropertyTester.clusterProperties(cluster));
+		}
+						
 		return clusterPropertyList;
 	}
 }

@@ -82,8 +82,7 @@ public class Main
 //		Main.clusterValidityTest();
 //		DissExperiments.genDissDataSets();
 //		DissExperiments.showSomeDataSets();
-//		DissExperiments.calculateClusterProperties();
-		DissExperiments.calculateClusterPropertiesConfigLevel();
+		DissExperiments.calculateClusterProperties();
 //		DissExperiments.clusterDissDataSets();
 	}
 	

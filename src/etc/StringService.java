@@ -65,7 +65,7 @@ public class StringService implements Serializable
 	}
 
 	
-	public double[] parseDoubleArray(String textArray)
+	public static double[] parseDoubleArray(String textArray)
 	{
 		String trimmed = textArray.trim();
 		if(trimmed.charAt(0) != '[' || trimmed.charAt(trimmed.length()-1) != ']') throw new IllegalArgumentException("Array must start with '[' and end with ']'. Could not be interpreted as double array: " + trimmed);
