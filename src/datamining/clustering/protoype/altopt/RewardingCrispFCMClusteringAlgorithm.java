@@ -47,7 +47,6 @@ import data.set.IndexedDataSet;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
-import etc.MyMath;
 
 /**
  * The rewarding crisp memberships fuzzy c-means clustering algorithm an extension of FCM.

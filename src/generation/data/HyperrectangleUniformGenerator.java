@@ -35,10 +35,8 @@ package generation.data;
 
 import generation.distributions.CollapsedRealDistribution;
 
-import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 /**

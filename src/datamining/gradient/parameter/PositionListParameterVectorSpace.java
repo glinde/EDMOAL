@@ -34,12 +34,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.gradient.parameter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import data.algebra.VectorSpace;
-import datamining.clustering.protoype.Prototype;
 
 /**
  * TODO Class Description

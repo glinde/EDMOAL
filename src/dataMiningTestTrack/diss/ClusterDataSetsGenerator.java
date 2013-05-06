@@ -37,47 +37,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack.diss; 
 
+import generation.data.ClusteredDataSetGenerator;
+import generation.data.HyperrectangleUniformGenerator;
 import io.CSVFileWriter;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
-import data.objects.doubleArray.DAEuclideanMetric;
-import data.objects.doubleArray.DAEuclideanVectorSpace;
-import data.set.IndexedDataObject;
-import data.set.IndexedDataSet;
 import dataMiningTestTrack.tests.TestVisualizer;
-import datamining.clustering.density.DBScan;
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.altopt.BallTreeFuzzyCMeansClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.DistAdaptedFCMClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.DistAdaptedFCMNoiseClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.ExpectationMaximizationSGMMClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.FuzzyCMeansNoiseClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.HardCMeansClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.PolynomFCMNoiseClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm;
-import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
-import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
-import datamining.validation.ClusterMaxPrecisionIndex;
-import datamining.validation.ClusterMaxRecallIndex;
-import datamining.validation.ClusteringInformation;
-import etc.DataGenerator;
-import generation.data.ClusteredDataSetGenerator;
-import generation.data.HyperrectangleUniformGenerator;
 
 
 /**

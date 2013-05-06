@@ -40,10 +40,6 @@ package data.structures;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import sun.awt.image.ImageWatched.Link;
-
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;

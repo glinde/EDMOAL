@@ -34,14 +34,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.validation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
-import javax.naming.NoInitialContextException;
 
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
-import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;

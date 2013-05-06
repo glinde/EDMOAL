@@ -35,7 +35,6 @@ package datamining.gradient.functions;
 
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.DataSetNotSealedException;
-import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import etc.SimpleStatistics;
 

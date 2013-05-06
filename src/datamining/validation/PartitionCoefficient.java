@@ -33,11 +33,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
-import java.util.ArrayList;
-
 import data.set.IndexedDataObject;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.resultProviders.FuzzyClusteringProvider;
 
 
 /**

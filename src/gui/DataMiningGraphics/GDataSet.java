@@ -51,11 +51,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
-//import org.apache.batik.ext.awt.geom.Polygon2D;
-
 import data.set.IndexedDataObject;
 import etc.DataManipulator;
+//import org.apache.batik.ext.awt.geom.Polygon2D;
 
 /**
  * TODO Class Description

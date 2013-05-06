@@ -38,7 +38,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.structures.balltree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.PriorityQueue;
 

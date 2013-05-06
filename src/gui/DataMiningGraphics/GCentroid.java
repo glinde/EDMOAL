@@ -48,7 +48,6 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.io.Serializable;
 
-import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
 
 /**

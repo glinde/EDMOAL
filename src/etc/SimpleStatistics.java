@@ -37,7 +37,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package etc;
 
-import java.awt.List;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -36,7 +36,6 @@ package dataMiningTestTrack.experiments.snFCM;
 import data.algebra.BoundedAlgebraicStructure;
 import data.algebra.VectorSpace;
 import datamining.gradient.parameter.PositionListParameter;
-import datamining.gradient.parameter.PositionListParameterVectorSpace;
 
 
 /**

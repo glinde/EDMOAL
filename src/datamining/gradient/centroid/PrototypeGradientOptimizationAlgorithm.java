@@ -34,21 +34,16 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.gradient.centroid;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import data.algebra.BoundedAlgebraicStructure;
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
-import dataMiningTestTrack.experiments.snFCM.ScaledNormFuzzyCMeansObjectiveFunction;
-import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
 import datamining.gradient.AbstractGradientOptimizationAlgorithm;
 import datamining.gradient.functions.GradientFunction;
 import datamining.gradient.parameter.PositionListParameter;
-import datamining.gradient.parameter.PositionListParameterMetric;
-import datamining.gradient.parameter.PositionListParameterVectorSpace;
 import datamining.resultProviders.PrototypeProvider;
 
 /**

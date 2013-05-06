@@ -33,7 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package generation.data.functions;
 
-import etc.MyMath;
 
 /**
  * TODO Class Description

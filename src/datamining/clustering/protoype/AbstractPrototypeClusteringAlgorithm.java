@@ -45,7 +45,6 @@ import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import datamining.IterativeObjectiveFunctionOptimization;
 import datamining.clustering.AbstractClusteringAlgorithm;
-import datamining.clustering.ClusteringAlgorithm;
 import datamining.resultProviders.PrototypeProvider;
 
 /**

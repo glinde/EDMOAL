@@ -33,15 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
-import java.util.ArrayList;
-
-import data.algebra.Metric;
-import data.algebra.VectorSpace;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.clustering.protoype.Prototype;
-import datamining.resultProviders.CrispNoiseClusteringProvider;
-import datamining.resultProviders.FuzzyClusteringProvider;
-import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 
 
 /**
@@ -52,7 +43,7 @@ import datamining.resultProviders.FuzzyNoiseClusteringProvider;
  * Complexity for pairwise data object calculations: O(n^2*c^2),
  *  with n being the number of data objects and c being the number of clusters.<br>    
  * 
- * See paper: D.L. Davies and D.W. Bouldin. A Cluster Separation Measure.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI) 1(4):224–227. IEEE Press, Piscataway, NJ, USA 1979
+ * See paper: D.L. Davies and D.W. Bouldin. A Cluster Separation Measure.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI) 1(4):224ï¿½227. IEEE Press, Piscataway, NJ, USA 1979
  * 
  * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
  * @param vs The vector space used for the clustering process

@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import data.objects.doubleArray.DAEuclideanMetric;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
 import datamining.resultProviders.CrispClusteringProvider;
 import datamining.resultProviders.FuzzyClusteringProvider;

@@ -36,17 +36,10 @@ package generation.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.HypergeometricDistribution;
-import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
-import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.random.RandomData;
 import org.apache.commons.math3.random.RandomDataGenerator;
-
-import etc.SimpleStatistics;
 
 /**
  * TODO Class Description

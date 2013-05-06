@@ -39,17 +39,13 @@ package datamining.clustering.protoype.altopt;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-
-import javax.xml.crypto.Data;
 
 import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import data.structures.balltree.CenteredBallTree;
 import data.structures.balltree.CenteredBallTreeNode;
-import data.structures.queries.SphereQueryProvider;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;

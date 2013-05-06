@@ -40,14 +40,13 @@ import generation.data.WeightedMixtureDataGenerator;
 
 import java.util.ArrayList;
 
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+
 import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataSet;
 import datamining.gradient.functions.RelativeVarianceOfDistancesObjectiveFunction;
 import etc.SimpleStatistics;
-
-import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 /**
  * TODO Class Description

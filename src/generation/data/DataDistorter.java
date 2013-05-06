@@ -34,17 +34,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package generation.data;
 
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import data.set.IndexedDataObject;
-import data.set.IndexedDataSet;
-import etc.MyMath;
+import org.apache.commons.math3.distribution.NormalDistribution;
+
 import etc.Parallel;
 import etc.SimpleStatistics;
-import generation.data.DistortionLayer;
 import generation.data.functions.BinaryAdd;
 import generation.data.functions.BinaryExp;
 import generation.data.functions.BinaryMul;
@@ -54,12 +51,8 @@ import generation.data.functions.Identity;
 import generation.data.functions.Reverse;
 import generation.data.functions.UnaryConcentrateCentre;
 import generation.data.functions.UnaryConcentrateLower;
-import generation.data.functions.UnarySpreadLower;
 import generation.data.functions.UnarySpreadCentre;
-
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.RealDistribution;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
+import generation.data.functions.UnarySpreadLower;
 
 /**
  * TODO Class Description

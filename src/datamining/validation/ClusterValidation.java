@@ -38,21 +38,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.validation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import data.algebra.Metric;
-import data.algebra.VectorSpace;
-import data.set.IndexedDataObject;
-import data.set.IndexedDataSet;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.Prototype;
-import datamining.resultProviders.CrispClusteringProvider;
-import datamining.resultProviders.CrispNoiseClusteringProvider;
-import datamining.resultProviders.FuzzyClusteringProvider;
-import datamining.resultProviders.FuzzyNoiseClusteringProvider;
-import datamining.resultProviders.PrototypeProvider;
 
 /**
  * This class provides a collection of standard cluster validation indices.

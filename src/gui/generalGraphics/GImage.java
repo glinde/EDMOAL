@@ -45,8 +45,6 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
-import com.sun.xml.internal.ws.api.FeatureConstructor;
-
 import data.objects.matrix.DoubleMatrix;
 import data.objects.matrix.FeatureSpaceSampling2D;
 

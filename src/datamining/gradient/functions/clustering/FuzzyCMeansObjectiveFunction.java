@@ -40,7 +40,6 @@ import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.gradient.functions.AbstractObjectiveFunction;
 import datamining.gradient.parameter.PositionListParameter;
 import datamining.resultProviders.FuzzyClusteringProvider;

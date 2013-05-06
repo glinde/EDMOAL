@@ -37,7 +37,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining.clustering;
 
-import data.algebra.Metric;
 import datamining.DataMiningAlgorithm;
 
 /**

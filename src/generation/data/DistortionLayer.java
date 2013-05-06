@@ -33,22 +33,16 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package generation.data;
 
+import etc.Parallel;
+import etc.SimpleStatistics;
 import generation.data.functions.Function;
 import generation.data.functions.UnarySpreadCentre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-
-import data.set.IndexedDataObject;
-import data.set.IndexedDataSet;
-import etc.Parallel;
-import etc.SimpleStatistics;
 
 /**
  * TODO Class Description

@@ -45,23 +45,18 @@ import gui.DataMiningGraphics.GCentroidClusteringAlgorithm;
 import gui.DataMiningGraphics.GClusteredDataSet;
 import gui.DataMiningGraphics.GDataSet;
 import gui.generalGraphics.GImage;
-import gui.generalGraphics.GScale;
 import gui.projections.Orthogonal2DProjection;
-import gui.projections.OrthogonalProjection;
 import io.BatikExport;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Stroke;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 
 import javax.swing.JFrame;
 
-import data.objects.matrix.DoubleMatrix;
 import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataObject;
 import datamining.DataMiningAlgorithm;

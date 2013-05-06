@@ -33,10 +33,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.gradient.parameter;
 
-import java.util.List;
-
 import data.algebra.Norm;
-import data.algebra.ScalarProduct;
 
 /**
  * TODO Class Description

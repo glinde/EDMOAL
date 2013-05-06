@@ -45,7 +45,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.protoype.Prototype;
 import datamining.resultProviders.PrototypeProvider;
 import datamining.resultProviders.ResultProvider;

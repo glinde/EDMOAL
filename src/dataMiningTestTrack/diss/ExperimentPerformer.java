@@ -34,7 +34,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack.diss;
 
 import io.CSVFileReader;
-import io.CSVFileWriter;
 import io.FileLineReader;
 
 import java.io.File;
@@ -44,7 +43,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.distribution.UniformIntegerDistribution;
@@ -54,11 +52,6 @@ import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.Prototype;
-import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
-import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
 import datamining.clustering.protoype.altopt.ExpectationMaximizationSGMMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.FuzzyCMeansNoiseClusteringAlgorithm;
@@ -67,8 +60,6 @@ import datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.PolynomFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlgorithm;
-import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
-import datamining.gradient.functions.RelativeVarianceOfDistancesObjectiveFunction;
 import etc.Parallel;
 
 /**
@@ -243,6 +234,11 @@ public class ExperimentPerformer
 		}
 	}
 	
+	private void loadClusterProperties() throws IOException
+	{
+		
+	}
+	
 	private void loadInitials() throws IOException
 	{
 		File file = new File(this.dataDirectory + "/init.csv");
@@ -271,6 +267,7 @@ public class ExperimentPerformer
 		{
 			this.loadMetaData();
 			this.loadClusterData();
+			this.loadClusterProperties();
 			this.loadInitials();
 			
 //			System.out.println("dim = " + this.dim);

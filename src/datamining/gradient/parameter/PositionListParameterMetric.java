@@ -33,8 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.gradient.parameter;
 
-import java.util.List;
-
 import data.algebra.Metric;
 import data.algebra.Norm;
 

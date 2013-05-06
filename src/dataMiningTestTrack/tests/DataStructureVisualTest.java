@@ -37,13 +37,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack.tests;
 
-import gui.ColorList;
-import gui.ScreenViewer;
-import gui.DataMiningGraphics.GDataSet;
-import gui.generalGraphics.GCircle;
-import gui.templates.DrawableTemplate;
-import gui.templates.GeomTemplate;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +50,12 @@ import data.structures.balltree.BallTreeNode;
 import data.structures.balltree.CenteredBallTree;
 import data.structures.balltree.CenteredBallTreeNode;
 import etc.DataGenerator;
+import gui.ColorList;
+import gui.ScreenViewer;
+import gui.DataMiningGraphics.GDataSet;
+import gui.generalGraphics.GCircle;
+import gui.templates.DrawableTemplate;
+import gui.templates.GeomTemplate;
 
 
 /**

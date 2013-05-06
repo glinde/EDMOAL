@@ -40,8 +40,8 @@ package datamining.clustering.protoype.altopt;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.algebra.Metric;
 import data.algebra.EuclideanVectorSpace;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;

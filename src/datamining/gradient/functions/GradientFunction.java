@@ -33,7 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.gradient.functions;
 
-import data.set.IndexedDataSet;
 
 /**
  * TODO Class Description

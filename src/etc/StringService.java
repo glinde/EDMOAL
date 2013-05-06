@@ -63,4 +63,22 @@ public class StringService implements Serializable
 		Date time = new Date();
 		return formatter.format(time);
 	}
+
+	
+	public double[] parseDoubleArray(String textArray)
+	{
+		String trimmed = textArray.trim();
+		if(trimmed.charAt(0) != '[' || trimmed.charAt(trimmed.length()-1) != ']') throw new IllegalArgumentException("Array must start with '[' and end with ']'. Could not be interpreted as double array: " + trimmed);
+		String inside = trimmed.substring(1, trimmed.length()-2);
+		String[] list = inside.split(",");
+		
+		double[] values = new double[list.length];
+		
+		for(int i=0; i<list.length; i++)
+		{
+			values[i] = Double.parseDouble(list[i]);
+		}
+		
+		return values;
+	}
 }

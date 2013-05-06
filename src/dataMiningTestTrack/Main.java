@@ -37,13 +37,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import data.structures.balltree.BallTree;
-import dataMiningTestTrack.diss.ClusterDataSetsGenerator;
 import dataMiningTestTrack.diss.DissExperiments;
 import dataMiningTestTrack.tests.ClusterAlgorithmTestCentre;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
@@ -54,8 +48,6 @@ import dataMiningTestTrack.tests.DataStructureVisualTest;
 import dataMiningTestTrack.tests.DistortionTester;
 import dataMiningTestTrack.tests.GradientAlgorithmVisualTest;
 import dataMiningTestTrack.tests.SymmetricalDataAlgorithmVisualTest;
-import datamining.clustering.ClusteringAlgorithm;
-import etc.MyMath;
 
 /**
  * Since the EDMOAL project is just an API, a main class would not be necessary to provide.
@@ -90,7 +82,8 @@ public class Main
 //		Main.clusterValidityTest();
 //		DissExperiments.genDissDataSets();
 //		DissExperiments.showSomeDataSets();
-		DissExperiments.calculateClusterProperties();
+//		DissExperiments.calculateClusterProperties();
+		DissExperiments.calculateClusterPropertiesConfigLevel();
 //		DissExperiments.clusterDissDataSets();
 	}
 	

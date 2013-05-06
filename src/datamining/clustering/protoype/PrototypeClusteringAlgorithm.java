@@ -37,10 +37,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining.clustering.protoype;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import data.algebra.VectorSpace;
 import datamining.clustering.ClusteringAlgorithm;
 import datamining.resultProviders.PrototypeProvider;
 

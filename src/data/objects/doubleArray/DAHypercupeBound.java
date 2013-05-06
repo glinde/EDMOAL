@@ -35,7 +35,6 @@ package data.objects.doubleArray;
 
 import data.algebra.BoundedAlgebraicStructure;
 import data.algebra.VectorSpace;
-import datamining.gradient.parameter.PositionListParameter;
 
 
 /**

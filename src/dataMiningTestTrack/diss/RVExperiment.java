@@ -33,30 +33,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package dataMiningTestTrack.diss;
 
-import io.CSVFileWriter;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 
-import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataSet;
-import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.Prototype;
-import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
 import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
 import datamining.gradient.functions.RelativeVarianceOfDistancesObjectiveFunction;
-import datamining.resultProviders.CrispClusteringProvider;
-import datamining.resultProviders.FuzzyClusteringProvider;
-import datamining.validation.BezdecSeperationIndex;
-import datamining.validation.ClusterF1Measure;
-import datamining.validation.ClusteringInformation;
-import datamining.validation.DaviesBouldinIndex;
-import datamining.validation.NonFuzzynessIndex;
-import datamining.validation.XieBeniIndex;
 
 /**
  * TODO Class Description

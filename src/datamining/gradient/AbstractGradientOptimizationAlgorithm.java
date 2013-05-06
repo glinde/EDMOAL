@@ -41,8 +41,6 @@ import data.algebra.VectorSpace;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
 import datamining.AbstractStaticDataMiningAlgorithm;
-import datamining.IterativeObjectiveFunctionOptimization;
-import datamining.ParameterOptimization;
 import datamining.gradient.functions.GradientFunction;
 
 /**

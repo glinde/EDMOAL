@@ -82,21 +82,24 @@ public class CSVFileWriter extends FileLineWriter implements Serializable
 	public void writeDoubleDataTable(List<double[]> data, List<String> attributeNames) throws IOException
 	{
 		int i, j;
+		ArrayList<String> attributeNamesList;
 		
 		if(this.firstLineAsAtributeNames)
 		{
-			if(attributeNames == null) attributeNames = new ArrayList<String>(data.get(0).length+2); 
-			if(data.get(0).length > attributeNames.size())
+			if(attributeNames == null) attributeNamesList = new ArrayList<String>(data.get(0).length+2);
+			else attributeNamesList = new ArrayList<String>(attributeNames);
+			
+			if(data.get(0).length > attributeNamesList.size())
 			{
-				for(i=attributeNames.size();i<data.get(0).length;i++)
+				for(i=attributeNamesList.size();i<data.get(0).length;i++)
 				{
-					attributeNames.add(this.defaultAttributeName + i);
+					attributeNamesList.add(this.defaultAttributeName + i);
 				}
 			}
-			if(this.addFirstAttributeAsID) attributeNames.add(0, "ID");
+			if(this.addFirstAttributeAsID) attributeNamesList.add(0, "ID");
 			
 			//System.out.println("attributes: " + attributeNames.toString());
-			this.writeStringListLine(attributeNames);
+			this.writeStringListLine(attributeNamesList);
 		}
 		
 		ArrayList<ArrayList<String>> dataStringTable = new ArrayList<ArrayList<String>>();

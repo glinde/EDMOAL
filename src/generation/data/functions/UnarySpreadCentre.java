@@ -33,9 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package generation.data.functions;
 
-import data.set.IndexedDataSet;
-import etc.MyMath;
-import etc.SimpleStatistics;
 
 /**
  * TODO Class Description

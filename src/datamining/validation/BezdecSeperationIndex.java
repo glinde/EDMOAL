@@ -33,19 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import data.algebra.Metric;
-import data.algebra.VectorSpace;
-import data.set.IndexedDataSet;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.clustering.protoype.Prototype;
-import datamining.resultProviders.CrispClusteringProvider;
-import datamining.resultProviders.CrispNoiseClusteringProvider;
-import datamining.resultProviders.FuzzyClusteringProvider;
-import datamining.resultProviders.FuzzyNoiseClusteringProvider;
-import datamining.resultProviders.PrototypeProvider;
 
 
 /**
@@ -58,8 +45,8 @@ import datamining.resultProviders.PrototypeProvider;
  * Complexity for pairwise data object calculations: O(n^2*c^2),
  *  with n being the number of data objects and c being the number of clusters. <br>   
  * 
- * See paper: J.C. Bezdek, W.Q. Li, Y. Attikiouzel, and M. Wind-ham. A Geometric Approach to Cluster Validity for Normal Mixtures. Soft Computing 1(4):166–179. Springer-Verlag, Heidelberg, Germany 1997<br>
- * See paper: J.C. Dunn. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters.Journal of Cyber-netics3(3):32–57. American Society for Cybernetics, Washington, DC, USA 1973 Reprinted in [Bezdek and Pal 1992], 82–101<br>
+ * See paper: J.C. Bezdek, W.Q. Li, Y. Attikiouzel, and M. Wind-ham. A Geometric Approach to Cluster Validity for Normal Mixtures. Soft Computing 1(4):166ï¿½179. Springer-Verlag, Heidelberg, Germany 1997<br>
+ * See paper: J.C. Dunn. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters.Journal of Cyber-netics3(3):32ï¿½57. American Society for Cybernetics, Washington, DC, USA 1973 Reprinted in [Bezdek and Pal 1992], 82ï¿½101<br>
  * 
  * @param fuzzyAlgorithm The fuzzy clustering algorithm containing the clustering result
  * @param vs The vector space used for the clustering process

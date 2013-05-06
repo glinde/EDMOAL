@@ -33,9 +33,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
-import data.set.IndexedDataObject;
-import datamining.clustering.ClusteringAlgorithm;
-import datamining.resultProviders.FuzzyClusteringProvider;
 
 
 /**
@@ -43,7 +40,7 @@ import datamining.resultProviders.FuzzyClusteringProvider;
  * 
  * The complexity of the function is in O(n*c) with n being the number of data objects and c being the number of clusters.<br> 
  * 
- * See paper: E. Backer and A.K. Jain. A Clustering Performance Measure based on Fuzzy Set Decomposition.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI)3(1):66–74. IEEE Press, Piscataway, NJ, USA 1981<br>
+ * See paper: E. Backer and A.K. Jain. A Clustering Performance Measure based on Fuzzy Set Decomposition.IEEE Trans. on Pattern Analysis and Machine Intelligence (PAMI)3(1):66ï¿½74. IEEE Press, Piscataway, NJ, USA 1981<br>
  *
  * @param fuzzyAlgorithm  The fuzzy clustering algorithm containing the clustering result
  * @return The partition coefficient of the specified clustering result.

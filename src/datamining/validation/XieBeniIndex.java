@@ -33,20 +33,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
-import java.util.ArrayList;
-
-import data.algebra.Metric;
-import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
-import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
-import datamining.clustering.protoype.MembershipFunctionProvider;
 import datamining.clustering.protoype.Prototype;
-import datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm;
 import datamining.resultProviders.CrispClusteringProvider;
-import datamining.resultProviders.CrispNoiseClusteringProvider;
-import datamining.resultProviders.FuzzyClusteringProvider;
-import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 import etc.MyMath;
 
 /** 

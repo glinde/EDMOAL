@@ -36,8 +36,6 @@ package datamining.gradient.parameter;
 import java.util.ArrayList;
 
 import data.algebra.VectorSpace;
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.Prototype;
 
 /**
  * TODO Class Description

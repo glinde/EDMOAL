@@ -37,15 +37,15 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack.tests; 
 
+import generation.data.ClusteredDataSetGenerator;
+import generation.data.HyperrectangleUniformGenerator;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.distribution.UniformIntegerDistribution;
-import org.apache.commons.math3.random.RandomData;
 
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
@@ -53,7 +53,6 @@ import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.density.DBScan;
-import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.altopt.BallTreeFuzzyCMeansClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.DistAdaptedFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.DistAdaptedFCMNoiseClusteringAlgorithm;
@@ -67,9 +66,7 @@ import datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorith
 import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
-import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
 import datamining.resultProviders.CrispClusteringProvider;
-import datamining.resultProviders.CrispNoiseClusteringProvider;
 import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 import datamining.resultProviders.FuzzyClusteringProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
@@ -77,9 +74,6 @@ import datamining.validation.ClusterF1Measure;
 import datamining.validation.ClusterMaxPrecisionIndex;
 import datamining.validation.ClusterMaxRecallIndex;
 import datamining.validation.ClusteringInformation;
-import etc.DataGenerator;
-import generation.data.ClusteredDataSetGenerator;
-import generation.data.HyperrectangleUniformGenerator;
 
 
 /**
