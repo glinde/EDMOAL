@@ -284,10 +284,20 @@ public class DissExperiments
 		algorithmDirs.add("experiments/data/Distorted/");
 		algorithmDirs.add("experiments/data/Corner/");
 		
+		ArrayList<String> attrNames = new ArrayList<String>();
+//		attrNames.add("id");
+		attrNames.add("size");
+		attrNames.add("RadiusMax");
+		attrNames.add("RadiusMean");
+		attrNames.add("RadiusDeviation");
+		attrNames.add("CentreRV");
+		attrNames.add("MaxRV");
+		
+		
 		CSVFileWriter writer = new CSVFileWriter();
 		writer.setAddFirstAttributeAsID(true);
-		writer.setFirstLineAsAtributeNames(false);
-
+		writer.setFirstLineAsAtributeNames(true);
+		
 		for(String s:algorithmDirs)
 		{
 			File algoDir = new File(s);
@@ -297,6 +307,7 @@ public class DissExperiments
 				continue;
 			}
 			File[] dimDirs = algoDir.listFiles();
+			Arrays.sort(dimDirs);
 			
 			for(int i=0; i<dimDirs.length; i++)
 			{
@@ -307,7 +318,7 @@ public class DissExperiments
 				try
 				{
 					writer.openFile(new File(dimDirs[i].getPath()+"/clusterProperties.csv"));
-					writer.writeDoubleDataTable(valueList, null);
+					writer.writeDoubleDataTable(valueList, attrNames);
 					writer.closeFile();
 				}
 				catch(IOException e)
@@ -329,13 +340,13 @@ public class DissExperiments
 				try
 				{
 					writer.openFile(new File(dimDirs[i]+"/clusterStatistics.ini"));
-					writer.writeStringLine("Interpretation=" + "[mean, sample standard deviation]");
-					writer.writeStringLine("DataObjects=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[0])));
-					writer.writeStringLine("DistanceMax=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[1])));
-					writer.writeStringLine("DistanceMean=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[2])));
-					writer.writeStringLine("DistanceVariance=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[3])));
-					writer.writeStringLine("CentreRV=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[4])));
-					writer.writeStringLine("MaxRV=" + Arrays.toString(SimpleStatistics.mean_deviation(valueMatrix[5])));
+					writer.writeStringLine("Interpretation=" + "[min, max, mean, sample standard deviation]");
+					writer.writeStringLine("DataObjects=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[0])));
+					writer.writeStringLine("RadiusMax=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[1])));
+					writer.writeStringLine("RadiusMean=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[2])));
+					writer.writeStringLine("RadiusDeviation=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[3])));
+					writer.writeStringLine("CentreRV=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[4])));
+					writer.writeStringLine("MaxRV=" + Arrays.toString(SimpleStatistics.min_max_mean_deviation(valueMatrix[5])));
 					writer.closeFile();
 				}
 				catch(IOException e)

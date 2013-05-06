@@ -294,6 +294,22 @@ public class SimpleStatistics implements Serializable
 		return new double[]{meanVar[0], Math.sqrt(meanVar[1])};
 	}
 
+
+	/**
+	 * Calculates the mean and the sample standard deviation of a set of double values and
+	 * returns it in form of an array where the first value holds the mean
+	 * and the second holds the sample variance.
+	 * 
+	 * @param data The double values.
+	 * @return The mean and sample variance as array: double[mean, variance].
+	 */
+	public static double[] min_max_mean_deviation(double[] data)
+	{
+		double[] meanVar = mean_variance(data);
+		
+		return new double[]{MyMath.min(data), MyMath.max(data), meanVar[0], Math.sqrt(meanVar[1])};
+	}
+
 	/**
 	 * Calculates an axis parallel hyper rectangle as bounding box of the specified
 	 * list of double arrays that are stored as indexed data objects.

@@ -136,4 +136,25 @@ public class MyMath implements Serializable
 		
 		return Math.pow(a, n);
 	}
+	
+	
+	public static double min(double[] list)
+	{
+		double min = list[0];
+		for(int i=1; i<list.length; i++)
+		{
+			min = (min>list[i])? list[i]:min;
+		}
+		return min;
+	}
+	
+	public static double max(double[] list)
+	{
+		double max = list[0];
+		for(int i=1; i<list.length; i++)
+		{
+			max = (max<list[i])? list[i]:max;
+		}
+		return max;
+	}
 }
