@@ -43,6 +43,7 @@ import data.objects.doubleArray.DAEuclideanMetric;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
+import datamining.clustering.protoype.altopt.ExpectationMaximizationSGMMClusteringAlgorithm;
 import datamining.resultProviders.CrispClusteringProvider;
 import datamining.resultProviders.FuzzyClusteringProvider;
 import datamining.validation.BezdecSeperationIndex;
@@ -79,6 +80,7 @@ public class Experiment//<S extends Prototype<double[]>>
 	
 	protected int[] correctClustering;
 	
+	protected String[] indexNames = new String[]{"Iterations", "ObjFunc Value", "F1", "F1 defuzz", "BSI", "DBI", "XBI", "NPCI"};
 	
 	protected double[] indexValues;
 	
@@ -102,20 +104,34 @@ public class Experiment//<S extends Prototype<double[]>>
 		this.correctClustering = correctClustering;
 
 		File dir = new File(this.resultDir);		
-		if(!dir.isDirectory()) throw new IllegalArgumentException("The path " + this.resultDir + " is not a directory.");
 		if(!dir.exists()) dir.mkdirs();
+		if(!dir.isDirectory()) throw new IllegalArgumentException("The path " + this.resultDir + " is not a directory.");
 		
-		this.indexValues = new double[7]; 
+		this.indexValues = new double[indexNames.length]; 
 	}
 	
-	public void applyAlgorithm()
+	public void initializeAlgorithm()
 	{
 		// initialize
 		this.clusteringAlgo.initializeWithPositions(this.initialPositions);
-		
+	}
+	
+	public void applyAlgorithm()
+	{		
 		// apply algorithm
 		this.clusteringAlgo.apply(this.maxIterations);
-		
+	}
+	
+	public void inplaceOptimizeAlgorithm()
+	{
+		if(this.clusteringAlgo instanceof ExpectationMaximizationSGMMClusteringAlgorithm)
+		{
+			((ExpectationMaximizationSGMMClusteringAlgorithm)this.clusteringAlgo).optimizeProbabilities(10);
+		}
+	}
+	
+	public void readAlgorithmDetails()
+	{
 		// store prototype positions
 		for(Centroid<double[]> proto:this.clusteringAlgo.getPrototypes())
 		{
@@ -146,10 +162,22 @@ public class Experiment//<S extends Prototype<double[]>>
 			this.info.calculateClusterDistances_Prototype();
 
 			this.indexValues[2] = (new ClusterF1Measure<double[]>(this.info, false)).index();
-			this.indexValues[3] = (new BezdecSeperationIndex<double[]>(this.info)).index();
-			this.indexValues[4] = (new DaviesBouldinIndex<double[]>(this.info)).index();
-			this.indexValues[5] = (new XieBeniIndex<double[]>(this.info, 1.5d, false)).index();
-			this.indexValues[6] = (new NonFuzzynessIndex<double[]>(this.info)).index();
+//			this.indexValues[3] = // see below.
+			this.indexValues[4] = (new BezdecSeperationIndex<double[]>(this.info)).index();
+			this.indexValues[5] = (new DaviesBouldinIndex<double[]>(this.info)).index();
+			this.indexValues[6] = (new XieBeniIndex<double[]>(this.info, 1.5d, false)).index();
+			this.indexValues[7] = (new NonFuzzynessIndex<double[]>(this.info)).index();
+
+			ClusteringInformation<double[]> defuzzInfo = new ClusteringInformation<double[]>(this.clusteringAlgo.getClusterCount());
+			defuzzInfo.setDataSet(this.clusteringAlgo.getDataSet());
+			defuzzInfo.setPrototypes(this.clusteringAlgo.getPrototypes());
+			defuzzInfo.setMetric(new DAEuclideanMetric());
+			defuzzInfo.setTrueClusteringResult(this.correctClustering);			
+			defuzzInfo.setCrispClusteringResult(this.info.defuzzify());
+			defuzzInfo.calculateClusterDiameters_Crisp_Prototype();
+			defuzzInfo.calculateClusterDistances_Prototype();
+			
+			this.indexValues[3] = (new ClusterF1Measure<double[]>(defuzzInfo, true)).index();
 		}
 		else if(this.clusteringAlgo instanceof CrispClusteringProvider)
 		{
@@ -158,10 +186,11 @@ public class Experiment//<S extends Prototype<double[]>>
 			this.info.calculateClusterDistances_Prototype();
 
 			this.indexValues[2] = (new ClusterF1Measure<double[]>(this.info, true)).index();
-			this.indexValues[3] = (new BezdecSeperationIndex<double[]>(this.info)).index();
-			this.indexValues[4] = (new DaviesBouldinIndex<double[]>(this.info)).index();
-			this.indexValues[5] = (new XieBeniIndex<double[]>(this.info, 1.5d, true)).index();
-			this.indexValues[6] = 1.0d;
+			this.indexValues[3] = this.indexValues[2];
+			this.indexValues[4] = (new BezdecSeperationIndex<double[]>(this.info)).index();
+			this.indexValues[5] = (new DaviesBouldinIndex<double[]>(this.info)).index();
+			this.indexValues[6] = (new XieBeniIndex<double[]>(this.info, 1.5d, true)).index();
+			this.indexValues[7] = 1.0d;
 		}
 	}
 	
