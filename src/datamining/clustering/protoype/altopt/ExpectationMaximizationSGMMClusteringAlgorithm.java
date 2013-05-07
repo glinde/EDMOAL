@@ -186,6 +186,61 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			this.clusterProbability[i] = this.clusterProbability[i]/((double)this.getDataCount());
 		}
 	}
+
+	/**
+	 * Recalculate the variances of the clusters.
+	 * 
+	 * The runtime complexity of this function is in O(n*c)  
+	 */
+	protected void recalculateVariances()
+	{
+		double[] invCondDOProbSum = new double[this.getClusterCount()];
+		double doubleTMP;
+		
+		// the maximization step
+		// cluster weight probabilities
+		for(int i=0; i<this.getClusterCount(); i++)
+		{
+			invCondDOProbSum[i] = 1.0d/(this.clusterProbability[i]*((double)this.getDataCount()));
+		}
+		
+		for(int i=0; i<this.getClusterCount(); i++)
+		{
+			doubleTMP = 0.0d;				
+			for(int j=0; j<this.getDataCount(); j++)
+			{
+				doubleTMP += this.conditionalProbabilities.get(j)[i] *  this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+			}
+			doubleTMP *= invCondDOProbSum[i] / ((double)this.vs.getDimension());
+
+			this.prototypes.get(i).setVariance(doubleTMP);
+			if(this.varianceBounded)
+			{
+				if(this.prototypes.get(i).getVariance() < this.varianceLowerBound) 
+					this.prototypes.get(i).setVariance(this.varianceLowerBound);
+				if(this.prototypes.get(i).getVariance() > this.varianceUpperBound) 
+					this.prototypes.get(i).setVariance(this.varianceUpperBound);
+			}
+		}
+	}
+		
+	/**
+	 * Recalculate the conditional probabilities, marginal probabilities and variances of the clusters.
+	 * They are stored in the class fields {@link #conditionalProbabilities} and {@link #clusterProbability}.<br>
+	 * 
+	 * The runtime complexity of this function is in O(n*c*iterations)
+	 * 
+	 * @param iterations The number of iterations this should be done. Usually 5 should be sufficient.
+	 */
+	public void optimizeProbabilities(int iterations)
+	{
+		for(int t=0; t<iterations; t++)
+		{
+			this.recalculateProbabilities();
+			this.recalculateVariances();
+		}
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#initializeWithPrototypes(java.util.Collection)
