@@ -316,7 +316,7 @@ public class ClusteringInformation<T>
 		
 		for(i=0; i<this.clusterCount; i++)
 		{
-			this.clusterDiameters[i] /= Math.sqrt(this.clusterDiameters[i]/clusterObjectCount[i]); 
+			this.clusterDiameters[i] = Math.sqrt(this.clusterDiameters[i]/clusterObjectCount[i]); 
 		}
 	}
 	
@@ -482,7 +482,7 @@ public class ClusteringInformation<T>
 				}
 			}
 			
-			if(noiseMembershipValues != null && this.noiseClusterMembershipValues[i] > max) crispResult[i] = -1;
+			if(noiseMembershipValues != null && noiseMembershipValues[i] > max) crispResult[i] = -1;
 			
 			i++;
 		}
