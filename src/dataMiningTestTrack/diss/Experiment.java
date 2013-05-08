@@ -38,6 +38,7 @@ import io.CSVFileWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import data.objects.doubleArray.DAEuclideanMetric;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
@@ -83,6 +84,8 @@ public class Experiment//<S extends Prototype<double[]>>
 	protected String[] indexNames = new String[]{"Iterations", "ObjFunc Value", "F1", "F1 defuzz", "BSI", "DBI", "XBI", "NPCI"};
 	
 	protected double[] indexValues;
+	
+	protected double[] convergenceHistory;
 	
 	/**
 	 * @param clusteringAlgo
@@ -132,6 +135,12 @@ public class Experiment//<S extends Prototype<double[]>>
 	
 	public void readAlgorithmDetails()
 	{
+		this.convergenceHistory = clusteringAlgo.getConvergenceHistory();
+//		synchronized(System.out)
+//		{
+//			System.out.println("Convergence History of " + this.resultDir + " - " + this.algoName + "("+ this.clusteringAlgo.getIterationCount() + "): " + Arrays.toString(this.convergenceHistory));
+//		}
+		
 		// store prototype positions
 		for(Centroid<double[]> proto:this.clusteringAlgo.getPrototypes())
 		{

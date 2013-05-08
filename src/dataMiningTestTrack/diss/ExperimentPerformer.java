@@ -50,6 +50,7 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
+import data.objects.doubleArray.DAMaximumMetric;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import datamining.clustering.protoype.DummyCrispPrototypeClusteringAlgorithm;
@@ -114,6 +115,8 @@ public class ExperimentPerformer
 	
 	private int experimentID;
 	
+	private double conversionEpsilon;
+	
 	
 	public ExperimentPerformer(String dataDirectory, String experimentDirectory, int maxIterations, int dataSetRepitition, int[] analyseClusterList, double noiseFraction)
 	{
@@ -158,6 +161,7 @@ public class ExperimentPerformer
 		this.experimentsByDataSet = new ArrayList<ArrayList<ArrayList<Experiment>>>(); // clustercount, repititions, experiments
 		
 		this.experimentID = 0;
+		this.conversionEpsilon = 0.01d;
 	}
 
 	private void loadMetaData() throws IOException
@@ -323,7 +327,6 @@ public class ExperimentPerformer
 		DecimalFormat format = new DecimalFormat();
 		format.setMinimumIntegerDigits(3);
 		format.setGroupingUsed(false);
-		
 		// start with large data sets, going down to small data sets
 		for(int i=0; i<this.analyseClusterList.length; i++)
 		{
@@ -385,7 +388,7 @@ public class ExperimentPerformer
 			dataSet.seal();
 
 			// calculate relative variance of data set
-			double maxRV = this.calculateExperimentRV(dataSet, 10*this.dim);
+			double maxRV = this.calculateExperimentRV(dataSet, 10);
 			
 			// repeat any experiment several times, using different initial values each time
 			for(int k=0; k<this.dataSetRepitition; k++)
@@ -474,7 +477,8 @@ public class ExperimentPerformer
 		{
 			HardCMeansClusteringAlgorithm<double[]> algo = new HardCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setMinIterations(10);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "HCM", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -483,7 +487,8 @@ public class ExperimentPerformer
 		{
 			FuzzyCMeansClusteringAlgorithm<double[]> algo = new FuzzyCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setFuzzifier(2.0d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "FCM2", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -496,7 +501,8 @@ public class ExperimentPerformer
 			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCM2", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -506,7 +512,8 @@ public class ExperimentPerformer
 			FuzzyCMeansClusteringAlgorithm<double[]> algo = new FuzzyCMeansClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setMinIterations(10);
 			algo.setFuzzifier(1.0d+1.0d/this.dim);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "FCMdim", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -519,7 +526,8 @@ public class ExperimentPerformer
 			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "NFCMdim", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -529,7 +537,8 @@ public class ExperimentPerformer
 			PolynomFCMClusteringAlgorithm<double[]> algo = new PolynomFCMClusteringAlgorithm<double[]>(dataSet, vs, metric);
 			algo.setMinIterations(10);
 			algo.setBeta(0.5d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "PFCM", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -542,7 +551,8 @@ public class ExperimentPerformer
 			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "PNFCM", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -553,7 +563,8 @@ public class ExperimentPerformer
 			algo.setMinIterations(10);
 			algo.setFuzzifier(2.0d);
 			algo.setDistanceMultiplierConstant(1.0d-1.0d/this.dim);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "RCFCM", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -567,7 +578,8 @@ public class ExperimentPerformer
 			algo.setNoiseDistance(this.noiseDistance);
 			algo.setDegradingNoiseDistance(20*algo.getNoiseDistance());
 			algo.setNoiseDegrationFactor(0.3d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "RCNFCM", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -579,7 +591,8 @@ public class ExperimentPerformer
 			algo.setVarianceBounded(true);
 			algo.setVarianceLowerBound(0.001d);
 			algo.setVarianceUpperBound(100.0d);
-			algo.setEpsilon(0.001d);
+			algo.setEpsilon(this.conversionEpsilon);
+			algo.setConvergenceMetric(new DAMaximumMetric());
 			Experiment exp = new Experiment(algo, initPos, this.maxIterations, resultDir, "EMGMM", this.experimentID++, correctClustering);
 			group.add(exp);
 		}
@@ -675,6 +688,7 @@ public class ExperimentPerformer
 				File dir = new File(this.experimentsByDataSet.get(i).get(r).get(0).resultDir);
 				if(!dir.exists()) dir.mkdirs();
 				
+				// safe scores
 				try
 				{
 					FileWriter writer = new FileWriter(this.experimentsByDataSet.get(i).get(r).get(0).resultDir + "/score.ini");
@@ -682,7 +696,24 @@ public class ExperimentPerformer
 					writer.write("Interpretation="+Arrays.toString(this.experimentsByDataSet.get(i).get(r).get(0).indexNames)+"\n");
 					for(int e=0; e<this.experimentsByDataSet.get(i).get(r).size(); e++)
 					{
-						writer.write(this.experimentsByDataSet.get(i).get(r).get(e).algoName+"_score="+Arrays.toString(this.experimentsByDataSet.get(i).get(r).get(e).indexValues)+"\n");
+						writer.write(this.experimentsByDataSet.get(i).get(r).get(e).algoName+"="+Arrays.toString(this.experimentsByDataSet.get(i).get(r).get(e).indexValues)+"\n");
+					}					
+					writer.flush();
+					writer.close();
+				}
+				catch(IOException e)
+				{
+					e.printStackTrace();
+				}
+				
+				// safe convergence history
+				try
+				{
+					FileWriter writer = new FileWriter(this.experimentsByDataSet.get(i).get(r).get(0).resultDir + "/convergence.ini");
+
+					for(int e=0; e<this.experimentsByDataSet.get(i).get(r).size(); e++)
+					{
+						writer.write(this.experimentsByDataSet.get(i).get(r).get(e).algoName+"="+Arrays.toString(this.experimentsByDataSet.get(i).get(r).get(e).convergenceHistory)+"\n");
 					}					
 					writer.flush();
 					writer.close();

@@ -67,7 +67,7 @@ public class DissExperiments
 	
 	public static final int[] dims = new int[]{2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100};
 //	public static final int[] dims = new int[]{2, 3, 5};
-	public static final int[] analyseClusters = new int[]{2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 120, 150, 170, 200, 250};
+	public static final int[] analyseClusters = new int[]{2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 120, 150, 170, 200/*, 250*/};
 //	public static final int[] analyseClusters = new int[]{2, 3, 4, 5, 6, 7, 8, 10};
 
 	public static final int clusters = analyseClusters[analyseClusters.length-1];
@@ -216,25 +216,25 @@ public class DissExperiments
 		System.out.print("\tload data...            "); timeStart = System.currentTimeMillis(); 
 		expPerformer.loadExperimentData();
 		time = System.currentTimeMillis() - timeStart;
-		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60*60); ms=time%1000;
+		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60); ms=time%1000;
 		System.out.println("done. ["+mhsf.format(h)+"h, "+mhsf.format(m)+"m, "+mhsf.format(s)+"s, "+msf.format(ms)+"ms]");
 		
 		System.out.print("\tgenerate experiments... "); timeStart = System.currentTimeMillis();
 		expPerformer.generateExperiments();
 		time = System.currentTimeMillis() - timeStart;
-		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60*60); ms=time%1000;
+		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60); ms=time%1000;
 		System.out.println("done. ["+mhsf.format(h)+"h, "+mhsf.format(m)+"m, "+mhsf.format(s)+"s, "+msf.format(ms)+"ms]");
 		
 		System.out.print("\tperform experiments...  "); timeStart = System.currentTimeMillis();
 		expPerformer.performExperiments();
 		time = System.currentTimeMillis() - timeStart;
-		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60*60); ms=time%1000;
+		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60); ms=time%1000;
 		System.out.println("done. ["+mhsf.format(h)+"h, "+mhsf.format(m)+"m, "+mhsf.format(s)+"s, "+msf.format(ms)+"ms]");
 						
 		System.out.print("\tsave results...         "); timeStart = System.currentTimeMillis();
 		expPerformer.storeResults();
 		time = System.currentTimeMillis() - timeStart;
-		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60*60); ms=time%1000;
+		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60); ms=time%1000;
 		System.out.println("done. ["+mhsf.format(h)+"h, "+mhsf.format(m)+"m, "+mhsf.format(s)+"s, "+msf.format(ms)+"ms]");
 			
 		
@@ -256,7 +256,7 @@ public class DissExperiments
 		try{Thread.sleep(1000);} catch(InterruptedException e){e.printStackTrace();}
 
 		time = System.currentTimeMillis() - expTimeStart;
-		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60*60); ms=time%1000;
+		h = time/(60*60*1000); m=(time/(60*1000))%60; s=(time/(1000))%(60); ms=time%1000;
 		System.out.println("### Experiments done. ["+mhsf.format(h)+"h, "+mhsf.format(m)+"m, "+mhsf.format(s)+"s, "+msf.format(ms)+"ms]");
 	}
 	
