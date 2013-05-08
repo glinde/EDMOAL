@@ -38,10 +38,11 @@ package data.objects.doubleArray;
 import java.io.Serializable;
 
 import data.algebra.Metric;
+import etc.MyMath;
 
 
 /**
- * The standard Euclidean distance for double arrays. This class implements the standard distance calculations for double arrays as they
+ * The standard Lp distance for double arrays. This class implements the standard distance calculations for double arrays as they
  * occur for n-dimensional real vector spaces with orthogonal dimensions.   
  *
  * @author Roland Winkler
@@ -51,6 +52,14 @@ public class DALpMetric implements Metric<double[]>, Serializable
 	/**  */
 	private static final long	serialVersionUID	= 8929609989993670728L;
 
+	
+	protected double p;
+	
+	
+	public DALpMetric(double p)
+	{
+		this.p = p;
+	}
 
 	/* (non-Javadoc)
 	 * @see data.algebra.Metric#distance(java.lang.Object, java.lang.Object)
@@ -58,7 +67,7 @@ public class DALpMetric implements Metric<double[]>, Serializable
 	@Override
 	public double distance(double[] x, double[] y)
 	{
-		return Math.sqrt(this.distanceSq(x, y));
+		return MyMath.pow(this.distanceP(x, y), 1.0d/this.p);
 	}
 
 	/* (non-Javadoc)
@@ -67,19 +76,32 @@ public class DALpMetric implements Metric<double[]>, Serializable
 	@Override
 	public double distanceSq(double[] x, double[] y)
 	{
-		double dist = 0.0d;
-		
-		for(int i=0; i<x.length && i<y.length; i++)
-		{
-			dist += (x[i]-y[i])*(x[i]-y[i]);
-		}
-		
-		return dist;
+		double dist = this.distance(x, y);		
+		return dist*dist;
 	}
 	
 	
 	/**
-	 * Calculates the Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * Calculates the Lp to the power of p distance between two double arrays.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @return The Lp to the power of p distance between <code>x</code> and <code>y</code>
+	 */
+	public double distanceP(double[] x, double[] y)
+	{
+		double dist = 0.0d;
+		
+		for(int i=0; i<x.length && i<y.length; i++)
+		{
+			dist += MyMath.pow(Math.abs(x[i]-y[i]), p);
+		}
+		
+		return dist;
+	}	
+	
+	/**
+	 * Calculates the Lp distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
 	 * 
 	 * @param x The coordinates of position x
 	 * @param y The coordinates of position y
@@ -88,12 +110,11 @@ public class DALpMetric implements Metric<double[]>, Serializable
 	 */
 	public double distance(double[] x, double[] y, int dim)
 	{
-		return Math.sqrt(this.distanceSq(x, y, dim));
+		return MyMath.pow(this.distanceP(x, y, dim), 1.0d/this.p);
 	}
 
-
 	/**
-	 * Calculates the squared Euclidean distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
+	 * Calculates the squared Lp distance between two double arrays, taking only the first <code>dim</code> dimensions into account.  
 	 * 
 	 * @param x The coordinates of position x
 	 * @param y The coordinates of position y
@@ -102,15 +123,30 @@ public class DALpMetric implements Metric<double[]>, Serializable
 	 */
 	public double distanceSq(double[] x, double[] y, int dim)
 	{
+		double dist = this.distance(x, y, dim);		
+		return dist*dist;
+	}
+		
+	/**
+	 * Calculates the Lp to the power of p distance between two double arrays.  
+	 * 
+	 * @param x The coordinates of position x
+	 * @param y The coordinates of position y
+	 * @return The Lp to the power of p distance between <code>x</code> and <code>y</code>
+	 */
+	public double distanceP(double[] x, double[] y, int dim)
+	{
 		double dist = 0.0d;
 		
 		if(x.length < dim || y.length < dim) throw new IllegalArgumentException("The number of elements in x and y must be at least dim.");
 		
+		
 		for(int i=0; i<dim; i++)
 		{
-			dist += (x[i]-y[i])*(x[i]-y[i]);
+			dist += MyMath.pow(Math.abs(x[i]-y[i]), p);
 		}
 		
 		return dist;
 	}	
+	
 }

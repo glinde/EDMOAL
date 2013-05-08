@@ -73,7 +73,7 @@ public class DACityBlockMetric implements Metric<double[]>, Serializable
 	public double distanceSq(double[] x, double[] y)
 	{
 		double dist = this.distance(x, y);		
-		return dist;
+		return dist*dist;
 	}
 	
 	
@@ -110,6 +110,6 @@ public class DACityBlockMetric implements Metric<double[]>, Serializable
 	public double distanceSq(double[] x, double[] y, int dim)
 	{
 		double dist = this.distance(x, y, dim);		
-		return dist;
+		return dist*dist;
 	}
 }
