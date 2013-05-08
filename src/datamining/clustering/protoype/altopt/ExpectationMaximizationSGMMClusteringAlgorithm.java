@@ -397,7 +397,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 					this.vs.add(newExpectationValues.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), newExpectationValues.get(i));
+				doubleTMP = ((this.convergenceMetric!=null)?this.convergenceMetric:this.metric).distanceSq(this.prototypes.get(i).getPosition(), newExpectationValues.get(i));
 				if(doubleTMP > maxPrototypeMovement) maxPrototypeMovement = doubleTMP;
 				
 				this.prototypes.get(i).moveTo(newExpectationValues.get(i));
@@ -429,6 +429,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 
 			this.iterationComplete();
 
+			this.convergenceHistory.add(Math.sqrt(maxPrototypeMovement));
 			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 

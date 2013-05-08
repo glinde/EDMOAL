@@ -454,9 +454,8 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 					this.vs.mul(this.newPrototypePosition.get(i), this.learningFactor);
 					this.vs.add(this.newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
-				
-				doubleTMP = this.metric.distanceSq(this.prototypes.get(i).getPosition(), this.newPrototypePosition.get(i));
-				
+
+				doubleTMP = ((this.convergenceMetric!=null)?this.convergenceMetric:this.metric).distanceSq(this.prototypes.get(i).getPosition(), this.newPrototypePosition.get(i));
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
 				this.prototypes.get(i).moveTo(this.newPrototypePosition.get(i));
@@ -464,6 +463,7 @@ public class BallTreeFuzzyCMeansClusteringAlgorithm<T> extends FuzzyCMeansCluste
 
 			this.iterationComplete();
 			
+			this.convergenceHistory.add(Math.sqrt(maxPrototypeMovement));
 			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
 

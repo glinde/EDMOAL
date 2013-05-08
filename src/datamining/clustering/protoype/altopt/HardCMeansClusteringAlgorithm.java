@@ -199,6 +199,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 		double distMin, dist;
 		double doubleTMP;
 		boolean assignmentChanged;
+		double maxPrototypeMovement=0.0d;
 		int[] clusterWeight = new int[this.getClusterCount()];
 		
 		ArrayList<T> newPrototypePosition = new ArrayList<T>(this.getClusterCount());
@@ -218,6 +219,7 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 				clusterWeight[i] = 0;
 			}
 			assignmentChanged = false;
+			maxPrototypeMovement=0.0d;
 			
 			// separate data according to closest prototype 
 			for(IndexedDataObject<T> x : this.data)
@@ -253,14 +255,19 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 					this.vs.mul(newPrototypePosition.get(i), this.learningFactor);
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
+
+				doubleTMP = ((this.convergenceMetric!=null)?this.convergenceMetric:this.metric).distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				
+				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
 				this.getPrototypes().get(i).moveTo(newPrototypePosition.get(i));
 			}
 
 			this.iterationComplete();
-			
+
+			this.convergenceHistory.add(Math.sqrt(maxPrototypeMovement));
 //			System.out.println("assignmentChanged = " + assignmentChanged);
-			if(this.iterationCount >= this.minIterations && !assignmentChanged)	break;
+			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon * this.epsilon) break;
 		}
 
 //		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");

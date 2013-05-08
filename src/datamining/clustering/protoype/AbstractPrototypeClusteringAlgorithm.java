@@ -110,6 +110,17 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	/** The recorded objective function values. */
 	protected ArrayList<Double> objectiveFunctionValues;
 	
+	/** A metric, specifically to detect the convergence of the algorithm. This can differ from the metric, specified for the
+	 * clustering process because there might be advantages in using a different approach. If this value is left
+	 * null, the clustering metric is used instead. */
+	protected Metric<T> convergenceMetric;
+	
+	
+	/** The recorded maximum distances that prototypes travelled in each iteration. It records the history how fast the
+	 * algorithm converged on a prototype level. Recording the objective function history might be too expensive at times,
+	 * which makes the convergence history a cheap alternative. No extra costs are involved. */
+	protected ArrayList<Double> convergenceHistory;
+	
 	/**
 	 *	If the square of prototype movement distance is smaller than <code>epsilon</code>, the calculation stops.<br>
 	 *	To ensure the algorithm does not stop, set <code>epsilon</code> to 0 or negative.
@@ -134,6 +145,7 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		this.iterationCount					= 0;
 		this.monitorObjectiveFunctionValues	= true;
 		this.objectiveFunctionValues		= new ArrayList<Double>(100);
+		this.convergenceHistory				= new ArrayList<Double>(100);
 		this.epsilon						= 0;
 		this.minIterations					= 10;
 		
@@ -164,6 +176,7 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		this.iterationCount					= 0;
 		this.monitorObjectiveFunctionValues	= c.monitorObjectiveFunctionValues;
 		this.objectiveFunctionValues		= new ArrayList<Double>(100);
+		this.convergenceHistory				= new ArrayList<Double>(100);
 		this.epsilon						= c.epsilon;
 		this.minIterations					= c.minIterations;
 		
@@ -428,6 +441,46 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		}
 		
 		return active;
+	}
+		
+	/**
+	 * Returns the convergence Metric.<br>  
+	 * This metric is specifically used to detect the convergence of the algorithm. This can differ from the clustering metric,
+	 * because there might be advantages in using a different approach. If this value is null, the clustering metric is used instead. 
+	 * 
+	 * @return the convergence Metric. If the value is null, no special convergence metric is defined.
+	 */
+	public Metric<T> getConvergenceMetric()
+	{
+		return convergenceMetric;
+	}
+
+	/**
+	 * Sets the convergence Metric.<br>  
+	 * This metric is specifically used to detect the convergence of the algorithm. This can differ from the clustering metric,
+	 * because there might be advantages in using a different approach. If this value is set to null, the clustering metric is used instead. 
+	 * 
+	 * @param convergenceMetric The metric that should be used for detecting the convergence of the algorithm. If it is set to null, the clustering metric is used instead.
+	 */
+	public void setConvergenceMetric(Metric<T> convergenceMetric)
+	{
+		this.convergenceMetric = convergenceMetric;
+	}
+
+	/**
+	 * Returns the recorded maximum distances that prototypes travelled in each iteration. The history records how fast the
+	 * algorithm converged on a prototype level. Recording the objective function history might be too expensive at times,
+	 * which makes the convergence history a cheap alternative. No extra costs are involved.
+	 * 
+	 * @return
+	 */
+	public double[] getConvergenceHistory()
+	{
+		double[] history = new double[this.convergenceHistory.size()];
+		
+		for(int i=0; i<this.convergenceHistory.size(); i++) history[i] = this.convergenceHistory.get(i);
+		
+		return history;
 	}
 
 	/**
