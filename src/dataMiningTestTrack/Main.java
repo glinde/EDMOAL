@@ -39,6 +39,7 @@ package dataMiningTestTrack;
 
 import data.structures.balltree.BallTree;
 import dataMiningTestTrack.diss.DissExperiments;
+import dataMiningTestTrack.diss.DissImageCreator;
 import dataMiningTestTrack.tests.ClusterAlgorithmTestCentre;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
@@ -83,7 +84,8 @@ public class Main
 //		DissExperiments.genDissDataSets();
 //		DissExperiments.showSomeDataSets();
 //		DissExperiments.calculateClusterProperties();
-		DissExperiments.clusterDissDataSets();
+//		DissExperiments.clusterDissDataSets();
+		DissImageCreator.createDissImages();
 	}
 	
 	
