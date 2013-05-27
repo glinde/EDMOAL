@@ -44,7 +44,7 @@ public class DissImageCreator extends TestVisualizer
 {
 	public static void createMembershipPlotCoords()
 	{
-		DissMembershipPlotCoordsCreator plotter = new DissMembershipPlotCoordsCreator(100);
+		DissMembershipPlotCoordsCreator plotter = new DissMembershipPlotCoordsCreator(2000);
 		plotter.hcm();
 		
 		plotter.fcm(1.2d);
@@ -55,13 +55,13 @@ public class DissImageCreator extends TestVisualizer
 		plotter.nfcm(2.0d);
 		plotter.nfcm(4.0d);
 		
-		plotter.pfcm(0.1d);
+		plotter.pfcm(0.2d);
+		plotter.pfcm(0.3d);
 		plotter.pfcm(0.5d);
-		plotter.pfcm(0.9d);
 		
-		plotter.pnfcm(0.1d);
+		plotter.pnfcm(0.2d);
+		plotter.pnfcm(0.3d);
 		plotter.pnfcm(0.5d);
-		plotter.pnfcm(0.9d);
 		
 		plotter.rcfcm(0.5d);
 		plotter.rcfcm(0.7d);

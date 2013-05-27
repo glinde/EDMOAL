@@ -76,7 +76,7 @@ public class DissMembershipPlotCoordsCreator
 	public DissMembershipPlotCoordsCreator(int nodes)
 	{
 		this.min = 0.0d;
-		this.max = 12.0d;
+		this.max = 15.0d;
 		this.stepsize = (this.max-this.min)/nodes;
 		
 		this.protoPos = new ArrayList<double[]>();
@@ -85,9 +85,9 @@ public class DissMembershipPlotCoordsCreator
 		File file = new File(filePath);
 		if(!file.exists()) file.mkdirs();
 				
-		this.protoPos.add(new double[]{2.0d});
 		this.protoPos.add(new double[]{3.0d});
-		this.protoPos.add(new double[]{6.0d});
+		this.protoPos.add(new double[]{4.0d});
+		this.protoPos.add(new double[]{7.0d});
 		
 		for(int i=0; i<nodes; i++)
 		{
@@ -264,6 +264,6 @@ public class DissMembershipPlotCoordsCreator
 		
 		ArrayList<double[]> membershipCoords = this.makeMembershipCoordinates(algo.getAllFuzzyClusterAssignments(null));
 		
-		this.writeMembershipCoordinates(membershipCoords, this.filePath+"EMGMM.csv");
+		this.writeMembershipCoordinates(membershipCoords, this.filePath+"EMGMM_"+variance+".csv");
 	}
 }
