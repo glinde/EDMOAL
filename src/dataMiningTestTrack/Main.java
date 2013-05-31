@@ -81,11 +81,6 @@ public class Main
 //		Main.distortionTest();
 //		Main.distortionClusteringTest();
 //		Main.clusterValidityTest();
-//		DissExperiments.genDissDataSets();
-//		DissExperiments.showSomeDataSets();
-//		DissExperiments.calculateClusterProperties();
-//		DissExperiments.clusterDissDataSets(); \\ results of EMGMM of runs 000 - 003 may be wrong due to bug during initialization.
-		DissImageCreator.createDissImages();
 	}
 	
 	
