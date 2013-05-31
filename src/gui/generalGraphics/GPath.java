@@ -93,7 +93,7 @@ public class GPath extends DrawableObject implements Serializable
 		
 		// the tail elements of the protoype
 		this.waypointTemp = new GeomTemplate(GeomTemplate.FILL_CIRCLE);
-		this.waypointTemp.setPixelSize(5.0d);
+		this.waypointTemp.setPixelSize(9.0d);
 		this.waypointTemp.setInternalColorIndex(this.tailColorIndex);
 		this.waypointTemp.setBorderColorIndex(this.waypointBorerColorIndex);
 		this.waypointTemp.setStrokeIndex(this.borderStrokeIndex);

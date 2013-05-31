@@ -38,8 +38,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack;
 
 import data.structures.balltree.BallTree;
-import dataMiningTestTrack.diss.DissExperiments;
-import dataMiningTestTrack.diss.DissImageCreator;
 import dataMiningTestTrack.tests.ClusterAlgorithmTestCentre;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;

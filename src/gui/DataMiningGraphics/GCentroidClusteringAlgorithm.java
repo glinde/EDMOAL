@@ -91,7 +91,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 			sc = new Scheme();
 			sc.addColor(ColorList.clusterColors[i%ColorList.clusterColors.length]);
 			sc.addColor(ColorList.BLACK);
-			sc.addStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			sc.addStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			sc.addStroke(new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			schemes.add(sc);
 		}
@@ -115,6 +115,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 		for(int i=0; i<this.clusterCount; i++)
 		{
 			this.gCentroids.get(i).setPrototype(this.prototypeProvider.getPrototypes().get(i));
+			
 		}
 		
 		this.updateClusterAssignments(resultProvider);

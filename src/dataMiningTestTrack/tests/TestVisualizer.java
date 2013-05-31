@@ -53,6 +53,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Stroke;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.swing.JFrame;
@@ -195,16 +196,19 @@ public abstract class TestVisualizer implements Serializable
 	{
 		GClusteredDataSet gClusteredDS;
 		ScreenViewer sv;
+		ArrayList<GCentroid> gPrototypes = new ArrayList<GCentroid>();
 		
-		if(clusterAlgo instanceof PrototypeClusteringAlgorithm)
+		if(clusterAlgo instanceof PrototypeProvider)
 		{
 			try
 			{
-				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo, resultProvider);
+				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Centroid<double[]>>) clusterAlgo, resultProvider);
+
 			}
 			catch(ClassCastException e)
 			{
 				gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider);
+				
 			}
 			
 		}
@@ -222,7 +226,7 @@ public abstract class TestVisualizer implements Serializable
 		gClusteredDS.setProjection(projection);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 
-		sv = new ScreenViewer();
+		sv = new ScreenViewer(this.xRes, this.yRes);
 		sv.screen.setFileName(filename);
 		sv.screen.setBackground(Color.WHITE);
 		sv.screen.addDrawableObject(gClusteredDS);
@@ -230,7 +234,6 @@ public abstract class TestVisualizer implements Serializable
 		sv.setTitle(title);
 		sv.repaint();
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		sv.setLocation(1920, 0);
 		
 		this.print(sv.screen, filename);
 	}
@@ -327,14 +330,65 @@ public abstract class TestVisualizer implements Serializable
 		gClusteredDS.setProjection(projection);
 		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
 
-		sv = new ScreenViewer();
+		sv = new ScreenViewer(this.xRes, this.yRes);
 		sv.screen.setFileName(filename);
 		sv.screen.setBackground(Color.WHITE);
 		sv.screen.addDrawableObject(gClusteredDS);
 		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
 		sv.setTitle(title);
 		sv.repaint();
-		sv.setLocation(1920, 0);
+		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.print(sv.screen, filename);
+	}
+
+	/**
+	 * Creates a visualisation of the specified data mining algorithm and its results.
+	 * The visualisation is automatically adopted to the type of the algorithm.
+	 * 
+	 * @param dmAlgo The algorithm that is to be visualised.
+	 * @param resultProvider The result of the data mining.
+	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 * @param dataObjectSubsectionIndexes
+	 */
+	@SuppressWarnings("unchecked")
+	public void showDataMiningAlgorithm(DataMiningAlgorithm<double[]> dmAlgo, ResultProvider<double[]> resultProvider, boolean drawCrispMembershipLevels, String title, String filename)
+	{
+		GClusteredDataSet gClusteredDS = null;
+		ScreenViewer sv;
+		
+		if(dmAlgo instanceof PrototypeProvider)
+		{
+
+			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Prototype<double[]>>)dmAlgo, resultProvider);
+
+		}
+		else if(dmAlgo instanceof ClusteringAlgorithm)
+		{
+			gClusteredDS = new GClusteredDataSet((ClusteringAlgorithm<double[]>)dmAlgo, resultProvider);
+		}
+		else
+		{
+			return;
+		}
+
+		gClusteredDS.setDrawMembershipLevels(drawCrispMembershipLevels);
+
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		gClusteredDS.setProjection(projection);
+		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+
+		sv = new ScreenViewer(this.xRes, this.yRes);
+		sv.screen.setFileName(filename);
+		sv.screen.setBackground(Color.WHITE);
+		sv.screen.addDrawableObject(gClusteredDS);
+		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
+		sv.setTitle(title);
+		sv.repaint();
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		this.print(sv.screen, filename);
@@ -559,7 +613,8 @@ public abstract class TestVisualizer implements Serializable
 		projection.setDimensionY(this.yIndex);
 		gClusteredDS.setProjection(projection);
 		gClusteredDS.setDrawMembershipLevels(false);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
+		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+//		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
 		gClusteredDS.setFuzzyColoring(false);
 		gClusteredDS.setDataSet(dataSet);
 		gClusteredDS.setCrispClusterAssignments(crispCluster);
