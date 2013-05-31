@@ -63,17 +63,20 @@ public class DissImageCreator extends TestVisualizer
 		plotter.pnfcm(0.3d);
 		plotter.pnfcm(0.5d);
 		
-		plotter.rcfcm(0.5d);
 		plotter.rcfcm(0.7d);
+		plotter.rcfcm(0.8d);
 		plotter.rcfcm(0.9d);
 		
-		plotter.rcnfcm(0.5d);
 		plotter.rcnfcm(0.7d);
+		plotter.rcnfcm(0.8d);
 		plotter.rcnfcm(0.9d);
 		
 		plotter.emgmm(0.001d);
+		plotter.emgmm(0.1d);
+		plotter.emgmm(0.2d);
+		plotter.emgmm(0.3d);
+		plotter.emgmm(0.4d);
 		plotter.emgmm(0.5d);
-		plotter.emgmm(1.0d);
 	}
 	
 	public static void createDissImages()

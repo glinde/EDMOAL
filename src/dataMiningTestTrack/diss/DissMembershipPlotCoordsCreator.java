@@ -256,14 +256,17 @@ public class DissMembershipPlotCoordsCreator
 	public void emgmm(double variance)
 	{
 		ExpectationMaximizationSGMMClusteringAlgorithm algo = new ExpectationMaximizationSGMMClusteringAlgorithm(this.dataSet, new DAEuclideanVectorSpace(1), new DAEuclideanMetric());
-		algo.initializeWithPositions(this.protoPos);
-		for(SphericalNormalDistributionPrototype proto:algo.getPrototypes())
+		ArrayList<SphericalNormalDistributionPrototype> prototypeList = new ArrayList<SphericalNormalDistributionPrototype>();
+		int i=0;
+		for(double[] x: this.protoPos) 
 		{
-			proto.setVariance(variance);
+			SphericalNormalDistributionPrototype centr = new SphericalNormalDistributionPrototype(new DAEuclideanVectorSpace(1), new DAEuclideanMetric(), x, variance);
+			centr.setClusterIndex(i);
+			prototypeList.add(centr);
+			i++;
 		}
-		
-		ArrayList<double[]> membershipCoords = this.makeMembershipCoordinates(algo.getAllFuzzyClusterAssignments(null));
-		
+		algo.initializeWithPrototypes(prototypeList);
+		ArrayList<double[]> membershipCoords = this.makeMembershipCoordinates(algo.getAllFuzzyClusterAssignments(null));		
 		this.writeMembershipCoordinates(membershipCoords, this.filePath+"EMGMM_"+variance+".csv");
 	}
 }

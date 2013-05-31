@@ -157,12 +157,13 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 	 * 
 	 * The runtime complexity of this function is in O(n*c)  
 	 */
-	protected void recalculateProbabilities()
+	public void recalculateProbabilities()
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
 		
 		int i, j;
 		double doubleTMP = 0.0d;
+		double[] invCondDOProbSum = new double[this.getClusterCount()];
 				
 		for(j=0; j<this.getDataCount(); j++)
 		{
@@ -177,13 +178,13 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				this.conditionalProbabilities.get(j)[i] *= doubleTMP;
-				this.clusterProbability[i] += this.conditionalProbabilities.get(j)[i];
+				invCondDOProbSum[i] += this.conditionalProbabilities.get(j)[i];
 			}
 		}
 		
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			this.clusterProbability[i] = this.clusterProbability[i]/((double)this.getDataCount());
+			this.clusterProbability[i] = invCondDOProbSum[i]/((double)this.getDataCount());
 		}
 	}
 
@@ -254,9 +255,9 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		Arrays.fill(this.clusterProbability, 1.0d/this.clusterProbability.length);
 		this.conditionalProbabilities = new ArrayList<double[]>(this.getDataCount());
 		for(int j=0; j<this.getDataCount(); j++) this.conditionalProbabilities.add(new double[this.getClusterCount()]);
-		
-		this.recalculateProbabilities();
+
 		this.initialized = true;
+		this.recalculateProbabilities();
 	}
 
 	/* (non-Javadoc)

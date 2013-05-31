@@ -88,8 +88,8 @@ public class SphericalNormalDistributionPrototype extends Centroid<double[]>
 	{
 		super(vs, initialPos);
 
-		this.variance = 1.0d;
-		this.initialVariance = 1.0d;
+		this.variance = initialVar;
+		this.initialVariance = initialVar;
 		this.dist = dist;
 	}
 	
