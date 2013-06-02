@@ -40,6 +40,7 @@ import java.util.List;
 
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
+import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 
 /**
  * TODO Class Description
@@ -63,7 +64,7 @@ public class DistortionTester extends TestVisualizer implements Serializable
 		this.yIndex = y;
 		IndexedDataSet<double[]> dataSet = new IndexedDataSet<double[]>(data.size());
 		for(double[] d:data) dataSet.add(new IndexedDataObject<double[]>(d));
-		this.showDataSet(dataSet, null);
+		this.showDataSet(dataSet, null, null, null, null, null, null);
 	}
 
 	/**
@@ -75,7 +76,8 @@ public class DistortionTester extends TestVisualizer implements Serializable
 		this.yIndex = y;
 		IndexedDataSet<double[]> dataSet = new IndexedDataSet<double[]>(data.size());
 		for(double[] d:data) dataSet.add(new IndexedDataObject<double[]>(d));
-		this.showCrispDataSetClustering(dataSet, clusterCount, clusterInformation, null);
+		DummyCrispClusteringAlgorithm<double[]> dummy = new DummyCrispClusteringAlgorithm<double[]>(dataSet, clusterInformation, clusterCount);
+		this.showDataSet(dataSet, null, dummy, null, null, null, null);
 	}
 	
 	public void testDistortedClusters(int dim, int dataPerClusterCount, boolean randomClusterSize, int clusterCount, int noise, boolean scale, int shuffleLocation)

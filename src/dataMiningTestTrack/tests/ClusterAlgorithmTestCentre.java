@@ -68,6 +68,7 @@ import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgori
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
 import datamining.resultProviders.CrispClusteringProvider;
 import datamining.resultProviders.DummyCrispClusteringAlgorithm;
+import datamining.resultProviders.DummyFuzzyClusteringAlgorithm;
 import datamining.resultProviders.FuzzyClusteringProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 import datamining.validation.ClusterF1Measure;
@@ -144,7 +145,7 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	{
 		this.xIndex = x;
 		this.yIndex = y;
-		this.showDataSet(this.dataSet, filename);
+		this.showDataSet(this.dataSet, null, null, null, null, filename, filename);
 	}
 
 	/**
@@ -154,7 +155,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	{
 		this.xIndex = x;
 		this.yIndex = y;
-		this.showCrispDataSetClustering(this.dataSet, this.clusterCount, clustering, filename);
+		DummyCrispClusteringAlgorithm<double[]> dummy = new DummyCrispClusteringAlgorithm<double[]>(this.dataSet, clustering, this.clusterCount);
+		this.showDataSet(this.dataSet, null, dummy, null, null, filename, filename);
 	}
 	
 	/**
@@ -164,7 +166,8 @@ public class ClusterAlgorithmTestCentre extends TestVisualizer implements Serial
 	{
 		this.xIndex = x;
 		this.yIndex = y;
-		this.showFuzzyDataSetClustering(this.dataSet, clustering, filename);
+		DummyFuzzyClusteringAlgorithm<double[]> dummy = new DummyFuzzyClusteringAlgorithm<double[]>(this.dataSet, clustering, null);
+		this.showDataSet(this.dataSet, null, dummy, null, null, filename, filename);
 	}
 	
 	public void showDataSetClustered2DProjections(double addA, double addB, String filename)

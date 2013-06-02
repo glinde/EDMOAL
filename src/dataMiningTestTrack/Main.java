@@ -89,8 +89,10 @@ public class Main
 	public static void dataStructureVisualTest()
 	{
 		DataStructureVisualTest visualTest = new DataStructureVisualTest(10000);
+		visualTest.xRes = 1000;
+		visualTest.yRes = 1000;
 		visualTest.ballTreeStructureTest(); System.gc();
-//		visualTest.centeredBallTreeStructureTest(); System.gc();
+		visualTest.centeredBallTreeStructureTest(); System.gc();
 	}
 	
 
@@ -124,25 +126,25 @@ public class Main
 	 */
 	public static void clusterAlgorithmVisualTest()
 	{
-		int dim = 20, number = 15000, clusterCount = 30;
+		int dim = 2, number = 5000, clusterCount = 5;
 		
 		ClusterAlgorithmVisualTest clusterTest = new ClusterAlgorithmVisualTest(dim, number, clusterCount);
-//		clusterTest.showDataSet();
+		clusterTest.showDataSet();
 //		clusterTest.showClusteredDataSet();
 //		clusterTest.testHardCMeans();
-//		clusterTest.testFuzzyCMeans();
-//		clusterTest.testFuzzyCMeansNoise();
-//		clusterTest.testPolynomialFuzzyCMeans();
-//		clusterTest.testPolynomialFuzzyCMeansNoise();
-//		clusterTest.testRewardingCrispFCM();		
-//		clusterTest.testRewardingCrispFCMNoise();
+//		clusterTest.testFuzzyCMeans(2.0d);
+//		clusterTest.testFuzzyCMeansNoise(2.0d, 0.2d);
+//		clusterTest.testPolynomialFuzzyCMeans(0.5d);
+//		clusterTest.testPolynomialFuzzyCMeansNoise(0.5d, 0.2d);
+//		clusterTest.testRewardingCrispFCM(0.9d);		
+//		clusterTest.testRewardingCrispFCMNoise(0.9d, 0.2d);
 //		clusterTest.testVoronoiPartitionFCM();		
-//		clusterTest.testVoronoiPartitionFCMNoise(); 
-//		clusterTest.testDistAdaptedFCM(); 
-//		clusterTest.testDistAdaptedFCMNoise();
-//		clusterTest.testBallTreeFuzzyCMeans();
+//		clusterTest.testVoronoiPartitionFCMNoise(0.2d); 
+//		clusterTest.testDistAdaptedFCM(2.0d, 0.9d); 
+//		clusterTest.testDistAdaptedFCMNoise(2.0d, 0.9d, 0.2d);
+//		clusterTest.testBallTreeFuzzyCMeans(2.0d, 0.2d);
 //		clusterTest.testExpectationMaximization();
-//		clusterTest.testDBScan();
+//		clusterTest.testDBScan(50, 0.05d);
 	}
 
 	
@@ -164,12 +166,12 @@ public class Main
 //		clusterTest.showDataSet();
 //		clusterTest.showClusteredDataSet();
 //		clusterTest.testHardCMeans();
-//		clusterTest.testFuzzyCMeans();
-//		clusterTest.testFuzzyCMeansNoise();
+		clusterTest.testFuzzyCMeans();
+		clusterTest.testFuzzyCMeansNoise();
 //		clusterTest.testPolynomialFuzzyCMeans();
 //		clusterTest.testPolynomialFuzzyCMeansNoise();
-		clusterTest.testRewardingCrispFCM();		
-		clusterTest.testRewardingCrispFCMNoise();
+//		clusterTest.testRewardingCrispFCM();		
+//		clusterTest.testRewardingCrispFCMNoise();
 //		clusterTest.testVoronoiPartitionFCM();		
 //		clusterTest.testVoronoiPartitionFCMNoise(); 
 //		clusterTest.testDistAdaptedFCM(); 
@@ -194,12 +196,12 @@ public class Main
 		gradientTest.printPNG = false;
 
 		gradientTest.showDataSet(true);
-//		gradientTest.leastSquaresTest();
-//		gradientTest.fcmGradientTest();
-//		gradientTest.snfcmGradientTest();
-//		gradientTest.testRewardingCrispFCM();		
-//		gradientTest.testRewardingCrispFCMNoise();
-//		gradientTest.snfcmGradientTest(1.2d, 0.5d);
+		gradientTest.leastSquaresTest();
+		gradientTest.fcmGradientTest();
+		gradientTest.snfcmGradientTest();
+		gradientTest.testRewardingCrispFCM();		
+		gradientTest.testRewardingCrispFCMNoise();
+		gradientTest.snfcmGradientTest(1.2d, 0.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.0d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 2.0d);
@@ -231,12 +233,12 @@ public class Main
 		gradientTest.printPNG = false;
 
 		gradientTest.showDataSet(true);
-//		gradientTest.leastSquaresTest();
-//		gradientTest.fcmGradientTest();
-//		gradientTest.snfcmGradientTest();
-//		gradientTest.testRewardingCrispFCM();		
-//		gradientTest.testRewardingCrispFCMNoise();
-//		gradientTest.snfcmGradientTest(1.2d, 0.5d);
+		gradientTest.leastSquaresTest();
+		gradientTest.fcmGradientTest();
+		gradientTest.snfcmGradientTest();
+		gradientTest.testRewardingCrispFCM();		
+		gradientTest.testRewardingCrispFCMNoise();
+		gradientTest.snfcmGradientTest(1.2d, 0.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.0d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 2.0d);

@@ -46,6 +46,7 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
 import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataSet;
 import datamining.gradient.functions.RelativeVarianceOfDistancesObjectiveFunction;
+import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 import etc.SimpleStatistics;
 
 /**
@@ -93,7 +94,8 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 		dataSet = clusterGenerator.generateDataSet(number);
 		clustering = clusterGenerator.assignementsOfLastGeneration();
 
-		this.showCrispDataSetClustering(dataSet, this.clusters+1, clustering, null);
+		DummyCrispClusteringAlgorithm<double[]> dummy = new DummyCrispClusteringAlgorithm<double[]>(dataSet, clustering, this.clusters+1);
+		this.showDataSet(dataSet, null, dummy, null, null, null, null);
 		
 		RelativeVarianceOfDistancesObjectiveFunction relVarFunction = new RelativeVarianceOfDistancesObjectiveFunction(dataSet);
 				
@@ -139,7 +141,7 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 		featureSampling.setLowerLeftCorner(llC);
 		featureSampling.setUpperRightCorner(urC);
 		
-		this.showDataSetImaged(dataSet, featureSampling, "Data Set Test", "DataSetTest");
+		this.showDataSet(dataSet, null, null, featureSampling, null, "Data Set Test", "DataSetTest");
 	}
 	
 

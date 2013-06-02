@@ -147,7 +147,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		
 		smallerDataSet = DataManipulator.selectWithoutCopy(this.dataSet, numberOfDataObjects);
 		
-		this.showDataSet(smallerDataSet, null);
+		this.showDataSet(smallerDataSet, null, null, null, null, null, null);
 	}
 	
 	/**

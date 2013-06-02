@@ -57,6 +57,7 @@ import datamining.gradient.functions.clustering.FuzzyCMeansObjectiveFunction;
 import datamining.gradient.parameter.PositionListParameter;
 import datamining.gradient.parameter.PositionListParameterMetric;
 import datamining.gradient.parameter.PositionListParameterVectorSpace;
+import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 import etc.DataGenerator;
 import etc.SimpleStatistics;
 
@@ -288,9 +289,10 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 	{
 		if(clustered)
 		{
-			this.showCrispDataSetClustering(dataSet, clusterCount, correctClustering, "Clustered Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+			DummyCrispClusteringAlgorithm<double[]> dummy = new DummyCrispClusteringAlgorithm<double[]>(dataSet, correctClustering, clusterCount);
+			this.showDataSet(dataSet, null, dummy, null, null, "Clustered Dataset", "Clustered Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 		}
-		else this.showDataSet(this.dataSet, "Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		else this.showDataSet(this.dataSet, null, null, null, null, "Dataset", "Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 	
@@ -303,7 +305,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		gradientoptimization.setLearningFactor(0.25d);
 		gradientoptimization.apply(50);
 		
-		this.showSingleCentroidGradientAlgorithm(gradientoptimization, gradientoptimization.algorithmName() + " - " + lsqOF.getName(), "LeastSquaresTest");
+		this.showDataSet(this.dataSet, gradientoptimization, null, null, null, gradientoptimization.algorithmName() + " - " + lsqOF.getName(), "LeastSquaresTest");
 	}
 
 	
@@ -326,7 +328,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(1.0d);
 		algo.apply(50);
 		
-		this.showDataMiningAlgorithm(algo, fcmFunction, algo.algorithmName(), "FCMGradientTest");
+		this.showDataSet(this.dataSet, algo, fcmFunction, null, null, algo.algorithmName(), "FCMGradientTest");
 	}
 
 	public void snfcmGradientTest()
@@ -356,7 +358,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(1.0d);
 		algo.apply(50);
 		
-		this.showDataMiningAlgorithm(algo, snfcmFunction, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+snfcmFunction.getFuzzifier());
+		this.showDataSet(this.dataSet, algo, snfcmFunction, null, null, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+snfcmFunction.getFuzzifier());
 	}
 
 	public void snfcmGradientTest(double fuzzifier, double learningFactor)
@@ -386,7 +388,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(learningFactor);
 		algo.apply(50);
 		
-		this.showDataMiningAlgorithm(algo, snfcmFunction, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+fuzzifier+"_LF"+learningFactor);
+		this.showDataSet(this.dataSet, algo, snfcmFunction, null, null, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+fuzzifier+"_LF"+learningFactor);
 	}
 
 	/**
@@ -415,7 +417,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showDataMiningAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(this.dataSet, clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -446,7 +448,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showDataMiningAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(this.dataSet, clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 	public void relativeVarianceGradientTest()
@@ -461,7 +463,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(0.1d);
 		algo.apply(50);
 		
-		this.showSingleCentroidGradientAlgorithm(algo, algo.algorithmName(), "RelVarGradientTest");
+		this.showDataSet(this.dataSet, algo, null, null, null, algo.algorithmName(), "RelVarGradientTest");
 		
 		// image overlay calculation
 		
@@ -504,7 +506,7 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		featureSampling.setLowerLeftCorner(llC);
 		featureSampling.setUpperRightCorner(urC);
 		
-		this.showDataSetImaged(algo.getDataSet(), featureSampling, algo.algorithmName(), "RelVarGradientTest");
+		this.showDataSet(this.dataSet, null, null, featureSampling, null, algo.algorithmName(), "RelVarGradientTest");
 	}
 //
 //	

@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack.tests;
 
 import gui.ColorList;
+import gui.DrawableObject;
 import gui.Screen;
 import gui.ScreenViewer;
 import gui.DataMiningGraphics.GCentroid;
@@ -65,7 +66,10 @@ import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
+import datamining.gradient.GradientOptimization;
 import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
 import datamining.resultProviders.PrototypeProvider;
 import datamining.resultProviders.ResultProvider;
 
@@ -155,7 +159,9 @@ public abstract class TestVisualizer implements Serializable
 	/**  */
 	public int yRes;
 	
+	public boolean drawCrispMembershipLevels;
 	
+		
 	/**
 	 * The standard constructor.
 	 */
@@ -165,6 +171,8 @@ public abstract class TestVisualizer implements Serializable
 		this.printJPG = false;
 		this.printPDF = false;
 		this.printPNG = false;
+		
+		this.drawCrispMembershipLevels = false;
 		
 		this.dataObjectSize = 5.0f;
 		this.seriesColorList = new Color[]{
@@ -184,496 +192,80 @@ public abstract class TestVisualizer implements Serializable
 	}
 	
 	/**
-	 * Creates a visualisation of the specified clustering algorithm and its results.
-	 * The visualisation is automatically adopted to the type of the algorithm.
+	 * Creates a visualisation of the specified data
 	 * 
-	 * @param clusterAlgo The algorithm that is to be visualised.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 * @param dataSet the data set to be visualized. May not be null!
+	 * @param prototypeProvider the prototypes to visualize. May be null.
+	 * @param resProv the clustering result for coloring the data objects. May be null.
+	 * @param matrix the data overlay that is printed in the background. May be null.
+	 * @param dataObjectSubsectionIndexes if only a subset of the data objects should be printed, set this list. May be null.
+	 * @param title The title of the window. May be null.
+	 * @param filename The filename for storing the image to the hard disk. May be null. 
 	 */
-	@SuppressWarnings("unchecked")
-	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, ResultProvider<double[]> resultProvider, String title, String filename)
+	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resProv, FeatureSpaceSampling2D matrix, int[] dataObjectSubsectionIndexes, String title, String filename)
 	{
-		GClusteredDataSet gClusteredDS;
-		ScreenViewer sv;
-		ArrayList<GCentroid> gPrototypes = new ArrayList<GCentroid>();
+		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
 		
-		if(clusterAlgo instanceof PrototypeProvider)
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		
+		if(dataSet != null)
 		{
-			try
+			DrawableObject gDataSet = null;		
+			if(resProv != null)
 			{
-				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Centroid<double[]>>) clusterAlgo, resultProvider);
-
-			}
-			catch(ClassCastException e)
-			{
-				gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider);
+				int clusterCount = 0;
+				if(resProv instanceof FuzzyClusteringProvider) clusterCount = ((FuzzyClusteringProvider<double[]>)resProv).getClusterCount();
+				else if (resProv instanceof CrispClusteringProvider) clusterCount = ((CrispClusteringProvider<double[]>)resProv).getClusterCount();
 				
+				GClusteredDataSet gClusteredDataSet;
+				if(prototypeProvider == null) gClusteredDataSet = new GClusteredDataSet(resProv, dataObjectSubsectionIndexes, clusterCount);
+				else  gClusteredDataSet = new GCentroidClusteringAlgorithm(prototypeProvider, resProv, dataObjectSubsectionIndexes);
+				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(4.0d);
+				gClusteredDataSet.setDataSubsetList(dataObjectSubsectionIndexes);
+				gClusteredDataSet.setDrawMembershipLevels(this.drawCrispMembershipLevels);
+				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+				gDataSet = gClusteredDataSet;
 			}
-			
-		}
-		else
-		{
-			gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider);
-		}
-
-		gClusteredDS.setDrawMembershipLevels(true);
-
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-
-		sv = new ScreenViewer(this.xRes, this.yRes);
-		sv.screen.setFileName(filename);
-		sv.screen.setBackground(Color.WHITE);
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.setScreenToDisplayAllIndexed(clusterAlgo.getDataSet());
-		sv.setTitle(title);
-		sv.repaint();
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-	/**
-	 * Creates a visualisation of the specified data mining algorithm and its results.
-	 * The visualisation is automatically adopted to the type of the algorithm.
-	 * 
-	 * @param dmAlgo The algorithm that is to be visualised.
-	 * @param resultProvider The result of the data mining.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 * @param dataObjectSubsectionIndexes
-	 */
-	@SuppressWarnings("unchecked")
-	public void showDataMiningAlgorithm(DataMiningAlgorithm<double[]> dmAlgo, ResultProvider<double[]> resultProvider, int[] dataObjectSubsectionIndexes, String title, String filename)
-	{
-		GClusteredDataSet gClusteredDS = null;
-		ScreenViewer sv;
-		
-		if(dmAlgo instanceof PrototypeProvider && dmAlgo instanceof ClusteringAlgorithm)
-		{
-
-			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Prototype<double[]>>)dmAlgo, resultProvider, dataObjectSubsectionIndexes);
-
-		}
-		else if(dmAlgo instanceof ClusteringAlgorithm)
-		{
-			gClusteredDS = new GClusteredDataSet((ClusteringAlgorithm<double[]>)dmAlgo, resultProvider, dataObjectSubsectionIndexes);
-		}
-		else
-		{
-			return;
-		}
-
-		gClusteredDS.setDrawMembershipLevels(true);
-
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-
-		sv = new ScreenViewer();
-		sv.screen.setFileName(filename);
-		sv.screen.setBackground(Color.WHITE);
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
-		sv.setTitle(title);
-		sv.repaint();
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-	/**
-	 * Creates a visualisation of the specified data mining algorithm and its results.
-	 * The visualisation is automatically adopted to the type of the algorithm.
-	 * 
-	 * @param dmAlgo The algorithm that is to be visualised.
-	 * @param resultProvider The result of the data mining.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 * @param dataObjectSubsectionIndexes
-	 */
-	@SuppressWarnings("unchecked")
-	public void showDataMiningAlgorithm(DataMiningAlgorithm<double[]> dmAlgo, ResultProvider<double[]> resultProvider, String title, String filename)
-	{
-		GClusteredDataSet gClusteredDS = null;
-		ScreenViewer sv;
-		
-		if(dmAlgo instanceof PrototypeProvider)
-		{
-
-			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Prototype<double[]>>)dmAlgo, resultProvider);
-
-		}
-		else if(dmAlgo instanceof ClusteringAlgorithm)
-		{
-			gClusteredDS = new GClusteredDataSet((ClusteringAlgorithm<double[]>)dmAlgo, resultProvider);
-		}
-		else
-		{
-			return;
-		}
-
-		gClusteredDS.setDrawMembershipLevels(true);
-
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-
-		sv = new ScreenViewer(this.xRes, this.yRes);
-		sv.screen.setFileName(filename);
-		sv.screen.setBackground(Color.WHITE);
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
-		sv.setTitle(title);
-		sv.repaint();
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-	/**
-	 * Creates a visualisation of the specified data mining algorithm and its results.
-	 * The visualisation is automatically adopted to the type of the algorithm.
-	 * 
-	 * @param dmAlgo The algorithm that is to be visualised.
-	 * @param resultProvider The result of the data mining.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 * @param dataObjectSubsectionIndexes
-	 */
-	@SuppressWarnings("unchecked")
-	public void showDataMiningAlgorithm(DataMiningAlgorithm<double[]> dmAlgo, ResultProvider<double[]> resultProvider, boolean drawCrispMembershipLevels, String title, String filename)
-	{
-		GClusteredDataSet gClusteredDS = null;
-		ScreenViewer sv;
-		
-		if(dmAlgo instanceof PrototypeProvider)
-		{
-
-			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeProvider<double[], ? extends Prototype<double[]>>)dmAlgo, resultProvider);
-
-		}
-		else if(dmAlgo instanceof ClusteringAlgorithm)
-		{
-			gClusteredDS = new GClusteredDataSet((ClusteringAlgorithm<double[]>)dmAlgo, resultProvider);
-		}
-		else
-		{
-			return;
-		}
-
-		gClusteredDS.setDrawMembershipLevels(drawCrispMembershipLevels);
-
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-
-		sv = new ScreenViewer(this.xRes, this.yRes);
-		sv.screen.setFileName(filename);
-		sv.screen.setBackground(Color.WHITE);
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.setScreenToDisplayAllIndexed(dmAlgo.getDataSet());
-		sv.setTitle(title);
-		sv.repaint();
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-
-	/**
-	 * Creates a visualisation of the specified clustering algorithm and its results.
-	 * The visualisation is automatically adopted to the type of the algorithm.
-	 * 
-	 * @param clusterAlgo The algorithm that is to be visualised.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 * @param dataObjectSubsectionIndexes
-	 */
-	@SuppressWarnings("unchecked")
-	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, ResultProvider<double[]> resultProvider, int[] dataObjectSubsectionIndexes, String title, String filename)
-	{
-		GClusteredDataSet gClusteredDS;
-		ScreenViewer sv;
-		
-		if(clusterAlgo instanceof PrototypeClusteringAlgorithm)
-		{
-			gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo, resultProvider, dataObjectSubsectionIndexes);
-		}
-		else
-		{
-			gClusteredDS = new GClusteredDataSet(clusterAlgo, resultProvider, dataObjectSubsectionIndexes);
-		}
-
-		gClusteredDS.setDrawMembershipLevels(true);
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-
-		sv = new ScreenViewer();
-		sv.screen.setFileName(filename);
-		sv.screen.setBackground(Color.WHITE);
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.setScreenToDisplayAllIndexed(clusterAlgo.getDataSet());
-		sv.setTitle(title);
-		sv.repaint();
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
+			else
+			{
+				if(prototypeProvider != null)
+				{
+					int i=0;
+					for(Prototype<double[]> p: prototypeProvider.getPrototypes())
+					{
+						GCentroid gCentroid = new GCentroid();
+						gCentroid.setPrototype(p);
+						gCentroid.setProjection(projection);
+						gCentroid.getScheme().setColor(0, ColorList.clusterColors[i]);
+						sv.screen.addDrawableObject(gCentroid);
+						i++;
+					}
+				}
+					
+				GDataSet gPureDataSet = new GDataSet(dataSet);
+				gPureDataSet.setDataSubsetList(dataObjectSubsectionIndexes);
+				gPureDataSet.getScheme().setColor(0, ColorList.BLACK);
+				gPureDataSet.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+				gDataSet = gPureDataSet;
+			}
 	
-	/**
-	 * Creates a visualisation of the specified gradient algorithm and the way of its centroid.
-	 * 
-	 * @param gradientAlgo The algorithm that is to be visualised.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 */
-	public void showSingleCentroidGradientAlgorithm(SingleCentroidGradientOptimizationAlgorithm<double[]> gradientAlgo, String title, String filename)
-	{
-		ScreenViewer sv  = new ScreenViewer();
-		GDataSet gCluster = new GDataSet();
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gCluster.setProjection(projection);
-		gCluster.setDataObjects(gradientAlgo.getDataSet());
-		gCluster.getScheme().setColor(0, ColorList.BLACK);
-		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
+			gDataSet.setProjection(projection);
+			sv.screen.addDrawableObject(gDataSet);
+			sv.screen.setScreenToDisplayAllIndexed(dataSet);
+		}
 		
-		GCentroid gCentroid = new GCentroid();
-		gCentroid.setPrototype(gradientAlgo.getCentroid());
-		gCentroid.setProjection(projection);
+		if(matrix != null)
+		{
+			GImage image = new GImage(null, matrix);
+			sv.screen.addDrawableObject(image);
+		}
 		
+		sv.screen.setBackground(Color.WHITE);
 		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(gCluster);
-		sv.screen.addDrawableObject(gCentroid);
-//		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(gradientAlgo.getDataSet());
-		sv.repaint();
 		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-	/**
-	 * Creates a visualisation of the specified gradient algorithm and the way of its centroid.
-	 * 
-	 * @param gradientAlgo The algorithm that is to be visualised.
-	 * @param title The title of the window (just for easy window management, the text is not shown in the figure it self).
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 */
-	public void showDataSetImaged(Collection<IndexedDataObject<double[]>> dataSet, FeatureSpaceSampling2D matrix, String title, String filename)
-	{
-		ScreenViewer sv  = new ScreenViewer();
-		GDataSet gCluster = new GDataSet();
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gCluster.setProjection(projection);
-		gCluster.setDataObjects(dataSet);
-		gCluster.getScheme().setColor(0, ColorList.BLACK);
-		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
-		
-		
-		GImage image = new GImage(null, matrix);
-//		image.generateTestImage(0.0d, 0.0d, 100, 100, 100);
-		
-		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(image);
-		sv.screen.addDrawableObject(gCluster);
-//		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
 		sv.repaint();
-		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-	
-	/**
-	 * Visualises the specified data set. Currently, only the first two dimensions of
-	 * the data vectors are presented. For visualising other dimensions, please change
-	 * the order of the attributes in the data vector.
-	 * 
-	 * @param dataSet The data set to be visualised.
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 */
-	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, String filename)
-	{
-		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
-		GDataSet gCluster = new GDataSet();
-		
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gCluster.setProjection(projection);
-		gCluster.setDataObjects(dataSet);
-		gCluster.getScheme().setColor(0, ColorList.BLACK);
-		gCluster.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-		
-		sv.screen.setFileName(filename);
-		sv.screen.addDrawableObject(gCluster);
-//		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
-		sv.repaint();
-		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-	
-	/**
-	 * Visualises the specified data set. Currently, only the first two dimensions of
-	 * the data vectors are presented. For visualising other dimensions, please change
-	 * the order of the attributes in the data vector.
-	 * 
-	 * @param dataSet The data set to be visualised.
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 */
-	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, int[] dataObjectSubsectionIndexes, String filename)
-	{
-		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
-		GDataSet gCluster = new GDataSet();
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gCluster.setProjection(projection);
-		gCluster.setDataObjects(dataSet);
-		gCluster.setDataSubsetList(dataObjectSubsectionIndexes);
-		gCluster.getScheme().setColor(0, ColorList.BLACK);
-		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
-		
-		sv.screen.setFileName(filename);
-	//	sv.setPreferredSize(new Dimension(1200, 800));
-	//	sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(gCluster);
-//		sv.screen.addDrawableObject(new GScale());
-	//	sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-	//	sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
-		sv.repaint();
-		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-	
-
-	/**
-	 * Presents the specified data set, coloured by the specified crisp clustering (partitioning). Currently,
-	 * only the first two dimensions of the data vectors are presented. For visualising other
-	 * dimensions, please change the order of the attributes in the data vector.
-	 * 
-	 * @param dataSet The data set to be visualised.
-	 * @param clusterCount The number of clusters in the clustering or the number of partitions of the data set.
-	 * @param crispCluster The crisp clustering (partitioning) that should be used for colouring the data.
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 */
-	public void showCrispDataSetClustering(Collection<IndexedDataObject<double[]>> dataSet, int clusterCount, int[] crispCluster, String filename)
-	{
-		GClusteredDataSet gClusteredDS;
-		ScreenViewer sv;
-		
-		gClusteredDS = new GClusteredDataSet(clusterCount);
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.setDrawMembershipLevels(false);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-//		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
-		gClusteredDS.setFuzzyColoring(false);
-		gClusteredDS.setDataSet(dataSet);
-		gClusteredDS.setCrispClusterAssignments(crispCluster);
-
-		sv = new ScreenViewer(this.xRes, this.yRes);
-		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(gClusteredDS);
-//		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
-		sv.repaint();
-		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-
-	/**
-	 * Presents the specified data set, coloured by the specified crisp clustering (partitioning). Currently,
-	 * only the first two dimensions of the data vectors are presented. For visualising other
-	 * dimensions, please change the order of the attributes in the data vector.
-	 * 
-	 * @param dataSet The data set to be visualised.
-	 * @param clusterCount The number of clusters in the clustering or the number of partitions of the data set.
-	 * @param crispCluster The crisp clustering (partitioning) that should be used for colouring the data.
-	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
-	 */
-	public void showFuzzyDataSetClustering(Collection<IndexedDataObject<double[]>> dataSet, Collection<double[]> clustering, String filename)
-	{
-		GClusteredDataSet gClusteredDS;
-		ScreenViewer sv;
-		
-		gClusteredDS = new GClusteredDataSet(clustering.iterator().next().length);
-
-		Orthogonal2DProjection projection = new Orthogonal2DProjection();
-		projection.setDimensionX(this.xIndex);
-		projection.setDimensionY(this.yIndex);
-		gClusteredDS.setProjection(projection);
-		gClusteredDS.setDrawMembershipLevels(false);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
-		gClusteredDS.setFuzzyColoring(true);
-		gClusteredDS.setDataSet(dataSet);
-		gClusteredDS.setFuzzyMemberships(clustering);
-
-		sv = new ScreenViewer(this.xRes, this.yRes);
-		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(gClusteredDS);
-//		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
-		sv.repaint();
-		sv.setTitle(filename);
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		this.print(sv.screen, filename);
