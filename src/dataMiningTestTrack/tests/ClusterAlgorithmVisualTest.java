@@ -62,6 +62,7 @@ import datamining.clustering.protoype.altopt.RewardingCrispFCMNoiseClusteringAlg
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm;
 import datamining.clustering.protoype.altopt.VoronoiPartitionFCMNoiseClusteringAlgorithm;
 import datamining.clustering.protoype.initial.DoubleArrayPrototypeGenerator;
+import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 import etc.DataGenerator;
 
 
@@ -195,7 +196,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void showDataSet()
 	{
-		this.showDataSet(this.dataSet, null);
+		this.showDataSet(this.dataSet, null, null, null, null, null, null);
 	}
 	
 	/**
@@ -203,7 +204,8 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 	 */
 	public void showClusteredDataSet()
 	{
-		this.showCrispDataSetClustering(this.dataSet, this.clusterCount, this.correctClustering, null);
+		DummyCrispClusteringAlgorithm<double[]> dummy = new DummyCrispClusteringAlgorithm<double[]>(this.dataSet, this.correctClustering, this.clusterCount);
+		this.showDataSet(this.dataSet, null, dummy, null, null, null, null);
 	}
 	
 	/**
@@ -214,7 +216,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		HardCMeansClusteringAlgorithm<double[]> clusterAlgo = new HardCMeansClusteringAlgorithm<double[]>(this.dataSet, new DAEuclideanVectorSpace(this.dataSet.first().x.length), new DAEuclideanMetric());
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "HCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "HCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -228,7 +230,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setFuzzifier(fuzzifier);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "FCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 	
@@ -243,7 +245,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "FCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -257,7 +259,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setBeta(beta);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -272,7 +274,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -287,7 +289,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setDistanceMultiplierConstant(distMul);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -303,7 +305,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -318,7 +320,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setFuzzifier(2.0d);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "VPFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "VPFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -334,7 +336,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "VPFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -349,7 +351,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setDistanceCorrectionParameter(distCorr);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "DAFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -365,7 +367,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setNoiseDistance(noiseDist);
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "DAFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -380,7 +382,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setMaximalMembershipIntervalLength(membershipIntervalLength);
 		clusterAlgo.setEpsilon(0.01d);
 		clusterAlgo.apply(50);
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "BTFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -397,7 +399,7 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setEpsilon(0.001d);
 		clusterAlgo.apply(50);
 //		for(SphericalNormalDistributionPrototype d:clusterAlgo.getActivePrototypes()) System.out.println(d.getClusterIndex() + ": " + d.getVariance());
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 
@@ -410,6 +412,6 @@ public class ClusterAlgorithmVisualTest extends TestVisualizer implements Serial
 		clusterAlgo.setCoreNum(coreNum);
 		clusterAlgo.setCoreDist(coreDist);
 		clusterAlgo.apply();
-		this.showClusteringAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(clusterAlgo.getDataSet(), null, clusterAlgo, null, null, clusterAlgo.algorithmName(), "DBScan_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 }

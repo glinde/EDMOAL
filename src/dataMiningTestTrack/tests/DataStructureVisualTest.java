@@ -132,7 +132,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		for(k = 0; k<ballTree.height() && k<maxVisuaiDepth; k++)
 		{
 			levelList.clear();
-			dataViewFrame = new ScreenViewer();
+			dataViewFrame = new ScreenViewer(this.xRes, this.yRes);
 //			dataViewFrame.screen.getTranslator().moveOffset(0.5d, 0.5d);	
 			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet);
 			levelSets = ballTree.subtreeElementsOfLevel(k);
@@ -143,9 +143,8 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			// draw subtree data objects
 			for(i=0; i<levelSets.size(); i++)
 			{
-				graphicsCluster = new GDataSet();
+				graphicsCluster = new GDataSet(levelSets.get(i));
 //				graphicsCluster.setDrawPrototype(false);
-				graphicsCluster.setDataObjects(levelSets.get(i));
 				graphicsCluster.calcCrispInternalSourrounding();
 				graphicsCluster.setDrawInternalArea(true);
 				graphicsCluster.setInternalAreaAlpha(50);
@@ -219,7 +218,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		for(k = 0; k<cballTree.height() && k<maxVisuaiDepth; k++)
 		{
 			levelList.clear();
-			dataViewFrame = new ScreenViewer();
+			dataViewFrame = new ScreenViewer(this.xRes, this.yRes);
 //			dataViewFrame.screen.getTranslator().moveOffset(0.5d, 0.5d);	
 			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet);
 			levelSets = cballTree.subtreeElementsOfLevel(k);
@@ -230,9 +229,8 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			// draw subtree data objects
 			for(i=0; i<levelSets.size(); i++)
 			{
-				graphicsCluster = new GDataSet();
+				graphicsCluster = new GDataSet(levelSets.get(i));
 //				graphicsCluster.setDrawPrototype(false);
-				graphicsCluster.setDataObjects(levelSets.get(i));
 				graphicsCluster.calcCrispInternalSourrounding();
 				graphicsCluster.setDrawInternalArea(true);
 				graphicsCluster.setInternalAreaAlpha(50);

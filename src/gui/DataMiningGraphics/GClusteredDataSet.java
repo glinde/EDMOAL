@@ -153,39 +153,18 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	}
 	
 	
-	public GClusteredDataSet(IndexedDataSet<double[]> data, ResultProvider<double[]> rp, int clusterCount)
-	{
-		this(clusterCount);
-
-		this.dataSet.addAll(data);
-		
-		this.updateClusterAssignments(rp);
-	}
-	
-	
-	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca, ResultProvider<double[]> rp)
-	{
-		this(ca.getDataSet(), rp, ca.getClusterCount());
-	}
-
-
-	public GClusteredDataSet(IndexedDataSet<double[]> data, ResultProvider<double[]> rp, int[] dataSubsetList, int clusterCount)
+	public GClusteredDataSet(ResultProvider<double[]> rp, int[] dataSubsetList, int clusterCount)
 	{
 		this(GClusteredDataSet.makeClusterScemes(clusterCount));
 
-		this.dataSet.addAll(data);
+		this.dataSet.addAll(rp.getDataSet());
 		
-		this.dataSubsetPresentation = true;
+		this.dataSubsetPresentation = dataSubsetList != null;
 		this.dataSubsetList = dataSubsetList;
 		
 		this.updateClusterAssignments(rp);
 	}
-	
-	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca, ResultProvider<double[]> rp, int[] dataSubsetList)
-	{
-		this(ca.getDataSet(), rp, dataSubsetList, ca.getClusterCount());
-	}
-	
+		
 	protected void recalculateConvexHulls()
 	{
 		int i, j, k, l;
@@ -854,7 +833,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	 */
 	public void setDataSubsetList(int[] dataSubsetList)
 	{
-		this.dataSubsetPresentation = true;
+		this.dataSubsetPresentation = dataSubsetList != null;
 		this.dataSubsetList = dataSubsetList;
 		this.recalculateConvexHulls();
 	}

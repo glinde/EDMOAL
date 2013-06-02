@@ -486,4 +486,13 @@ public class ScaledNormFuzzyCMeansObjectiveFunction extends AbstractObjectiveFun
 		return membershipValueSums;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClusteringProvider#getClusterCount()
+	 */
+	@Override
+	public int getClusterCount()
+	{
+		return this.parameter.getPositionCount();
+	}
+
 }

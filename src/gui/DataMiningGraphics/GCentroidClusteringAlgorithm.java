@@ -104,28 +104,12 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 		this(GCentroidClusteringAlgorithm.makePrototypeScemes(clusterCount));
 	}
 	
-	public GCentroidClusteringAlgorithm(PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resultProvider)
-	{
-		this(prototypeProvider.getPrototypeCount());
-
-		this.prototypeProvider = prototypeProvider;
-		
-		this.dataSet.addAll(this.prototypeProvider.getDataSet());	
-
-		for(int i=0; i<this.clusterCount; i++)
-		{
-			this.gCentroids.get(i).setPrototype(this.prototypeProvider.getPrototypes().get(i));
-			
-		}
-		
-		this.updateClusterAssignments(resultProvider);
-	}
 
 	public  GCentroidClusteringAlgorithm(PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resultProvider, int[] dataSubsetList)
 	{
 		this(prototypeProvider.getPrototypeCount());
 
-		this.dataSubsetPresentation = true;
+		this.dataSubsetPresentation = dataSubsetList != null;
 		this.dataSubsetList = dataSubsetList;
 
 		this.prototypeProvider = prototypeProvider;

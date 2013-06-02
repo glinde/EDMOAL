@@ -40,6 +40,7 @@ import java.util.Collections;
 import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.objects.doubleArray.DAMaximumNorm;
+import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
 import dataMiningTestTrack.experiments.snFCM.DAPositionListParameterBound;
@@ -56,7 +57,9 @@ import datamining.gradient.functions.clustering.FuzzyCMeansObjectiveFunction;
 import datamining.gradient.parameter.PositionListParameter;
 import datamining.gradient.parameter.PositionListParameterMetric;
 import datamining.gradient.parameter.PositionListParameterVectorSpace;
+import datamining.resultProviders.DummyCrispClusteringAlgorithm;
 import etc.DataGenerator;
+import etc.SimpleStatistics;
 
 /**
  * TODO Class Description
@@ -198,7 +201,7 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		for(Centroid<double[]> c:initialPrototypes) this.initialPositons.add(c.getInitialPosition().clone());
 	}
 	
-	
+
 	/**
 	 * Shows the generated data set.
 	 */
@@ -206,9 +209,10 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 	{
 		if(clustered)
 		{
-			this.showCrispDataSetClustering(dataSet, clusterCount, correctClustering, "Clustered Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+			DummyCrispClusteringAlgorithm<double[]> dummy = new DummyCrispClusteringAlgorithm<double[]>(dataSet, correctClustering, clusterCount);
+			this.showDataSet(dataSet, null, dummy, null, null, "Clustered Dataset", "Clustered Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 		}
-		else this.showDataSet(this.dataSet, "Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		else this.showDataSet(this.dataSet, null, null, null, null, "Dataset", "Dataset"  + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 	
 	
@@ -221,7 +225,7 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		gradientoptimization.setLearningFactor(0.25d);
 		gradientoptimization.apply(50);
 		
-		this.showSingleCentroidGradientAlgorithm(gradientoptimization, gradientoptimization.algorithmName() + " - " + lsqOF.getName(), "LeastSquaresTest");
+		this.showDataSet(this.dataSet, gradientoptimization, null, null, null, gradientoptimization.algorithmName() + " - " + lsqOF.getName(), "LeastSquaresTest");
 	}
 
 	
@@ -243,8 +247,8 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		algo.initializeWithParameter(parameter);
 		algo.setLearningFactor(1.0d);
 		algo.apply(50);
-		
-		this.showDataMiningAlgorithm(algo, fcmFunction, algo.algorithmName(), "FCMGradientTest");
+
+		this.showDataSet(this.dataSet, algo, fcmFunction, null, null, algo.algorithmName(), "FCMGradientTest");
 	}
 
 	public void snfcmGradientTest()
@@ -274,7 +278,7 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(1.0d);
 		algo.apply(50);
 		
-		this.showDataMiningAlgorithm(algo, snfcmFunction, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+snfcmFunction.getFuzzifier());
+		this.showDataSet(this.dataSet, algo, snfcmFunction, null, null, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+snfcmFunction.getFuzzifier());
 	}
 
 	public void snfcmGradientTest(double fuzzifier, double learningFactor)
@@ -304,7 +308,7 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		algo.setLearningFactor(learningFactor);
 		algo.apply(50);
 		
-		this.showDataMiningAlgorithm(algo, snfcmFunction, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+fuzzifier+"_LF"+learningFactor);
+		this.showDataSet(this.dataSet, algo, snfcmFunction, null, null, algo.algorithmName(), "SNFCMGradientTest_"+evs.getDimension()+"Dim_w"+fuzzifier+"_LF"+learningFactor);
 	}
 
 	/**
@@ -333,7 +337,7 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showDataMiningAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(this.dataSet, clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 
@@ -364,7 +368,7 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		time += System.currentTimeMillis();
 		System.out.println("done. ("+time+" ms)");
 		
-		this.showDataMiningAlgorithm(clusterAlgo, clusterAlgo, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
+		this.showDataSet(this.dataSet, clusterAlgo, clusterAlgo, null, null, clusterAlgo.algorithmName(), "PFCMN_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}
 
 	public void relativeVarianceGradientTest()
@@ -381,7 +385,48 @@ public class SymmetricalDataAlgorithmVisualTest extends TestVisualizer
 		algo.apply(50);
 		System.out.println(Arrays.toString(algo.getObjectiveFunctionValueHistory()));
 		
-		this.showSingleCentroidGradientAlgorithm(algo, algo.algorithmName(), "RelVarGradientTest");
+		this.showDataSet(this.dataSet, algo, null, null, null, algo.algorithmName(), "RelVarGradientTest");
+
+		double scale = 0.01d;
+		double[] parameter = new double[2];
+		double value;
+		double min = Double.MAX_VALUE, max = 0.0d;
+		double[] llC = new double[2];
+		double[] urC = new double[2];
+		
+		ArrayList<double[]> boundingBox = SimpleStatistics.boundingBoxCornersIndexed(this.dataSet);
+		llC[0] = (boundingBox.get(0)[0]-(boundingBox.get(1)[0] - boundingBox.get(0)[0])*0.5d);  
+		llC[1] = (boundingBox.get(0)[1]-(boundingBox.get(1)[1] - boundingBox.get(0)[1])*0.5d);  
+		urC[0] = (boundingBox.get(1)[0]+(boundingBox.get(1)[0] - boundingBox.get(0)[0])*0.5d);  
+		urC[1] = (boundingBox.get(1)[1]+(boundingBox.get(1)[0] - boundingBox.get(0)[0])*0.5d);  
+		
+		FeatureSpaceSampling2D featureSampling = new FeatureSpaceSampling2D((int)((urC[0] - llC[0])/scale), (int)((urC[1] - llC[1])/scale));
+		for(int x=0; x<featureSampling.sizeX(); x++)
+		{
+			for(int y=0; y<featureSampling.sizeY(); y++)
+			{
+				parameter[0] = ((double)x)*scale + llC[0] + 0.5d * scale;
+				parameter[1] = ((double)y)*scale + llC[1] + 0.5d * scale;
+				relVarFunction.setParameter(parameter);
+				value = relVarFunction.functionValue();
+				min = (value < min)? value : min;
+				max = (value > max)? value : max;
+				featureSampling.set(x, y, value);
+			}	
+		}
+		for(int x=0; x<featureSampling.sizeX(); x++)
+		{
+			for(int y=0; y<featureSampling.sizeY(); y++)
+			{
+				value = featureSampling.get(x, y);
+				featureSampling.set(x, y, (value - min)/(max - min));
+			}	
+		}
+		
+		featureSampling.setLowerLeftCorner(llC);
+		featureSampling.setUpperRightCorner(urC);
+		
+		this.showDataSet(this.dataSet, null, null, featureSampling, null, algo.algorithmName(), "RelVarGradientTest");
 	}
 
 }

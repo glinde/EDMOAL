@@ -80,7 +80,7 @@ public class GDataSet extends DrawableObject implements Serializable
 	protected boolean dataSubsetPresentation;
 	protected int[] dataSubsetList;
 		
-	public GDataSet()
+	public GDataSet(Collection<IndexedDataObject<double[]>> dataObjects)
 	{
 		super();
 
@@ -89,7 +89,7 @@ public class GDataSet extends DrawableObject implements Serializable
 		this.scheme.addStroke(new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		this.scheme.addStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		
-		this.dataObjects = new ArrayList<IndexedDataObject<double[]>>();
+		this.dataObjects = new ArrayList<IndexedDataObject<double[]>>(dataObjects);
 		
 		this.resetSchemeIndices();
 		
@@ -321,7 +321,7 @@ public class GDataSet extends DrawableObject implements Serializable
 	 */
 	public void setDataSubsetList(int[] dataSubsetList)
 	{
-		this.dataSubsetPresentation = true;
+		this.dataSubsetPresentation = dataSubsetList != null;
 		this.dataSubsetList = dataSubsetList;
 	}
 }
