@@ -146,7 +146,7 @@ public abstract class TestVisualizer implements Serializable
 	 * The visual size of a data object in pixels.
 	 */
 	public float dataObjectSize;
-
+	
 	public float lineThickness;
 	
 	
@@ -163,7 +163,6 @@ public abstract class TestVisualizer implements Serializable
 	public int yRes;
 	
 	public boolean drawCrispMembershipLevels;
-	
 	
 		
 	/**
@@ -231,8 +230,7 @@ public abstract class TestVisualizer implements Serializable
 				{
 					s.setStrokeThickness(0, this.lineThickness);
 				}
-					
-				
+				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(4.0d);
 				gClusteredDataSet.setDataSubsetList(dataObjectSubsectionIndexes);
 				gClusteredDataSet.setDrawMembershipLevels(this.drawCrispMembershipLevels);
 				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
