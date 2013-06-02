@@ -95,4 +95,12 @@ public interface FuzzyClusteringProvider<T> extends ResultProvider<T>
 	 * @return A list of membership value sums, by cluster.
 	 */
 	public double[] getFuzzyAssignmentSums();
+	
+
+	/**
+	 * Returns the total number of clusters.
+	 * 
+	 * @return the total number of clusters.
+	 */
+	public int getClusterCount();
 }

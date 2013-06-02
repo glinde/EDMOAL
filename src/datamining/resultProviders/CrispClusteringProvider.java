@@ -83,4 +83,12 @@ public interface CrispClusteringProvider<T> extends ResultProvider<T>
 	 * @return the cluster assignment.
 	 */
 	public int getCrispClusterAssignmentOf(IndexedDataObject<T> obj);
+	
+
+	/**
+	 * Returns the total number of clusters.
+	 * 
+	 * @return the total number of clusters.
+	 */
+	public int getClusterCount();
 }

@@ -466,4 +466,13 @@ public class FuzzyCMeansObjectiveFunction<T> extends AbstractObjectiveFunction<T
 		return membershipValueSums;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClusteringProvider#getClusterCount()
+	 */
+	@Override
+	public int getClusterCount()
+	{
+		return this.parameter.getPositionCount();
+	}
+
 }

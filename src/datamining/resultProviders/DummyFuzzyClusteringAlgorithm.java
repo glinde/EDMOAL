@@ -33,6 +33,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.resultProviders;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import data.set.AbstractStaticDataSetContainer;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
@@ -43,64 +47,89 @@ import datamining.clustering.ClusteringAlgorithm;
  *
  * @author Roland Winkler
  */
-public class DummyCrispClusteringAlgorithm<T> extends AbstractStaticDataSetContainer<T> implements ClusteringAlgorithm<T>, CrispClusteringProvider<T>, CrispNoiseClusteringProvider<T>
+public class DummyFuzzyClusteringAlgorithm<T> extends AbstractStaticDataSetContainer<T> implements ClusteringAlgorithm<T>, FuzzyClusteringProvider<T>, FuzzyNoiseClusteringProvider<T>
 {
-	protected int[] clusteringResult;
+	protected ArrayList<double[]> clusteringResult;
+	
+	protected double[] noise;
 	
 	protected int clusterCount;
 	
-	public DummyCrispClusteringAlgorithm(IndexedDataSet<T> dataSet, int[] clusteringResult, int clusterCount)
+	public DummyFuzzyClusteringAlgorithm(IndexedDataSet<T> dataSet, Collection<double[]> clusteringResult, double[] noise)
 	{
 		super(dataSet);
-		this.clusteringResult = clusteringResult;
-		this.clusterCount = clusterCount;
+		this.clusteringResult = new ArrayList<double[]>(clusteringResult);
+		if(noise != null) this.noise = noise;
+		else this.noise = new double[this.clusteringResult.size()];
+		this.clusterCount = this.clusteringResult.get(0).length;
 	}
 	
 	/* (non-Javadoc)
 	 * @see datamining.resultProviders.CrispClusteringProvider#isCrispAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
-	public boolean isCrispAssigned(IndexedDataObject<T> obj)
+	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
 	{
 		return this.data.contains(obj);
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.resultProviders.CrispClusteringProvider#getAllCrispClusterAssignments()
+	 * @see datamining.resultProviders.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignments()
 	 */
 	@Override
-	public int[] getAllCrispClusterAssignments()
+	public double[] getFuzzyNoiseAssignments()
 	{
-		return this.clusteringResult;
+		return this.noise;
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.resultProviders.CrispClusteringProvider#getCrispClusterAssignmentOf(data.set.IndexedDataObject)
+	 * @see datamining.resultProviders.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
-	public int getCrispClusterAssignmentOf(IndexedDataObject<T> obj)
+	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
 	{
-		return this.clusteringResult[obj.getID()];
+		return this.noise[obj.getID()];
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.resultProviders.CrispNoiseClusteringProvider#getCrispNoiseAssignments()
+	 * @see datamining.resultProviders.FuzzyClusteringProvider#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
-	public boolean[] getCrispNoiseAssignments()
+	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
 	{
-		boolean[] noise = new boolean[this.getDataCount()];
-		for(int j=0; j<this.getDataCount(); j++) noise[j] = this.clusteringResult[j] < 0;
-		return noise;
+		return this.clusteringResult.get(obj.getID());
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.resultProviders.CrispNoiseClusteringProvider#isCrispNoiseAssigned(data.set.IndexedDataObject)
+	 * @see datamining.resultProviders.FuzzyClusteringProvider#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
-	public boolean isCrispNoiseAssigned(IndexedDataObject<T> obj)
+	public List<double[]> getAllFuzzyClusterAssignments(List<double[]> assignmentList)
 	{
-		return this.clusteringResult[obj.getID()] < 0;
+		if(assignmentList == null) assignmentList = new ArrayList<double[]>(this.data.size());
+		
+		assignmentList.addAll(this.clusteringResult);
+		
+		return assignmentList;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClusteringProvider#getFuzzyAssignmentSums()
+	 */
+	@Override
+	public double[] getFuzzyAssignmentSums()
+	{
+		double[] sums = new double[this.getClusterCount()];
+		
+		for(double[] memberV:this.clusteringResult)
+		{
+			for(int i=0; i<this.getClusterCount(); i++)
+			{
+				sums[i] += memberV[i];
+			}
+		}
+		
+		return sums;
 	}
 
 	/* (non-Javadoc)
@@ -116,7 +145,7 @@ public class DummyCrispClusteringAlgorithm<T> extends AbstractStaticDataSetConta
 	@Override
 	public String algorithmName()
 	{
-		return "Dummy Crisp Clustering Algorithm";
+		return "Dummy Fuzzy Clustering Algorithm";
 	}
 
 	/* (non-Javadoc)
