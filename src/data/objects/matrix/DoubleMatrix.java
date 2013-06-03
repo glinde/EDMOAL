@@ -35,6 +35,8 @@ package data.objects.matrix;
 
 import java.io.Serializable;
 
+import etc.DataManipulator;
+
 /**
  * Dummy class for a 2-Dimensional array of double elements.
  * At moment it does not provide useful functionality, but that might change as it is needed.
@@ -43,7 +45,7 @@ import java.io.Serializable;
  */
 public class DoubleMatrix implements Serializable
 {
-	private double[][] elements;
+	protected double[][] elements;
 	
 	public DoubleMatrix(int sizeX, int sizeY)
 	{
@@ -69,5 +71,29 @@ public class DoubleMatrix implements Serializable
 	public int sizeY()
 	{
 		return this.elements[0].length;
+	}
+	
+
+	public void gaussFilter(int radius)
+	{
+		double[] line = new double[this.elements[0].length];
+		
+		for(int i=0; i<this.elements.length; i++)
+		{
+			DataManipulator.gaussFilter(this.elements[i], radius);
+		}
+		
+		for(int i=0; i<this.elements.length; i++)
+		{
+			for(int j=0; j<this.elements[i].length; j++)
+			{
+				line[j] = this.elements[i][j];
+			}
+			DataManipulator.gaussFilter(line, radius);
+			for(int j=0; j<this.elements[i].length; j++)
+			{
+				this.elements[i][j] = line[j];
+			}
+		}
 	}
 }

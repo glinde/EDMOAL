@@ -173,6 +173,8 @@ public abstract class TestVisualizer implements Serializable
 	
 	public double[] membershipLevels;
 	
+	public int membershipLevelLineWidth;
+	
 		
 	/**
 	 * The standard constructor.
@@ -191,6 +193,7 @@ public abstract class TestVisualizer implements Serializable
 		
 		this.dataObjectSize = 5.0f;
 		this.lineThickness = 1.0f;
+		this.membershipLevelLineWidth = 2;
 		this.seriesColorList = new Color[]{
 				ColorList.RED,				ColorList.GREEN,			ColorList.BLUE,
 				ColorList.ORANGE,			ColorList.MAGENTA,			ColorList.CYAN,
@@ -227,6 +230,47 @@ public abstract class TestVisualizer implements Serializable
 		Orthogonal2DProjection projection = new Orthogonal2DProjection();
 		projection.setDimensionX(this.xIndex);
 		projection.setDimensionY(this.yIndex);
+
+		if(matrices != null)
+		{
+			if(this.drawMembershipHeightLines)
+			{
+				GImage image = new GImage(null);
+				
+				for(FeatureSpaceSampling2D matrix:matrices)
+				{
+					if(matrix instanceof FeatureSpaceClusterSampling2D)
+					{
+						Color rgbColor  = Color.BLACK;
+						Color rgbaColor = new Color(rgbColor.getRed(), rgbColor.getGreen(), rgbColor.getBlue(), 220);
+						
+						image.setLowerLeftCorner(matrix.getLowerLeftCorner());
+						image.setUpperRightCorner(matrix.getUpperRightCorner());
+						
+						if(((FeatureSpaceClusterSampling2D) matrix).getClusterID()>=0)
+						{
+							rgbColor  = ColorList.clusterColors[((FeatureSpaceClusterSampling2D) matrix).getClusterID()%ColorList.clusterColors.length];
+							rgbaColor = new Color(rgbColor.getRed(), rgbColor.getGreen(), rgbColor.getBlue(), 200);
+						}
+						image.fillAboveHeight(matrix, this.membershipLevels[0], rgbaColor);
+						for(int k=0; k<this.membershipLevels.length; k++)
+						{
+							image.addHeightLines(matrix, this.membershipLevels[k], this.membershipLevelLineWidth, rgbColor);
+						}
+					}
+				}
+				sv.screen.addDrawableObject(image);
+			}
+			
+			if(this.drawOverlays) for(FeatureSpaceSampling2D matrix:matrices)
+			{
+				GImage image = new GImage(null);
+				image.setImageData(matrix, this.overlayColors[0].getRGB(), this.overlayColors[1].getRGB());
+				image.setLowerLeftCorner(matrix.getLowerLeftCorner());
+				image.setUpperRightCorner(matrix.getUpperRightCorner());
+				sv.screen.addDrawableObject(image);
+			}
+		}
 		
 		if(dataSet != null)
 		{
@@ -244,7 +288,6 @@ public abstract class TestVisualizer implements Serializable
 				{
 					s.setStrokeThickness(0, this.lineThickness);
 				}
-				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(4.0d);
 				gClusteredDataSet.setDataSubsetList(dataObjectSubsectionIndexes);
 				gClusteredDataSet.setDrawMembershipLevels(this.drawCrispMembershipLevels);
 				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
@@ -279,38 +322,6 @@ public abstract class TestVisualizer implements Serializable
 			sv.screen.setScreenToDisplayAllIndexed(dataSet);
 		}
 		
-		if(matrices != null)
-		{
-			if(this.drawMembershipHeightLines)
-			{
-				GImage image = new GImage(null);
-				
-				for(FeatureSpaceSampling2D matrix:matrices)
-				{
-					if(matrix instanceof FeatureSpaceClusterSampling2D)
-					{
-						Color rgbColor  = Color.BLACK;
-						Color rgbaColor = Color.BLACK;
-						if(((FeatureSpaceClusterSampling2D) matrix).getClusterID()>=0)
-						{
-							rgbColor  = ColorList.clusterColors[((FeatureSpaceClusterSampling2D) matrix).getClusterID()%ColorList.clusterColors.length];
-							rgbaColor = ColorList.clusterColors[((FeatureSpaceClusterSampling2D) matrix).getClusterID()%ColorList.clusterColors.length];
-							rgbaColor = new Color(rgbaColor.getRed(), rgbaColor.getGreen(), rgbaColor.getBlue(), 50);
-						}
-						image.fillAboveHeight(matrix, this.membershipLevels[0], rgbaColor);
-						for(int k=0; k<this.membershipLevels.length; k++) image.addHeightLines(matrix, this.membershipLevels[k], rgbColor);
-					}
-				}
-				sv.screen.addDrawableObject(image);
-			}
-			
-			if(this.drawOverlays) for(FeatureSpaceSampling2D matrix:matrices)
-			{
-				GImage image = new GImage(null);
-				image.setImageData(matrix, this.overlayColors[0].getRGB(), this.overlayColors[1].getRGB());
-				sv.screen.addDrawableObject(image);
-			}
-		}
 		
 		sv.screen.setBackground(Color.WHITE);
 		sv.screen.setFileName(filename);

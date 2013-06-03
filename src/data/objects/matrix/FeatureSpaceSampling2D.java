@@ -40,9 +40,9 @@ package data.objects.matrix;
  */
 public class FeatureSpaceSampling2D extends DoubleMatrix
 {
-	private double[] lowerLeftCorner;
+	protected double[] lowerLeftCorner;
 	
-	private double[] upperRightCorner;
+	protected double[] upperRightCorner;
 	
 	
 	public FeatureSpaceSampling2D(int sizeX, int sizeY)

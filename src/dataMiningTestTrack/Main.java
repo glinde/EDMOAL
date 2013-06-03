@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack;
 
 import data.structures.balltree.BallTree;
+import dataMiningTestTrack.tests.ClusterAlgorithm2DTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmTestCentre;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualSpeedTest;
 import dataMiningTestTrack.tests.ClusterAlgorithmVisualTest;
@@ -72,6 +73,7 @@ public class Main
 //		Main.dataStructureVisualTest();
 //		Main.dataStructureSpeedTest();
 //		Main.clusterAlgorithmVisualTest();
+		Main.clusterAlgorithm2DTest();
 //		Main.clusterAlgorithmVisualSpeedTest();
 //		Main.gradientAlgorithmVisualTest();
 //		Main.symmetricalGgradientAlgorithmVisualTest();
@@ -147,6 +149,44 @@ public class Main
 //		clusterTest.testDBScan(50, 0.05d);
 	}
 
+
+	/**
+	 * Performs tests of the clustering algorithms, using synthetic data sets.
+	 * The result is visualised so that the result of the algorithm is easily
+	 * interpretable. The point of these tests is, to give the user some
+	 * feeling of how the algorithms behave and to decide whether or not they
+	 * might be useful for him.
+	 */
+	public static void clusterAlgorithm2DTest()
+	{
+		int number = 5000, clusterCount = 5;
+		
+		ClusterAlgorithm2DTest clusterTest = new ClusterAlgorithm2DTest(number, clusterCount, 2000);
+		clusterTest.xRes = 1000;
+		clusterTest.yRes = 1000;
+		clusterTest.drawCrispMembershipLevels = false;
+		clusterTest.drawMembershipHeightLines = true;
+		clusterTest.drawOverlays = false;
+		clusterTest.membershipLevels = new double[]{1.0d, 0.9d, 0.8d, 0.7d, 0.6d, 0.5d};
+		clusterTest.membershipLevelLineWidth = 3;
+		
+//		clusterTest.showDataSet();
+//		clusterTest.showClusteredDataSet();
+//		clusterTest.testHardCMeans();
+		clusterTest.testFuzzyCMeans(2.0d);
+		clusterTest.testFuzzyCMeansNoise(2.0d, 0.2d);
+		clusterTest.testPolynomialFuzzyCMeans(0.5d);
+		clusterTest.testPolynomialFuzzyCMeansNoise(0.5d, 0.2d);
+		clusterTest.testRewardingCrispFCM(0.9d);		
+		clusterTest.testRewardingCrispFCMNoise(0.9d, 0.2d);
+		clusterTest.testVoronoiPartitionFCM();		
+		clusterTest.testVoronoiPartitionFCMNoise(0.2d); 
+//		clusterTest.testDistAdaptedFCM(2.0d, 0.9d); 
+//		clusterTest.testDistAdaptedFCMNoise(2.0d, 0.9d, 0.2d);
+//		clusterTest.testBallTreeFuzzyCMeans(2.0d, 0.2d);
+		clusterTest.testExpectationMaximization();
+//		clusterTest.testDBScan(50, 0.05d);
+	}
 	
 	/**
 	 * Performs tests of the clustering algorithms, using synthetic data sets.
@@ -180,6 +220,7 @@ public class Main
 //		clusterTest.testExpectationMaximization();
 //		clusterTest.testDBScan();
 	}
+	
 
 	/**
 	 * Performs tests of the clustering algorithms, using synthetic data sets.

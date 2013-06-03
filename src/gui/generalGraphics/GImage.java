@@ -187,9 +187,9 @@ public class GImage extends DrawableObject implements Serializable
 		this.img = bfImage;
 	}
 	
-	public void addHeightLines(DoubleMatrix matrix, double mapHeight, Color col)
+	public void addHeightLines(DoubleMatrix matrix, double mapHeight, int lineWidth, Color col)
 	{
-		if(this.img == null || this.img.getWidth() < matrix.sizeX() || this.img.getHeight() <= matrix.sizeY())
+		if(this.img == null || this.img.getWidth() < matrix.sizeX() || this.img.getHeight() < matrix.sizeY())
 		{
 			this.img = new BufferedImage(matrix.sizeX(), matrix.sizeY(), BufferedImage.TYPE_INT_RGB);
 			for(int x=0; x<matrix.sizeX(); x++) for(int y=0; y<matrix.sizeY(); y++) this.img.setRGB(x, y, 0xFFFFFF);
@@ -199,12 +199,20 @@ public class GImage extends DrawableObject implements Serializable
 		{
 			for(int y=1; y<matrix.sizeY()-1; y++)
 			{
-				if(matrix.get(x, y) > mapHeight)
+				if(matrix.get(x, y) >= mapHeight)
 				{
 					if(	matrix.get(x-1,	y+1)	< mapHeight ||	matrix.get(x,	y+1)	< mapHeight ||	matrix.get(x+1, y+1)	< mapHeight || 
 						matrix.get(x-1,	y)		< mapHeight ||											matrix.get(x+1, y)		< mapHeight ||
 						matrix.get(x-1,	y-1)	< mapHeight ||	matrix.get(x,	y-1)	< mapHeight ||	matrix.get(x+1, y-1)	< mapHeight)
-							this.img.setRGB(x, y, col.getRGB());
+					{
+						for(int r=Math.max(x-lineWidth+1, 0); r<x+lineWidth-1 && r<matrix.sizeX(); r++)
+						{
+							for(int s=Math.max(y-lineWidth+1, 0); s<y+lineWidth-1 && s<matrix.sizeY(); s++)
+							{
+								if(matrix.get(r, s) >= mapHeight) this.img.setRGB(r, s, col.getRGB());	
+							}
+						}
+					}
 				}
 			}
 		}
@@ -212,7 +220,7 @@ public class GImage extends DrawableObject implements Serializable
 
 	public void fillAboveHeight(DoubleMatrix matrix, double mapHeight, Color col)
 	{
-		if(this.img == null || this.img.getWidth() < matrix.sizeX() || this.img.getHeight() <= matrix.sizeY())
+		if(this.img == null || this.img.getWidth() < matrix.sizeX() || this.img.getHeight() < matrix.sizeY())
 		{
 			this.img = new BufferedImage(matrix.sizeX(), matrix.sizeY(), BufferedImage.TYPE_INT_RGB);
 			for(int x=0; x<matrix.sizeX(); x++) for(int y=0; y<matrix.sizeY(); y++) this.img.setRGB(x, y, 0xFFFFFF);
@@ -229,7 +237,7 @@ public class GImage extends DrawableObject implements Serializable
 		{
 			for(int y=1; y<matrix.sizeY()-1; y++)
 			{
-				if(matrix.get(x, y) > mapHeight)
+				if(matrix.get(x, y) >= mapHeight)
 				{
 					this.img.setRGB(x, y, rgb);
 				}
