@@ -40,6 +40,7 @@ package gui.generalGraphics;
 import gui.DrawableObject;
 import gui.Translation;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -58,7 +59,7 @@ public class GImage extends DrawableObject implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -3049018252109079727L;
 
-	protected Image img;
+	protected BufferedImage img;
 	
 	protected double[] lowerLeftCorner;
 	protected double[] upperRightCorner;
@@ -86,7 +87,7 @@ public class GImage extends DrawableObject implements Serializable
 	 * @param upperLeftCorner
 	 * @param lowerRightCorner
 	 */
-	public GImage(Image img, double[] upperLeftCorner, double[] lowerRightCorner)
+	public GImage(BufferedImage img, double[] upperLeftCorner, double[] lowerRightCorner)
 	{
 		this(img, upperLeftCorner, lowerRightCorner, null);
 	}
@@ -96,7 +97,7 @@ public class GImage extends DrawableObject implements Serializable
 	 * @param lowerLeftCorner
 	 * @param upperRightCorner
 	 */
-	public GImage(Image img, double[] lowerLeftCorner, double[] upperRightCorner, DrawableObject parent)
+	public GImage(BufferedImage img, double[] lowerLeftCorner, double[] upperRightCorner, DrawableObject parent)
 	{
 		super(parent);
 		
@@ -129,7 +130,7 @@ public class GImage extends DrawableObject implements Serializable
 	/**
 	 * @return the img
 	 */
-	public Image getImg()
+	public BufferedImage getImg()
 	{
 		return this.img;
 	}
@@ -137,7 +138,7 @@ public class GImage extends DrawableObject implements Serializable
 	/**
 	 * @param img the img to set
 	 */
-	public void setImg(Image img)
+	public void setImg(BufferedImage img)
 	{
 		this.img = img;
 	}
@@ -185,7 +186,57 @@ public class GImage extends DrawableObject implements Serializable
 		
 		this.img = bfImage;
 	}
+	
+	public void addHeightLines(DoubleMatrix matrix, double mapHeight, Color col)
+	{
+		if(this.img == null || this.img.getWidth() < matrix.sizeX() || this.img.getHeight() <= matrix.sizeY())
+		{
+			this.img = new BufferedImage(matrix.sizeX(), matrix.sizeY(), BufferedImage.TYPE_INT_RGB);
+			for(int x=0; x<matrix.sizeX(); x++) for(int y=0; y<matrix.sizeY(); y++) this.img.setRGB(x, y, 0xFFFFFF);
+		}
+		
+		for(int x=1; x<matrix.sizeX()-1; x++)
+		{
+			for(int y=1; y<matrix.sizeY()-1; y++)
+			{
+				if(matrix.get(x, y) > mapHeight)
+				{
+					if(	matrix.get(x-1,	y+1)	< mapHeight ||	matrix.get(x,	y+1)	< mapHeight ||	matrix.get(x+1, y+1)	< mapHeight || 
+						matrix.get(x-1,	y)		< mapHeight ||											matrix.get(x+1, y)		< mapHeight ||
+						matrix.get(x-1,	y-1)	< mapHeight ||	matrix.get(x,	y-1)	< mapHeight ||	matrix.get(x+1, y-1)	< mapHeight)
+							this.img.setRGB(x, y, col.getRGB());
+				}
+			}
+		}
+	}
 
+	public void fillAboveHeight(DoubleMatrix matrix, double mapHeight, Color col)
+	{
+		if(this.img == null || this.img.getWidth() < matrix.sizeX() || this.img.getHeight() <= matrix.sizeY())
+		{
+			this.img = new BufferedImage(matrix.sizeX(), matrix.sizeY(), BufferedImage.TYPE_INT_RGB);
+			for(int x=0; x<matrix.sizeX(); x++) for(int y=0; y<matrix.sizeY(); y++) this.img.setRGB(x, y, 0xFFFFFF);
+		}
+		
+		int rgb = col.getRGB();
+		double value = col.getAlpha()/255.0d;
+		int red   = (int)(value*255 + (1.0d - value)*((rgb & 0x00FF0000)>>>16))<<16 & 0xFF0000;
+		int green = (int)(value*255	+ (1.0d - value)*((rgb & 0x0000FF00)>>>8))<<8 & 0x00FF00;
+		int blue  = (int)(value*255	+ (1.0d - value)*((rgb & 0x000000FF))) & 0x0000FF;
+		rgb = red + green + blue;
+		
+		for(int x=1; x<matrix.sizeX()-1; x++)
+		{
+			for(int y=1; y<matrix.sizeY()-1; y++)
+			{
+				if(matrix.get(x, y) > mapHeight)
+				{
+					this.img.setRGB(x, y, rgb);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * @return the lowerLeftCorner
 	 */

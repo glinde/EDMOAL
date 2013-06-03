@@ -60,6 +60,7 @@ import java.util.Collection;
 
 import javax.swing.JFrame;
 
+import data.objects.matrix.FeatureSpaceClusterSampling2D;
 import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataObject;
 import datamining.DataMiningAlgorithm;
@@ -121,6 +122,8 @@ public abstract class TestVisualizer implements Serializable
 	 * A list of predefined colours. 
 	 */
 	public Color[] seriesColorList;
+	
+	public Color[] overlayColors;
 
 	/**
 	 * States if the figure is saved in the SVG format, if the figure is printed to a file.
@@ -164,6 +167,12 @@ public abstract class TestVisualizer implements Serializable
 	
 	public boolean drawCrispMembershipLevels;
 	
+	public boolean drawOverlays;
+	
+	public boolean drawMembershipHeightLines;
+	
+	public double[] membershipLevels;
+	
 		
 	/**
 	 * The standard constructor.
@@ -176,6 +185,9 @@ public abstract class TestVisualizer implements Serializable
 		this.printPNG = false;
 		
 		this.drawCrispMembershipLevels = false;
+		this.drawOverlays = true;
+		this.drawMembershipHeightLines = false;
+		this.membershipLevels = new double[0];
 		
 		this.dataObjectSize = 5.0f;
 		this.lineThickness = 1.0f;
@@ -187,6 +199,8 @@ public abstract class TestVisualizer implements Serializable
 				ColorList.DARK_RED,			ColorList.DARK_GREEN,		ColorList.DARK_BLUE,
 				ColorList.DARK_ORANGE,		ColorList.DARK_MAGENTA,		ColorList.DARK_CYAN
 			};
+		
+		this.overlayColors = new Color[]{Color.GREEN, Color.RED};
 		
 		this.xIndex = 0;
 		this.yIndex = 1;
@@ -206,7 +220,7 @@ public abstract class TestVisualizer implements Serializable
 	 * @param title The title of the window. May be null.
 	 * @param filename The filename for storing the image to the hard disk. May be null. 
 	 */
-	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resProv, FeatureSpaceSampling2D matrix, int[] dataObjectSubsectionIndexes, String title, String filename)
+	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resProv, Collection<? extends FeatureSpaceSampling2D> matrices, int[] dataObjectSubsectionIndexes, String title, String filename)
 	{
 		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
 		
@@ -265,10 +279,37 @@ public abstract class TestVisualizer implements Serializable
 			sv.screen.setScreenToDisplayAllIndexed(dataSet);
 		}
 		
-		if(matrix != null)
+		if(matrices != null)
 		{
-			GImage image = new GImage(null, matrix);
-			sv.screen.addDrawableObject(image);
+			if(this.drawMembershipHeightLines)
+			{
+				GImage image = new GImage(null);
+				
+				for(FeatureSpaceSampling2D matrix:matrices)
+				{
+					if(matrix instanceof FeatureSpaceClusterSampling2D)
+					{
+						Color rgbColor  = Color.BLACK;
+						Color rgbaColor = Color.BLACK;
+						if(((FeatureSpaceClusterSampling2D) matrix).getClusterID()>=0)
+						{
+							rgbColor  = ColorList.clusterColors[((FeatureSpaceClusterSampling2D) matrix).getClusterID()%ColorList.clusterColors.length];
+							rgbaColor = ColorList.clusterColors[((FeatureSpaceClusterSampling2D) matrix).getClusterID()%ColorList.clusterColors.length];
+							rgbaColor = new Color(rgbaColor.getRed(), rgbaColor.getGreen(), rgbaColor.getBlue(), 50);
+						}
+						image.fillAboveHeight(matrix, this.membershipLevels[0], rgbaColor);
+						for(int k=0; k<this.membershipLevels.length; k++) image.addHeightLines(matrix, this.membershipLevels[k], rgbColor);
+					}
+				}
+				sv.screen.addDrawableObject(image);
+			}
+			
+			if(this.drawOverlays) for(FeatureSpaceSampling2D matrix:matrices)
+			{
+				GImage image = new GImage(null);
+				image.setImageData(matrix, this.overlayColors[0].getRGB(), this.overlayColors[1].getRGB());
+				sv.screen.addDrawableObject(image);
+			}
 		}
 		
 		sv.screen.setBackground(Color.WHITE);

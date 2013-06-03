@@ -505,8 +505,9 @@ public class GradientAlgorithmVisualTest extends TestVisualizer
 		
 		featureSampling.setLowerLeftCorner(llC);
 		featureSampling.setUpperRightCorner(urC);
-		
-		this.showDataSet(this.dataSet, null, null, featureSampling, null, algo.algorithmName(), "RelVarGradientTest");
+		ArrayList<FeatureSpaceSampling2D> list = new ArrayList<FeatureSpaceSampling2D>();
+		list.add(featureSampling);
+		this.showDataSet(this.dataSet, null, null, list, null, algo.algorithmName(), "RelVarGradientTest");
 	}
 //
 //	

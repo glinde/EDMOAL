@@ -141,7 +141,9 @@ public class DataGenerationAlgorithmTest extends TestVisualizer
 		featureSampling.setLowerLeftCorner(llC);
 		featureSampling.setUpperRightCorner(urC);
 		
-		this.showDataSet(dataSet, null, null, featureSampling, null, "Data Set Test", "DataSetTest");
+		ArrayList<FeatureSpaceSampling2D> list = new ArrayList<FeatureSpaceSampling2D>();
+		list.add(featureSampling);
+		this.showDataSet(dataSet, null, null, list, null, "Data Set Test", "DataSetTest");
 	}
 	
 
