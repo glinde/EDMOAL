@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering.protoype.altopt;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import data.algebra.Metric;
@@ -562,6 +563,17 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
 	{
+		return this.classify(obj.x);
+	}
+		
+	
+	
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(T x)
+	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 
 		int i, k;
@@ -581,7 +593,7 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			fuzzDistances[i] = doubleTMP;
 			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 		}
@@ -636,7 +648,97 @@ public class RewardingCrispFCMClusteringAlgorithm<T> extends FuzzyCMeansClusteri
 		
 		return membershipValues;
 	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.FuzzyCMeansClusteringAlgorithm#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public ArrayList<double[]> classifyAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 		
+		ArrayList<double[]> assignmentList = new ArrayList<double[]>(this.getDataCount());
+				
+		int i, k;
+				
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
+		int zeroDistanceCount;
+		double minDistValue = 0.0d;
+			
+		for(T x:list)
+		{				
+			for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			minDistValue = Double.MAX_VALUE;
+
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+				fuzzDistances[i] = doubleTMP;
+				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+			}
+			minDistValue *= this.distanceMultiplierConstant;
+			
+			for(i = 0; i < this.getClusterCount(); i++)
+			{
+				doubleTMP = fuzzDistances[i] - minDistValue;
+				if(doubleTMP <= 0.0d)
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				else
+				{
+					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
+					fuzzDistances[i] = doubleTMP;
+					distanceSum += doubleTMP;
+				}
+			}
+	
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
+			{
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					membershipValues[i] = 0.0d;
+				}
+				doubleTMP = 1.0d / ((double)zeroDistanceCount);
+				for(k=0; k<zeroDistanceCount; k++)
+				{
+					membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
+				}
+			}
+			else
+			{
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					doubleTMP = fuzzDistances[i] / distanceSum;
+					membershipValues[i] = doubleTMP;
+				}
+			}
+			
+			assignmentList.add(membershipValues.clone());
+		}
+		
+		return assignmentList;
+	}
+
+
 	/**
 	 * Returns the distance multiplier constant.
 	 * 

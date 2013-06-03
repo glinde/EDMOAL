@@ -42,7 +42,7 @@ import java.util.Collection;
  */
 public interface FuzzyNoiseClassificationProvider<T> extends FuzzyClassificationProvider<T>
 {
-	public double classifyNoise(T obj);
+	public double classifyNoise(T x);
 	
 	public double[] classifyNoiseAll(Collection<T> list);
 }

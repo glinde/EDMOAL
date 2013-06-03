@@ -43,7 +43,7 @@ import java.util.Collection;
  */
 public interface FuzzyClassificationProvider<T> extends ClassificationProvider<T>
 {
-	public double[] classify(T obj);
+	public double[] classify(T x);
 	
 	public ArrayList<double[]> classifyAll(Collection<T> list);
 }

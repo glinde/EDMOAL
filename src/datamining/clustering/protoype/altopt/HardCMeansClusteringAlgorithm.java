@@ -49,6 +49,7 @@ import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import datamining.clustering.protoype.MembershipFunctionProvider;
+import datamining.resultProviders.CrispClassificationProvider;
 import datamining.resultProviders.CrispClusteringProvider;
 
 /**
@@ -73,7 +74,7 @@ import datamining.resultProviders.CrispClusteringProvider;
  * 
  * @author Roland Winkler
  */
-public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements CrispClusteringProvider<T>, MembershipFunctionProvider
+public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements CrispClusteringProvider<T>, CrispClassificationProvider<T>, MembershipFunctionProvider
 {		
 	/**  */
 	private static final long	serialVersionUID	= -2518725991257149820L;
@@ -304,6 +305,46 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 		
 		return objectiveFunctionValue;
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.CrispClassificationProvider#classify(java.lang.Object)
+	 */
+	@Override
+	public int classify(T x)
+	{
+		double distMin, dist;
+		int minID = 0;
+
+		distMin = Double.MAX_VALUE;
+		for(int i=0; i<this.getClusterCount(); i++)
+		{
+			dist = this.metric.distanceSq(this.prototypes.get(i).getPosition(), x); 
+			if(dist < distMin)
+			{
+				distMin = dist;
+				minID = i;
+			}
+		}
+		
+		return minID;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.CrispClassificationProvider#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public int[] classifyAll(Collection<T> list)
+	{
+		int[] classifiedList = new int[list.size()];
+		int i = 0;
+		
+		for(T x:list)
+		{
+			classifiedList[i] = this.classify(x);
+		}
+		
+		return classifiedList;
 	}
 
 	/* (non-Javadoc)

@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering.protoype.altopt;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -49,6 +50,7 @@ import data.set.IndexedDataSet;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyNoiseClassificationProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 import etc.MyMath;
 
@@ -91,7 +93,7 @@ import etc.MyMath;
  *
  * @author Roland Winkler
  */
-public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiPartitionFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>
+public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiPartitionFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= 2723685927200471389L;
@@ -706,106 +708,7 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
 	{
-		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
-		
-		int i; 
-
-		double distanceExponent = 1.0d / (1.0d - this.fuzzifier);	// to reduce the usage of divisions
-		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
-		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
-		 
-		double[] fuzzDistances				= new double[this.getClusterCount()];
-		double[] membershipValues			= new double[this.getClusterCount()];
-		SortablePrototype sp;
-		
-		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
-		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
-		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
-		ArrayList<SortablePrototype> includedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
-		
-		int			zeroDistanceCount;
-		
-		zeroDistanceCount = 0;
-		distanceSum = 0.0d;
-		
-		// calculate distances and relative vectors from data object j to all prototypes
-		// fill the priority queue
-		for(i=0; i<this.getClusterCount(); i++)
-		{
-			this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
-			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), obj.x);
-
-			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
-		}
-		
-		// if one or more prototypes sit on top of a data object, no sorting etc. is necessary			
-		if(zeroDistanceCount > 0)
-		{
-			doubleTMP = 1.0d/((double)zeroDistanceCount);
-			for(i=0; i<unsortedPrototypes.size(); i++)
-			{
-				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
-				{
-					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = doubleTMP;
-				}
-				else
-				{
-					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = 0.0d;
-				}
-			}
-		}
-		else // update membership values regularly
-		{
-			sortedPrototypes.clear();
-			sortedPrototypes.addAll(unsortedPrototypes);
-			
-			includedPrototypes.clear();
-			
-			// test for prototypes in ascending order w.r.t. their distance to the data object
-			while(!sortedPrototypes.isEmpty())
-			{
-				sp = sortedPrototypes.poll();
-				sp.included = true;
-					
-				// test if prototype should be excluded due to closer, already included prototypes
-				for(SortablePrototype ip:includedPrototypes)
-				{
-					doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
-												
-					if(doubleTMP > ip.squareDistance)
-					{
-						sp.included = false;
-						break;
-					}
-				}
-				
-				// if the prototype should be included, calculate distances accordingly
-				if(sp.included)
-				{
-					includedPrototypes.add(sp);
-					doubleTMP = MyMath.pow(sp.squareDistance, distanceExponent);
-					fuzzDistances[sp.prototype.getClusterIndex()] = doubleTMP;
-					distanceSum += doubleTMP;
-				}
-			}
-			distanceSum += MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent);
-								
-			for(i=0; i<this.getClusterCount(); i++)
-			{
-				if(unsortedPrototypes.get(i).included)
-				{
-					doubleTMP = fuzzDistances[unsortedPrototypes.get(i).prototype.getClusterIndex()] / distanceSum;
-					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = doubleTMP;
-				}
-				else
-				{
-					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = 0.0d;
-				}
-			}
-		}
-
-		return membershipValues;
+		return this.classify(obj.x);
 	}
 
 	/* (non-Javadoc)
@@ -912,6 +815,15 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 	@Override
 	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
 	{
+		return this.classifyNoise(obj.x);
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoise(java.lang.Object)
+	 */
+	@Override
+	public double classifyNoise(T x)
+	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
 		
 		int i; 
@@ -938,8 +850,8 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		for(i=0; i<this.getClusterCount(); i++)
 		{
 			this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
-			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, obj.x);
-			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), obj.x);
+			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, x);
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), x);
 
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
@@ -989,6 +901,322 @@ public class VoronoiPartitionFCMNoiseClusteringAlgorithm<T> extends VoronoiParti
 		return fuzzNoiseDist/distanceSum;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoiseAll(java.util.Collection)
+	 */
+	@Override
+	public double[] classifyNoiseAll(Collection<T> list)
+	{
+
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
+		
+		int i, j; 
+
+		double distanceExponent = 1.0d / (1.0d - this.fuzzifier);	// to reduce the usage of divisions
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+
+		double fuzzNoiseDist				= 0.0d;
+		double[] noiseMemberships			= new double[list.size()];
+		SortablePrototype sp;
+		
+		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
+		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
+		ArrayList<SortablePrototype> includedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		
+		int			zeroDistanceCount;
+		
+		j=0;
+		for(T x:list)
+		{
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			
+			// calculate distances and relative vectors from data object j to all prototypes
+			// fill the priority queue
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, this.data.get(j).x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), x);
+	
+				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
+			}
+			
+			// if one or more prototypes sit on top of a data object, no sorting etc. is necessary			
+			if(zeroDistanceCount > 0)
+			{
+				noiseMemberships[j] = 0.0d;
+			}
+			else // update membership values regularly
+			{
+				sortedPrototypes.clear();
+				sortedPrototypes.addAll(unsortedPrototypes);
+				
+				includedPrototypes.clear();
+				
+				// test for prototypes in ascending order w.r.t. their distance to the data object
+				while(!sortedPrototypes.isEmpty())
+				{
+					sp = sortedPrototypes.poll();
+					sp.included = true;
+						
+					// test if prototype should be excluded due to closer, already included prototypes
+					for(SortablePrototype ip:includedPrototypes)
+					{
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+													
+						if(doubleTMP > ip.squareDistance)
+						{
+							sp.included = false;
+							break;
+						}
+					}
+					
+					// if the prototype should be included, calculate distances accordingly
+					if(sp.included)
+					{
+						includedPrototypes.add(sp);
+						doubleTMP = MyMath.pow(sp.squareDistance, distanceExponent);
+						distanceSum += doubleTMP;
+					}
+				}
+				fuzzNoiseDist = MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent); 
+				distanceSum += fuzzNoiseDist;
+				
+				noiseMemberships[j] = fuzzNoiseDist/distanceSum; 
+			}
+			
+			j++;
+		}
+		
+		return noiseMemberships;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(T x)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
+		
+		int i; 
+
+		double distanceExponent = 1.0d / (1.0d - this.fuzzifier);	// to reduce the usage of divisions
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		 
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		SortablePrototype sp;
+		
+		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
+		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
+		ArrayList<SortablePrototype> includedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		
+		int			zeroDistanceCount;
+		
+		zeroDistanceCount = 0;
+		distanceSum = 0.0d;
+		
+		// calculate distances and relative vectors from data object j to all prototypes
+		// fill the priority queue
+		for(i=0; i<this.getClusterCount(); i++)
+		{
+			this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+			this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, x);
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), x);
+
+			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
+		}
+		
+		// if one or more prototypes sit on top of a data object, no sorting etc. is necessary			
+		if(zeroDistanceCount > 0)
+		{
+			doubleTMP = 1.0d/((double)zeroDistanceCount);
+			for(i=0; i<unsortedPrototypes.size(); i++)
+			{
+				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
+				{
+					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = doubleTMP;
+				}
+				else
+				{
+					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = 0.0d;
+				}
+			}
+		}
+		else // update membership values regularly
+		{
+			sortedPrototypes.clear();
+			sortedPrototypes.addAll(unsortedPrototypes);
+			
+			includedPrototypes.clear();
+			
+			// test for prototypes in ascending order w.r.t. their distance to the data object
+			while(!sortedPrototypes.isEmpty())
+			{
+				sp = sortedPrototypes.poll();
+				sp.included = true;
+					
+				// test if prototype should be excluded due to closer, already included prototypes
+				for(SortablePrototype ip:includedPrototypes)
+				{
+					doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+												
+					if(doubleTMP > ip.squareDistance)
+					{
+						sp.included = false;
+						break;
+					}
+				}
+				
+				// if the prototype should be included, calculate distances accordingly
+				if(sp.included)
+				{
+					includedPrototypes.add(sp);
+					doubleTMP = MyMath.pow(sp.squareDistance, distanceExponent);
+					fuzzDistances[sp.prototype.getClusterIndex()] = doubleTMP;
+					distanceSum += doubleTMP;
+				}
+			}
+			distanceSum += MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent);
+								
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				if(unsortedPrototypes.get(i).included)
+				{
+					doubleTMP = fuzzDistances[unsortedPrototypes.get(i).prototype.getClusterIndex()] / distanceSum;
+					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = doubleTMP;
+				}
+				else
+				{
+					membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = 0.0d;
+				}
+			}
+		}
+
+		return membershipValues;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.VoronoiPartitionFCMClusteringAlgorithm#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public ArrayList<double[]> classifyAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
+
+		ArrayList<double[]> assignmentList = new ArrayList<double[]>(list.size());
+		
+		int i; 
+
+		double distanceExponent = 1.0d / (1.0d - this.fuzzifier);	// to reduce the usage of divisions
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		 
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		SortablePrototype sp;
+		
+		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
+		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
+		ArrayList<SortablePrototype> includedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		
+		int			zeroDistanceCount;
+		
+		// update membership values
+		for(T x:list)
+		{				
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			
+			// calculate distances and relative vectors from data object j to all prototypes
+			// fill the priority queue
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				this.vs.copy(unsortedPrototypes.get(i).relativeVecToDataObject, unsortedPrototypes.get(i).prototype.getPosition());
+				this.vs.sub(unsortedPrototypes.get(i).relativeVecToDataObject, x);
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(unsortedPrototypes.get(i).prototype.getPosition(), x);
+
+				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
+			}
+			
+			// if one or more prototypes sit on top of a data object, no sorting etc. is necessary			
+			if(zeroDistanceCount > 0)
+			{
+				doubleTMP = 1.0d/((double)zeroDistanceCount);
+				for(i=0; i<unsortedPrototypes.size(); i++)
+				{
+					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
+					{
+						membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = doubleTMP;
+					}
+					else
+					{
+						membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = 0.0d;
+					}
+				}
+			}
+			else // update membership values regularly
+			{
+				sortedPrototypes.clear();
+				sortedPrototypes.addAll(unsortedPrototypes);
+				
+				includedPrototypes.clear();
+				
+				// test for prototypes in ascending order w.r.t. their distance to the data object
+				while(!sortedPrototypes.isEmpty())
+				{
+					sp = sortedPrototypes.poll();
+					sp.included = true;
+						
+					// test if prototype should be excluded due to closer, already included prototypes
+					for(SortablePrototype ip:includedPrototypes)
+					{
+						doubleTMP = this.sp.scalarProduct(ip.relativeVecToDataObject, sp.relativeVecToDataObject); 
+													
+						if(doubleTMP > ip.squareDistance)
+						{
+							sp.included = false;
+							break;
+						}
+					}
+					
+					// if the prototype should be included, calculate distances accordingly
+					if(sp.included)
+					{
+						includedPrototypes.add(sp);
+						doubleTMP = MyMath.pow(sp.squareDistance, distanceExponent);
+						fuzzDistances[sp.prototype.getClusterIndex()] = doubleTMP;
+						distanceSum += doubleTMP;
+					}
+				}
+				distanceSum += MyMath.pow(this.noiseDistance*this.noiseDistance, distanceExponent);
+									
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					if(unsortedPrototypes.get(i).included)
+					{
+						doubleTMP = fuzzDistances[unsortedPrototypes.get(i).prototype.getClusterIndex()] / distanceSum;
+						membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = doubleTMP;
+					}
+					else
+					{
+						membershipValues[unsortedPrototypes.get(i).prototype.getClusterIndex()] = 0.0d;
+					}
+				}
+			}
+
+			assignmentList.add(membershipValues.clone());
+		}
+
+		return assignmentList;
+	}
 
 	/**
 	 * Returns the noise distance.

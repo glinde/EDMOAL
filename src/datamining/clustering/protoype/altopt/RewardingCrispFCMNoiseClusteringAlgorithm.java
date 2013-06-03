@@ -38,6 +38,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering.protoype.altopt;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import data.algebra.Metric;
@@ -47,6 +48,7 @@ import data.set.IndexedDataSet;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyNoiseClassificationProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
 import etc.MyMath;
 
@@ -88,7 +90,7 @@ import etc.MyMath;
  * 
  * @author Roland Winkler
  */
-public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrispFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>
+public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrispFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>
 {	
 	/**  */
 	private static final long	serialVersionUID	= 6531335434133789423L;
@@ -562,81 +564,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
 	{
-		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
-
-		int i, k;
-				
-		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
-		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
-		double[] fuzzDistances				= new double[this.getClusterCount()];
-		double[] membershipValues			= new double[this.getClusterCount()];
-		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
-		int zeroDistanceCount;
-		double minDistValue = 0.0d;
-		
-		for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
-		zeroDistanceCount = 0;
-		distanceSum = 0.0d;
-		minDistValue = Double.MAX_VALUE;
-
-		for(i=0; i<this.getClusterCount(); i++)
-		{
-			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
-			fuzzDistances[i] = doubleTMP;
-			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
-		}
-		if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
-		minDistValue *= this.distanceMultiplierConstant;
-		
-		for(i = 0; i < this.getClusterCount(); i++)
-		{
-			doubleTMP = fuzzDistances[i] - minDistValue;
-			if(doubleTMP <= 0.0d)
-			{
-				doubleTMP = 0.0d;
-				zeroDistanceIndexList[zeroDistanceCount] = i;
-				zeroDistanceCount++;
-			}
-			else
-			{
-				doubleTMP = 1.0/doubleTMP;
-
-				if(Double.isInfinite(doubleTMP))
-				{
-					doubleTMP = 0.0d;
-					zeroDistanceIndexList[zeroDistanceCount] = i;
-					zeroDistanceCount++;
-				}
-				
-				fuzzDistances[i] = doubleTMP;
-				distanceSum += doubleTMP;
-			}
-		}
-		distanceSum += 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
-
-		// special case handling: if one (or more) prototype sits on top of a data object
-		if(zeroDistanceCount>0)
-		{
-			for(i=0; i<this.getClusterCount(); i++)
-			{
-				membershipValues[i] = 0.0d;
-			}
-			doubleTMP = 1.0d / ((double)zeroDistanceCount);
-			for(k=0; k<zeroDistanceCount; k++)
-			{
-				membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
-			}
-		}
-		else
-		{
-			for(i=0; i<this.getClusterCount(); i++)
-			{
-				doubleTMP = fuzzDistances[i] / distanceSum;
-				membershipValues[i] = doubleTMP;
-			}
-		}
-		
-		return membershipValues;
+		return this.classify(obj.x);
 	}
 		
 
@@ -738,6 +666,193 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	@Override
 	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
 	{
+		return this.classifyNoise(obj.x);
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(T x)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+
+		int i, k;
+				
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
+		int zeroDistanceCount;
+		double minDistValue = 0.0d;
+		
+		for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
+		zeroDistanceCount = 0;
+		distanceSum = 0.0d;
+		minDistValue = Double.MAX_VALUE;
+
+		for(i=0; i<this.getClusterCount(); i++)
+		{
+			doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+			fuzzDistances[i] = doubleTMP;
+			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+		}
+		if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+		minDistValue *= this.distanceMultiplierConstant;
+		
+		for(i = 0; i < this.getClusterCount(); i++)
+		{
+			doubleTMP = fuzzDistances[i] - minDistValue;
+			if(doubleTMP <= 0.0d)
+			{
+				doubleTMP = 0.0d;
+				zeroDistanceIndexList[zeroDistanceCount] = i;
+				zeroDistanceCount++;
+			}
+			else
+			{
+				doubleTMP = 1.0/doubleTMP;
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
+				fuzzDistances[i] = doubleTMP;
+				distanceSum += doubleTMP;
+			}
+		}
+		distanceSum += 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+
+		// special case handling: if one (or more) prototype sits on top of a data object
+		if(zeroDistanceCount>0)
+		{
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				membershipValues[i] = 0.0d;
+			}
+			doubleTMP = 1.0d / ((double)zeroDistanceCount);
+			for(k=0; k<zeroDistanceCount; k++)
+			{
+				membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
+			}
+		}
+		else
+		{
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = fuzzDistances[i] / distanceSum;
+				membershipValues[i] = doubleTMP;
+			}
+		}
+		
+		return membershipValues;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public ArrayList<double[]> classifyAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+				
+		ArrayList<double[]> assignmentList = new ArrayList<double[]>(this.getDataCount());
+				
+		int i, j, k;
+				
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
+		int zeroDistanceCount;
+		double minDistValue = 0.0d;
+			
+						
+		for(T x:list)
+		{				
+			for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			minDistValue = Double.MAX_VALUE;
+
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+				fuzzDistances[i] = doubleTMP;
+				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+			}
+			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+			minDistValue *= this.distanceMultiplierConstant;
+			
+			for(i = 0; i < this.getClusterCount(); i++)
+			{
+				doubleTMP = fuzzDistances[i] - minDistValue;
+				if(doubleTMP <= 0.0d)
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				else
+				{
+					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
+					fuzzDistances[i] = doubleTMP;
+					distanceSum += doubleTMP;
+				}
+			}
+			distanceSum += 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+	
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
+			{
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					membershipValues[i] = 0.0d;
+				}
+				doubleTMP = 1.0d / ((double)zeroDistanceCount);
+				for(k=0; k<zeroDistanceCount; k++)
+				{
+					membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
+				}
+			}
+			else
+			{
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					doubleTMP = fuzzDistances[i] / distanceSum;
+					membershipValues[i] = doubleTMP;
+				}
+			}
+			
+			assignmentList.add(membershipValues.clone());
+		}
+		
+		return assignmentList;
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoise(java.lang.Object)
+	 */
+	@Override
+	public double classifyNoise(T x) 
+	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 
 		int i;
@@ -756,7 +871,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			fuzzDistances[i] = doubleTMP;
 			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 		}
@@ -797,6 +912,83 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		}
 		
 		return noiseMembership;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoiseAll(java.util.Collection)
+	 */
+	@Override
+	public double[] classifyNoiseAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+
+		int i;
+				
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		int zeroDistanceCount;
+		double minDistValue = 0.0d;
+		double noiseDistance = 0.0d;
+		double[] noiseMemberships = new double[list.size()];
+		
+		zeroDistanceCount = 0;
+		distanceSum = 0.0d;
+		minDistValue = Double.MAX_VALUE;
+
+		int j=0;
+		for(T x:list)
+		{
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			minDistValue = Double.MAX_VALUE;
+			
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+				fuzzDistances[i] = doubleTMP;
+				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+			}
+			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+			minDistValue *= this.distanceMultiplierConstant;
+			
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = fuzzDistances[i] - minDistValue;
+				if(doubleTMP <= 0.0d)
+				{
+					zeroDistanceCount++;
+				}
+				else
+				{
+					doubleTMP = 1.0d/doubleTMP;
+					
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceCount++;
+					}
+					
+					distanceSum += doubleTMP;
+				}
+			}
+			noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+			distanceSum += noiseDistance; 
+	
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
+			{
+				noiseMemberships[j] = 0.0d;
+			}
+			else
+			{
+				noiseMemberships[j] = noiseDistance/distanceSum;
+			}
+			
+			j++;
+		}
+		return noiseMemberships;
 	}
 
 

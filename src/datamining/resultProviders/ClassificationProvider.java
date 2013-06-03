@@ -39,4 +39,6 @@ package datamining.resultProviders;
  * @author Roland Winkler
  */
 public interface ClassificationProvider<T>
-{}
+{
+	public int getClusterCount();
+}

@@ -49,6 +49,7 @@ import data.set.IndexedDataSet;
 import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.SphericalNormalDistributionPrototype;
+import datamining.resultProviders.FuzzyClassificationProvider;
 import datamining.resultProviders.FuzzyClusteringProvider;
 
 /**
@@ -82,8 +83,9 @@ import datamining.resultProviders.FuzzyClusteringProvider;
  * 
  * @author Roland Winkler
  */
-public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractPrototypeClusteringAlgorithm<double[], SphericalNormalDistributionPrototype> implements Serializable, FuzzyClusteringProvider<double[]>
+public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractPrototypeClusteringAlgorithm<double[], SphericalNormalDistributionPrototype> implements Serializable, FuzzyClusteringProvider<double[]>, FuzzyClassificationProvider<double[]>
 {	
+
 	/**  */
 	private static final long	serialVersionUID	= -8858858125481849303L;
 	
@@ -462,29 +464,7 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 				objectiveFunctionValue += this.conditionalProbabilities.get(j)[i] * (doubleTMP - 0.5d*this.metric.distanceSq(this.prototypes.get(i).getPosition(), this.data.get(j).x)/this.prototypes.get(i).getVariance());
 			}
 		}
-		
-//		if(objectiveFunctionValue < 0.0d)
-//		{
-//			double[] marginalProbabilities = new double[this.getDataCount()];
-//			for(j=0; j<this.getDataCount(); j++)
-//			{
-//				for(i=0; i<this.getClusterCount(); i++)
-//				{
-//					marginalProbabilities[j] += this.conditionalProbabilities.get(j)[i];
-//				}
-//			}
-//
-//			double clusterProbSum=0.0d;
-//			for(i=0; i<this.getClusterCount(); i++)
-//			{
-//				clusterProbSum += this.clusterProbability[i];
-//			}
-//			
-//			System.out.println("Warning: negative OFV");
-//		}
-		
-		
-		
+				
 		return objectiveFunctionValue;
 	}
 
@@ -543,6 +523,50 @@ public class ExpectationMaximizationSGMMClusteringAlgorithm extends AbstractProt
 		}
 		
 		return sums;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClassificationProvider#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(double[] x)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");	
+		
+		int i;
+		double doubleTMP = 0.0d;
+		double[] condProbs = new double[this.getClusterCount()];
+			
+		doubleTMP = 0.0d;
+		for(i=0; i<this.getClusterCount(); i++)
+		{
+			condProbs[i] = this.clusterProbability[i];
+			condProbs[i] *= this.prototypes.get(i).density(x);
+			doubleTMP += condProbs[i];
+		}
+		doubleTMP = 1.0d/doubleTMP;
+		for(i=0; i<this.getClusterCount(); i++)
+		{
+			condProbs[i] *= doubleTMP;
+		}
+				
+		return condProbs;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClassificationProvider#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public ArrayList<double[]> classifyAll(Collection<double[]> list)
+	{
+		ArrayList<double[]> classificationList = new ArrayList<double[]>(list.size());
+		
+		for(double[] x:list)
+		{
+			classificationList.add(this.classify(x));
+		}
+		
+		return classificationList;
 	}
 
 	/**
