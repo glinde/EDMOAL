@@ -141,6 +141,30 @@ public class DataManipulator implements Serializable
 		return filteredList;
 	}
 	
+
+	public static void gaussFilter(double[][] elements, int radius)
+	{
+		double[] line = new double[elements.length];
+		
+		for(int i=0; i<elements.length; i++)
+		{
+			elements[i] = DataManipulator.gaussFilter(elements[i], radius);
+		}
+		
+		for(int j=0; j<elements[0].length; j++)
+		{
+			for(int i=0; i<elements.length; i++)
+			{
+				line[i] = elements[i][j];
+			}
+			line = DataManipulator.gaussFilter(line, radius);
+			for(int i=0; i<elements.length; i++)
+			{
+				elements[i][j] = line[i];
+			}
+		}
+	}
+	
 	/**
 	 * Computes for a list of double values the local variation.
 	 * For a point x[i], the derivation is computed by

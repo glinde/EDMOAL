@@ -173,18 +173,18 @@ public class Main
 //		clusterTest.showDataSet();
 //		clusterTest.showClusteredDataSet();
 //		clusterTest.testHardCMeans();
-		clusterTest.testFuzzyCMeans(2.0d);
-		clusterTest.testFuzzyCMeansNoise(2.0d, 0.2d);
-		clusterTest.testPolynomialFuzzyCMeans(0.5d);
+//		clusterTest.testFuzzyCMeans(2.0d);
+//		clusterTest.testFuzzyCMeansNoise(2.0d, 0.2d);
+//		clusterTest.testPolynomialFuzzyCMeans(0.5d);
 		clusterTest.testPolynomialFuzzyCMeansNoise(0.5d, 0.2d);
-		clusterTest.testRewardingCrispFCM(0.9d);		
-		clusterTest.testRewardingCrispFCMNoise(0.9d, 0.2d);
-		clusterTest.testVoronoiPartitionFCM();		
-		clusterTest.testVoronoiPartitionFCMNoise(0.2d); 
+//		clusterTest.testRewardingCrispFCM(0.9d);		
+//		clusterTest.testRewardingCrispFCMNoise(0.9d, 0.2d);
+//		clusterTest.testVoronoiPartitionFCM();		
+//		clusterTest.testVoronoiPartitionFCMNoise(0.2d); 
 //		clusterTest.testDistAdaptedFCM(2.0d, 0.9d); 
 //		clusterTest.testDistAdaptedFCMNoise(2.0d, 0.9d, 0.2d);
 //		clusterTest.testBallTreeFuzzyCMeans(2.0d, 0.2d);
-		clusterTest.testExpectationMaximization();
+//		clusterTest.testExpectationMaximization();
 //		clusterTest.testDBScan(50, 0.05d);
 	}
 	

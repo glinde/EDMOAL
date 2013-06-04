@@ -237,4 +237,14 @@ public class GCentroid extends DrawableObject implements Serializable
 	{
 		this.bodyStrokeIndex = bodyStrokeIndex;
 	}
+	
+	public void setTailShadow(boolean shadow)
+	{
+		this.tail.setDrawTailBackgroundGray(shadow);
+	}
+	
+	public boolean isTailShadow()
+	{
+		return this.tail.isDrawTailBackgroundGray();
+	}
 }

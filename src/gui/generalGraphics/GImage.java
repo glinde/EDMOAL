@@ -45,9 +45,11 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import data.objects.matrix.DoubleMatrix;
 import data.objects.matrix.FeatureSpaceSampling2D;
+import etc.DataManipulator;
 
 /**
  * TODO Class Description
@@ -204,12 +206,15 @@ public class GImage extends DrawableObject implements Serializable
 					if(	matrix.get(x-1,	y+1)	< mapHeight ||	matrix.get(x,	y+1)	< mapHeight ||	matrix.get(x+1, y+1)	< mapHeight || 
 						matrix.get(x-1,	y)		< mapHeight ||											matrix.get(x+1, y)		< mapHeight ||
 						matrix.get(x-1,	y-1)	< mapHeight ||	matrix.get(x,	y-1)	< mapHeight ||	matrix.get(x+1, y-1)	< mapHeight)
+//					if(											matrix.get(x,	y+1)	< mapHeight ||
+//						matrix.get(x-1,	y)		< mapHeight ||											matrix.get(x+1, y)		< mapHeight ||
+//																matrix.get(x,	y-1)	< mapHeight)
 					{
-						for(int r=Math.max(x-lineWidth+1, 0); r<x+lineWidth-1 && r<matrix.sizeX(); r++)
+						for(int r=Math.max(x-lineWidth+1, 0); r<x+lineWidth && r<matrix.sizeX(); r++)
 						{
-							for(int s=Math.max(y-lineWidth+1, 0); s<y+lineWidth-1 && s<matrix.sizeY(); s++)
+							for(int s=Math.max(y-lineWidth+1, 0); s<y+lineWidth && s<matrix.sizeY(); s++)
 							{
-								if(matrix.get(r, s) >= mapHeight) this.img.setRGB(r, s, col.getRGB());	
+								if((x-r)*(x-r)+(y-s)*(y-s) <= (lineWidth-1)*(lineWidth-1) && matrix.get(r, s) >= mapHeight) this.img.setRGB(r, s, col.getRGB());	
 							}
 						}
 					}
@@ -244,6 +249,70 @@ public class GImage extends DrawableObject implements Serializable
 			}
 		}
 	}
+	
+	private ArrayList<double[][]> extractColorChannelsRGB(BufferedImage image)
+	{
+		ArrayList<double[][]> channels = new ArrayList<double[][]>();
+		
+		double[][] red = new double[image.getWidth()][image.getHeight()];	
+		double[][] green = new double[image.getWidth()][image.getHeight()];	
+		double[][] blue = new double[image.getWidth()][image.getHeight()];
+		
+		for(int x=0; x<image.getWidth(); x++)
+		{
+			for(int y=0; y<image.getHeight(); y++)
+			{
+				red[x][y] = ((double)((image.getRGB(x, y)&0x00FF0000)>>16))/255.0d;
+				green[x][y] = ((double)((image.getRGB(x, y)&0x0000FF00)>>8))/255.0d;
+				blue[x][y] = ((double)(image.getRGB(x, y)&0x000000FF))/255.0d;
+			}
+		}
+		
+		channels.add(red);
+		channels.add(green);
+		channels.add(blue);
+				
+		return channels;
+	}
+
+	private BufferedImage combineColorChannelsRGB(double[][] red, double[][] green, double[][] blue)
+	{		
+		BufferedImage image = new BufferedImage(red.length, red[0].length, BufferedImage.TYPE_INT_RGB);
+		
+		int rgb = 0;
+		
+		for(int x=0; x<image.getWidth(); x++)
+		{
+			for(int y=0; y<image.getHeight(); y++)
+			{
+				rgb = 0;
+				rgb |= (((int)(255.0d*red[x][y]))&0x000000FF)<<16;
+				rgb |= (((int)(255.0d*green[x][y]))&0x000000FF)<<8;
+				rgb |= (((int)(255.0d*blue[x][y]))&0x000000FF);
+				
+				image.setRGB(x, y, rgb);
+			}
+		}
+		
+		return image;
+	}
+	
+	
+	public void gaussFilterImage(int radius)
+	{
+		ArrayList<double[][]> channels = this.extractColorChannelsRGB(this.img);
+
+		double[][] red = channels.get(0);	
+		double[][] green = channels.get(1);	
+		double[][] blue = channels.get(2);
+		
+		DataManipulator.gaussFilter(red, radius);
+		DataManipulator.gaussFilter(green, radius);
+		DataManipulator.gaussFilter(blue, radius);
+		
+		this.img = this.combineColorChannelsRGB(red, green, blue);
+	}
+	
 	
 	/**
 	 * @return the lowerLeftCorner

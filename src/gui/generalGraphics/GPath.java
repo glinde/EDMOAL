@@ -42,7 +42,10 @@ import gui.Translation;
 import gui.templates.BasicTemplate;
 import gui.templates.GeomTemplate;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.geom.Path2D;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -73,6 +76,7 @@ public class GPath extends DrawableObject implements Serializable
 	protected int waypointBorerColorIndex;
 	protected int tailStrokeIndex;
 	protected int borderStrokeIndex;
+	protected boolean drawTailBackgroundGray;
 	
 	protected boolean closed;
 	
@@ -86,6 +90,7 @@ public class GPath extends DrawableObject implements Serializable
 		super(parent);
 		this.drawWay = true;
 		this.closed = false;
+		this.drawTailBackgroundGray = true;
 
 		this.resetSchemeIndices();
 		
@@ -129,6 +134,15 @@ public class GPath extends DrawableObject implements Serializable
 				tail.lineTo(screenWay.get(i)[0], screenWay.get(i)[1]);
 			}
 			if(this.closed) tail.closePath();
+
+			if(this.drawTailBackgroundGray)
+			{
+				g2.setColor(Color.GRAY);
+				BasicStroke backgroundStroke = new BasicStroke(this.scheme.getStroke(this.tailStrokeIndex).getLineWidth()+1.0f, this.scheme.getStroke(this.tailStrokeIndex).getEndCap(), this.scheme.getStroke(this.tailStrokeIndex).getLineJoin());
+				g2.setStroke(backgroundStroke);
+				g2.draw(tail);
+			}
+			
 			g2.setColor(this.scheme.getColor(this.tailColorIndex));
 			g2.setStroke(this.scheme.getStroke(this.tailStrokeIndex));
 			g2.draw(tail);
@@ -280,6 +294,14 @@ public class GPath extends DrawableObject implements Serializable
 	public void setClosed(boolean closed)
 	{
 		this.closed = closed;
+	}
+
+	public boolean isDrawTailBackgroundGray() {
+		return drawTailBackgroundGray;
+	}
+
+	public void setDrawTailBackgroundGray(boolean drawTailBackgroundGray) {
+		this.drawTailBackgroundGray = drawTailBackgroundGray;
 	}
 	
 	

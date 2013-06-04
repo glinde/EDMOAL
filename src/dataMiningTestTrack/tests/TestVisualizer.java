@@ -259,6 +259,7 @@ public abstract class TestVisualizer implements Serializable
 						}
 					}
 				}
+				image.gaussFilterImage(2);
 				sv.screen.addDrawableObject(image);
 			}
 			
