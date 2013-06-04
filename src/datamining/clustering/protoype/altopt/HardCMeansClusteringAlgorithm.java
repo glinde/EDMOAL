@@ -386,4 +386,13 @@ public class HardCMeansClusteringAlgorithm<T> extends AbstractCentroidClustering
 	{
 		return membershipValue;
 	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.CrispClassificationProvider#isNoiseClassificationProvider()
+	 */
+	@Override
+	public boolean isNoiseClassificationProvider()
+	{
+		return false;
+	}
 }

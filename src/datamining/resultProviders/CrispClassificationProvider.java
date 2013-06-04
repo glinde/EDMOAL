@@ -46,4 +46,6 @@ public interface CrispClassificationProvider<T> extends ClassificationProvider<T
 	public int classify(T obj);
 	
 	public int[] classifyAll(Collection<T> list);
+	
+	public boolean isNoiseClassificationProvider();
 }

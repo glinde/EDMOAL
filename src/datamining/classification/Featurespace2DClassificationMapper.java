@@ -36,6 +36,7 @@ package datamining.classification;
 import java.util.ArrayList;
 
 import data.objects.matrix.FeatureSpaceClusterSampling2D;
+import datamining.resultProviders.CrispClassificationProvider;
 import datamining.resultProviders.FuzzyClassificationProvider;
 import datamining.resultProviders.FuzzyNoiseClassificationProvider;
 
@@ -102,6 +103,39 @@ public class Featurespace2DClassificationMapper
 		}
 		
 		return featureSpace;
+	}
+
+
+	public ArrayList<FeatureSpaceClusterSampling2D> readFromClassifier(CrispClassificationProvider<double[]> classifier)
+	{
+		double[] obj = new double[2];
+		int classification;
+		
+		ArrayList<FeatureSpaceClusterSampling2D> featureSpaceList = new ArrayList<FeatureSpaceClusterSampling2D>();
+		FeatureSpaceClusterSampling2D noiseFeatureSpaceList = null; 
+		
+		for(int i=0; i<classifier.getClusterCount(); i++)
+			featureSpaceList.add(new FeatureSpaceClusterSampling2D(this.sizeX, this.sizeY, this.lowerLeftCorner, this.upperRightCorner, i));
+		if(classifier.isNoiseClassificationProvider()) noiseFeatureSpaceList = new FeatureSpaceClusterSampling2D(this.sizeX, this.sizeY, this.lowerLeftCorner, this.upperRightCorner, -1);
+		
+		for(int x=0; x<this.sizeX; x++) for(int y=0; y<this.sizeY; y++)
+		{			
+			obj[0] = this.lowerLeftCorner[0]+(((double)x)+0.5d)*((this.upperRightCorner[0] - this.lowerLeftCorner[0])/(this.sizeX+1));
+			obj[1] = this.lowerLeftCorner[1]+(((double)y)+0.5d)*((this.upperRightCorner[1] - this.lowerLeftCorner[1])/(this.sizeY+1));
+		
+			classification = classifier.classify(obj);
+			
+			for(int i=0; i<classifier.getClusterCount(); i++)
+				featureSpaceList.get(i).set(x, y, (i==classification)?1.0d:0.0d);
+			
+			if(classifier.isNoiseClassificationProvider())
+			{
+				noiseFeatureSpaceList.set(x, y, (classification < 0)? 1.0d:0.0d);
+			}
+		}
+		featureSpaceList.add(noiseFeatureSpaceList);
+		
+		return featureSpaceList;
 	}
 	
 }
