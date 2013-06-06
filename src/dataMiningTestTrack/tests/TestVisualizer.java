@@ -320,7 +320,7 @@ public abstract class TestVisualizer implements Serializable
 	
 			gDataSet.setProjection(projection);
 			sv.screen.addDrawableObject(gDataSet);
-			sv.screen.setScreenToDisplayAllIndexed(dataSet);
+			sv.screen.setScreenToDisplayAllIndexed(dataSet, projection);
 		}
 		
 		

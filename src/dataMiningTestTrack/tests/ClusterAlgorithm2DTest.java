@@ -150,7 +150,7 @@ public class ClusterAlgorithm2DTest extends TestVisualizer implements Serializab
 		// add clusters
 		for(int i=0; i<this.clusterCount; i++)
 		{
-			tmpData = dg.gaussPoints(seeds.get(i), 0.1*dg.generatorRand.nextDouble(), (9*dataObjectCount)/(10*this.clusterCount));
+			tmpData = dg.gaussPoints(seeds.get(i), 0.02+0.02*dg.generatorRand.nextDouble(), (9*dataObjectCount)/(10*this.clusterCount));
 
 			// indicate the correct cluster
 			for(int j=0; j<tmpData.size(); j++)
@@ -162,14 +162,14 @@ public class ClusterAlgorithm2DTest extends TestVisualizer implements Serializab
 		}
 		
 		// add noise
-		tmpData = dg.uniformStandardPoints(3, dataObjectCount/10);
-
-		// indicate the noise cluster
-		for(int j=0; j<tmpData.size(); j++)
-		{
-			tmpData.get(j)[2] = -1.0d;
-		}
-		data.addAll(tmpData);
+//		tmpData = dg.uniformStandardPoints(3, dataObjectCount/10);
+//
+//		// indicate the noise cluster
+//		for(int j=0; j<tmpData.size(); j++)
+//		{
+//			tmpData.get(j)[2] = -1.0d;
+//		}
+//		data.addAll(tmpData);
 		
 		// mix it
 		Collections.shuffle(data);
@@ -400,9 +400,9 @@ public class ClusterAlgorithm2DTest extends TestVisualizer implements Serializab
 		clusterAlgo.initializeWithPositions(this.initialPositons);
 		clusterAlgo.setVarianceBounded(true);
 		clusterAlgo.setVarianceLowerBound(0.001d);
-		clusterAlgo.setVarianceUpperBound(100.0d);
+		clusterAlgo.setVarianceUpperBound(0.05d);
 		clusterAlgo.setEpsilon(0.001d);
-		clusterAlgo.apply(50);
+		clusterAlgo.apply(100);
 //		for(SphericalNormalDistributionPrototype d:clusterAlgo.getActivePrototypes()) System.out.println(d.getClusterIndex() + ": " + d.getVariance());
 		this.showDataSet(clusterAlgo.getDataSet(), clusterAlgo, clusterAlgo, this.mapper.readFromClassifier(clusterAlgo), null, clusterAlgo.algorithmName(), "EMGMM_" + this.dataSet.first().x.length + "d_"+ this.clusterCount+"c");
 	}

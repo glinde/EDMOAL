@@ -54,6 +54,7 @@ import gui.ColorList;
 import gui.ScreenViewer;
 import gui.DataMiningGraphics.GDataSet;
 import gui.generalGraphics.GCircle;
+import gui.projections.Orthogonal2DProjection;
 import gui.templates.DrawableTemplate;
 import gui.templates.GeomTemplate;
 
@@ -113,7 +114,11 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 	{
 		int k = 10;
 		int maxVisuaiDepth = 3;
-				
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		
 		ScreenViewer dataViewFrame;
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelList = new ArrayList<ArrayList<IndexedDataObject<double[]>>>();
 		GDataSet graphicsCluster;
@@ -134,7 +139,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			levelList.clear();
 			dataViewFrame = new ScreenViewer(this.xRes, this.yRes);
 //			dataViewFrame.screen.getTranslator().moveOffset(0.5d, 0.5d);	
-			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet);
+			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet, projection);
 			levelSets = ballTree.subtreeElementsOfLevel(k);
 			nodesOfLevel = ballTree.nodesOfLevel(k);
 
@@ -199,6 +204,10 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 	{
 		int k = 10;
 		int maxVisuaiDepth = 3;
+		
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
 				
 		ScreenViewer dataViewFrame;
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelList = new ArrayList<ArrayList<IndexedDataObject<double[]>>>();
@@ -220,7 +229,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			levelList.clear();
 			dataViewFrame = new ScreenViewer(this.xRes, this.yRes);
 //			dataViewFrame.screen.getTranslator().moveOffset(0.5d, 0.5d);	
-			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet);
+			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet, projection);
 			levelSets = cballTree.subtreeElementsOfLevel(k);
 			nodesOfLevel = cballTree.nodesOfLevel(k);
 

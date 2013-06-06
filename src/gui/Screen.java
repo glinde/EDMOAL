@@ -37,6 +37,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package gui;
 
+import gui.projections.Projection;
 import io.BatikExport;
 
 import java.awt.Color;
@@ -278,28 +279,30 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 	/**
 	 * @param pCol
 	 */
-	public void setScreenToDisplayAllIndexed(Collection<IndexedDataObject<double[]>> pCol)
+	public void setScreenToDisplayAllIndexed(Collection<IndexedDataObject<double[]>> pCol, Projection proj)
 	{
 //		double screenH = this.getHeight()*0.5d;
 //		double screenW = this.getWidth()*0.5d;
 //		double[] screenCenter = this.translator.inverseTranslate(new double[]{screenW, screenH});
 		boolean first = true;
 		
-		double[] upperRight = null;
-		double[] lowerLeft = null;
+		double[] upperRight = new double[2];
+		double[] lowerLeft = new double[2];
 		double[] center = new double[]{0.0d, 0.0d};
+		double[] projX = new double[2];
 		
 		if(pCol.size() == 0) return;
 		
 		for(IndexedDataObject<double[]> p:pCol)
 		{
+			proj.project(p.x, projX);
 			if(first)
 			{
-				upperRight = p.x.clone();
-				lowerLeft = p.x.clone();
+				upperRight = projX.clone();
+				lowerLeft = projX.clone();
 				if(pCol.size()==1)
 				{
-					this.centerScreenTo(p.x);
+					this.centerScreenTo(projX);
 					return;
 				}
 				
@@ -307,10 +310,10 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 				continue;
 			}
 			
-			if(p.x[0] > upperRight[0]) upperRight[0] = p.x[0];
-			if(p.x[1] > upperRight[1]) upperRight[1] = p.x[1];
-			if(p.x[0] < lowerLeft[0]) lowerLeft[0] = p.x[0];
-			if(p.x[1] < lowerLeft[1]) lowerLeft[1] = p.x[1];
+			if(projX[0] > upperRight[0]) upperRight[0] = projX[0];
+			if(projX[1] > upperRight[1]) upperRight[1] = projX[1];
+			if(projX[0] < lowerLeft[0]) lowerLeft[0] = projX[0];
+			if(projX[1] < lowerLeft[1]) lowerLeft[1] = projX[1];
 		}
 		
 		center[0] = 0.5d*(upperRight[0]+lowerLeft[0]);
