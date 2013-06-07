@@ -82,7 +82,7 @@ import datamining.resultProviders.ResultProvider;
  *
  * @author Roland Winkler
  */
-public abstract class TestVisualizer implements Serializable
+public class TestVisualizer implements Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 121707857795848952L;
