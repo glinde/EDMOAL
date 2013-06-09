@@ -165,6 +165,8 @@ public class TestVisualizer implements Serializable
 	/**  */
 	public int yRes;
 	
+	public ArrayList<double[]> explicitView;
+	
 	public boolean drawCrispMembershipLevels;
 	
 	public boolean drawOverlays;
@@ -185,6 +187,8 @@ public class TestVisualizer implements Serializable
 		this.printJPG = false;
 		this.printPDF = false;
 		this.printPNG = false;
+		
+		this.explicitView = null;
 		
 		this.drawCrispMembershipLevels = false;
 		this.drawOverlays = true;
@@ -323,7 +327,7 @@ public class TestVisualizer implements Serializable
 			sv.screen.setScreenToDisplayAllIndexed(dataSet, projection);
 		}
 		
-		
+		if(this.explicitView != null && this.explicitView.size() >= 2 && this.explicitView.get(0).length >= 2) sv.screen.setScreenToDisplayAll(this.explicitView, projection);
 		sv.screen.setBackground(Color.WHITE);
 		sv.screen.setFileName(filename);
 		sv.setTitle(filename);
