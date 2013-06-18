@@ -40,6 +40,7 @@ package datamining.clustering;
 import data.algebra.Metric;
 import data.set.IndexedDataSet;
 import datamining.AbstractStaticDataMiningAlgorithm;
+import datamining.resultProviders.ResultProvider;
  
 /**
  * Extends the {@link AbstractStaticDataMiningAlgorithm} class by adding the basic functionality of a clustering algorithms.
@@ -49,7 +50,7 @@ import datamining.AbstractStaticDataMiningAlgorithm;
  *
  * @author Roland Winkler
  */
-public abstract class AbstractClusteringAlgorithm<T> extends AbstractStaticDataMiningAlgorithm<T> implements ClusteringAlgorithm<T>
+public abstract class AbstractClusteringAlgorithm<T> extends AbstractStaticDataMiningAlgorithm<T> implements ClusteringAlgorithm<T>, ResultProvider<T>
 {	
 	/**  */
 	private static final long	serialVersionUID	= 4356769460943616262L;
