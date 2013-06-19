@@ -373,6 +373,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{}
@@ -472,6 +473,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -574,6 +576,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -684,6 +687,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -715,7 +719,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 					doubleTMP /= sortedNoise.squareDistance * distanceSum;
 					doubleTMP -= this.beta;
 					doubleTMP *= 1.0d/(1.0d - this.beta);
-					
+										
 					noiseMembershipValues[j] = doubleTMP;
 				}
 				else
@@ -776,6 +780,7 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
+		sortedNoise.included = false;
 		
 		if(zeroDistanceCount > 0)
 		{
@@ -874,6 +879,7 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -971,6 +977,7 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
+		sortedNoise.included = false;
 		
 		if(zeroDistanceCount > 0)
 		{
@@ -1054,6 +1061,7 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
