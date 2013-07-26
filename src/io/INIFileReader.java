@@ -73,6 +73,11 @@ public class INIFileReader extends FileLineReader
 		}
 	}
 	
+	public TreeMap<String, String> getMap()
+	{
+		return this.map;
+	}
+	
 	public String getElement(String key)
 	{
 		return this.map.get(key);
