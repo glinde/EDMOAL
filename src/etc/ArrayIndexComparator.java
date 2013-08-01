@@ -56,6 +56,11 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	private int index;
 	
 	/**
+	 * If true, the order of comparing is decresing rather than the standard of increasing.
+	 */
+	private boolean decresing;
+	
+	/**
 	 * Creates a new comparator which addresses the specified index.
 	 * 
 	 * @param i The index of the array that is used for comparisons. 
@@ -63,6 +68,7 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	public ArrayIndexComparator(int i)
 	{
 		this.index = i;
+		this.decresing = false;
 	}
 
 	/* (non-Javadoc)
@@ -71,7 +77,7 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	@Override
 	public int compare(double[] a, double[] b)
 	{
-		return (a[this.index]==b[this.index])?0:((a[this.index]<b[this.index])?-1:1);
+		return (a[this.index]==b[this.index])?0:((this.decresing?-1:1) * ((a[this.index]<b[this.index])?-1:1));
 	}
 
 	/**
@@ -93,4 +99,14 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	{
 		this.index = index;
 	}
+
+	public boolean isDecresing() {
+		return decresing;
+	}
+
+	public void setDecresing(boolean decresing) {
+		this.decresing = decresing;
+	}
+	
+	
 }
