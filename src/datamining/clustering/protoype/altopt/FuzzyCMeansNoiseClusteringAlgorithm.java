@@ -50,6 +50,7 @@ import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import datamining.resultProviders.FuzzyNoiseClassificationProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+import datamining.resultProviders.NoiseDistanceProvider;
 import etc.MyMath;
 
 /**
@@ -77,7 +78,7 @@ import etc.MyMath;
  * 
  * @author Roland Winkler
  */
-public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>
+public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>, NoiseDistanceProvider
 {
 	/**  */
 	private static final long	serialVersionUID	= 7172180428079511424L;
@@ -912,10 +913,8 @@ public class FuzzyCMeansNoiseClusteringAlgorithm<T> extends FuzzyCMeansClusterin
 		return noiseMembership;
 	}
 	
-	/**
-	 * Returns the noise distance.
-	 * 
-	 * @return The noise distance.
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.NoiseDistanceProvider#getNoiseDistance()
 	 */
 	public double getNoiseDistance()
 	{

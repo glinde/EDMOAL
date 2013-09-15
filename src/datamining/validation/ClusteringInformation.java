@@ -70,6 +70,8 @@ public class ClusteringInformation<T>
 	
 	protected double[] noiseClusterMembershipValues;
 	
+	protected double noiseDistance;
+	
 	protected int[] crispClusteringResult;
 	
 	protected int[] trueClusteringResult;
@@ -85,6 +87,7 @@ public class ClusteringInformation<T>
 		this.fuzzyClusteringProvider = null;
 		this.fuzzyClusteringResult = null;
 		this.noiseClusterMembershipValues = null;
+		this.noiseDistance = -1.0d;
 		this.crispClusteringResult = null;
 
 		this.trueClusteringResult = null;
@@ -559,7 +562,11 @@ public class ClusteringInformation<T>
 	{
 		if(this.clusterDistances == null) throw new NotEnoughInformationException("Cluster distances not available.");
 	}
-	
+
+	public void checkNoiseDistances()
+	{
+		if(this.noiseDistance < 0.0) throw new NotEnoughInformationException("Noise distances not available.");
+	}
 	/**
 	 * @return the clusterDiameters
 	 */
@@ -729,5 +736,21 @@ public class ClusteringInformation<T>
 	public void setTrueClusteringResult(int[] trueClusteringResult)
 	{
 		this.trueClusteringResult = trueClusteringResult;
+	}
+
+	/**
+	 * @return the noiseDistance
+	 */
+	public double getNoiseDistance()
+	{
+		return noiseDistance;
+	}
+
+	/**
+	 * @param noiseDistance the noiseDistance to set
+	 */
+	public void setNoiseDistance(double noiseDistance)
+	{
+		this.noiseDistance = noiseDistance;
 	}
 }

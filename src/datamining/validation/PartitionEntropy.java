@@ -55,10 +55,10 @@ public class PartitionEntropy<T> extends ClusterValidation<T>
 		super(clusterInfo);
 	}
 	
-	
 	public double index()
 	{
 		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
+		if(this.clusterInfo.getNoiseDistance() >= 0.0) return this.noiseIndex(); 
 		
 		double sum = 0.0d;
 		int i;		
@@ -79,7 +79,36 @@ public class PartitionEntropy<T> extends ClusterValidation<T>
 				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * Math.log(membershipValues[i])/Math.log(2.0d);
 			}
 		}
+
+		return -sum / ((double)this.clusterInfo.getDataCount() * Math.log((double)this.clusterInfo.getClusterCount())/Math.log(2.0d));
+	}
+
+	public double noiseIndex()
+	{
+		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
+		this.clusterInfo.checkNoiseClusterMembershipValues();
 		
-		return -sum;
+		double sum = 0.0d;
+		double[] noiseMemberships = this.clusterInfo.getNoiseClusterMembershipValues();
+		
+		if(this.clusterInfo.getFuzzyClusteringResult() != null)
+		{
+			for(double[] membershipValues : this.clusterInfo.getFuzzyClusteringResult())
+			{
+				for(int i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * (membershipValues[i]>0.0? Math.log(membershipValues[i])/Math.log(2.0d) : 0.0d);
+			}
+		}
+		else
+		{
+			double[] membershipValues;
+			for(IndexedDataObject<T> d : this.clusterInfo.getFuzzyClusteringProvider().getDataSet())
+			{
+				membershipValues = this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(d);
+				for(int i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * (membershipValues[i]>0.0? Math.log(membershipValues[i])/Math.log(2.0d) : 0.0d);
+			}
+		}
+		for(int j=0; j<noiseMemberships.length; j++) sum += noiseMemberships[j] * (noiseMemberships[j]>0.0? Math.log(noiseMemberships[j])/Math.log(2.0d) : 0.0d);
+		
+		return -sum / ((double)this.clusterInfo.getDataCount() * Math.log((double)this.clusterInfo.getClusterCount()+1.0d)/Math.log(2.0d));
 	}
 }

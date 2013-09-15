@@ -87,10 +87,52 @@ public class XieBeniIndex<T> extends ClusterValidation<T>
 	
 	public double index()
 	{
-		return this.crisp? this.crispIndex(): this.fuzzyIndex();
+		return this.crisp? (this.clusterInfo.getNoiseDistance() >= 0.0? this.crispNoiseIndex() : this.crispIndex()):
+						   (this.clusterInfo.getNoiseDistance() >= 0.0? this.fuzzyNoiseIndex() : this.fuzzyIndex());
 	}
 	
 	public double crispIndex()
+	{
+		this.clusterInfo.checkClusterDistances();
+		
+		int i, j, k;
+		double objectiveFunctionValue;
+				
+		if(this.clusterAlgo != null)
+		{
+			objectiveFunctionValue = clusterAlgo.getObjectiveFunctionValue();
+		}
+		else
+		{
+			this.clusterInfo.checkCrispClusteringResult();
+			this.clusterInfo.checkPrototypes();
+			this.clusterInfo.checkDataSet();
+			this.clusterInfo.checkMetric();
+			
+			
+			objectiveFunctionValue = 0.0d;
+									
+			for(j=0; j<this.clusterInfo.getDataSet().size(); j++)
+			{
+				IndexedDataObject<T> obj = this.clusterInfo.getDataSet().get(j);
+				
+				if(this.clusterInfo.getCrispClusteringResult()[j] >= 0) objectiveFunctionValue += this.clusterInfo.getMetric().distanceSq(obj.x, this.clusterInfo.getPrototypes().get(this.clusterInfo.getCrispClusteringResult()[j]).getPosition());
+			}	
+		}
+		
+		double minClusterDistance = Double.POSITIVE_INFINITY;
+		for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			for(k=i+1; k<this.clusterInfo.getClusterCount(); k++)
+			{
+				if(this.clusterInfo.getClusterDistances()[i][k] < minClusterDistance) minClusterDistance = this.clusterInfo.getClusterDistances()[i][k];
+			}
+		}
+			
+		return objectiveFunctionValue/(this.clusterInfo.getDataSet().size()*minClusterDistance*minClusterDistance);
+	}
+	
+	public double crispNoiseIndex()
 	{
 		this.clusterInfo.checkClusterDistances();
 		
@@ -115,7 +157,8 @@ public class XieBeniIndex<T> extends ClusterValidation<T>
 				IndexedDataObject<T> obj = this.clusterInfo.getDataSet().get(j);
 				
 				if(this.clusterInfo.getCrispClusteringResult()[j] >= 0) objectiveFunctionValue += this.clusterInfo.getMetric().distanceSq(obj.x, this.clusterInfo.getPrototypes().get(this.clusterInfo.getCrispClusteringResult()[j]).getPosition());
-			}	
+				else objectiveFunctionValue += this.clusterInfo.getNoiseDistance()*this.clusterInfo.getNoiseDistance();
+			}
 		}
 		
 		double minClusterDistance = Double.POSITIVE_INFINITY;
@@ -126,6 +169,7 @@ public class XieBeniIndex<T> extends ClusterValidation<T>
 				if(this.clusterInfo.getClusterDistances()[i][k] < minClusterDistance) minClusterDistance = this.clusterInfo.getClusterDistances()[i][k];
 			}
 		}
+		if(2.0 * this.clusterInfo.getNoiseDistance() < minClusterDistance) minClusterDistance = 2.0 * this.clusterInfo.getNoiseDistance();
 			
 		return objectiveFunctionValue/(this.clusterInfo.getDataSet().size()*minClusterDistance*minClusterDistance);
 	}
@@ -173,6 +217,57 @@ public class XieBeniIndex<T> extends ClusterValidation<T>
 				if(this.clusterInfo.getClusterDistances()[i][k] < minClusterDistance) minClusterDistance = this.clusterInfo.getClusterDistances()[i][k];
 			}
 		}
+			
+		return objectiveFunctionValue/(this.clusterInfo.getFuzzyClusteringProvider().getDataSet().size()*minClusterDistance*minClusterDistance);
+	}
+
+	public double fuzzyNoiseIndex()
+	{
+		this.clusterInfo.checkClusterDistances();
+		
+		int i, j, k;
+		double objectiveFunctionValue;
+		
+		if(this.clusterAlgo != null)
+		{
+			objectiveFunctionValue = clusterAlgo.getObjectiveFunctionValue();
+		}
+		else
+		{
+			this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
+			this.clusterInfo.checkPrototypes();
+			this.clusterInfo.checkDataSet();
+			this.clusterInfo.checkMetric();
+			this.clusterInfo.checkNoiseClusterMembershipValues();
+			
+			double[] membershipValues;
+			objectiveFunctionValue = 0.0d;
+									
+			for(j=0; j<this.clusterInfo.getFuzzyClusteringProvider().getDataSet().size(); j++)
+			{
+				IndexedDataObject<T> obj = this.clusterInfo.getDataSet().get(j);
+				
+				membershipValues = (this.clusterInfo.getFuzzyClusteringResult() != null)?
+					this.clusterInfo.getFuzzyClusteringResult().get(j) : this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(obj);
+				
+				for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+				{
+					objectiveFunctionValue += MyMath.pow(membershipValues[i], this.fuzzifier) * this.clusterInfo.getMetric().distanceSq(obj.x, this.clusterInfo.getPrototypes().get(i).getPosition());
+				}
+				
+				objectiveFunctionValue += MyMath.pow(this.clusterInfo.getNoiseClusterMembershipValues()[j], this.fuzzifier) * this.clusterInfo.getNoiseDistance()*this.clusterInfo.getNoiseDistance();
+			}	
+		}
+		
+		double minClusterDistance = Double.POSITIVE_INFINITY;
+		for(i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			for(k=i+1; k<this.clusterInfo.getClusterCount(); k++)
+			{
+				if(this.clusterInfo.getClusterDistances()[i][k] < minClusterDistance) minClusterDistance = this.clusterInfo.getClusterDistances()[i][k];
+			}
+		}
+		if(2.0 * this.clusterInfo.getNoiseDistance() < minClusterDistance) minClusterDistance = 2.0 * this.clusterInfo.getNoiseDistance();
 			
 		return objectiveFunctionValue/(this.clusterInfo.getFuzzyClusteringProvider().getDataSet().size()*minClusterDistance*minClusterDistance);
 	}

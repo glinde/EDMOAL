@@ -55,10 +55,12 @@ public class PartitionCoefficient<T> extends ClusterValidation<T>
 	{
 		super(clusterInfo);
 	}
+	
 
 	public double index()
 	{
 		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
+		if(this.clusterInfo.getNoiseDistance() >= 0.0) return this.noiseIndex(); 
 		
 		double sum = 0.0d;
 		int dataCount;
@@ -86,6 +88,43 @@ public class PartitionCoefficient<T> extends ClusterValidation<T>
 		sum /= ((double)dataCount);
 		
 		return sum;
+	}
+
+	public double noiseIndex()
+	{
+		this.clusterInfo.checkFuzzyClusteringProvider_FuzzyClusteringResult();
+		this.clusterInfo.checkNoiseClusterMembershipValues();
+		
+		double sum = 0.0d;
+		int dataCount;
+		int i;		
+		double[] noiseMemberships = this.clusterInfo.getNoiseClusterMembershipValues();
+		
+		if(this.clusterInfo.getFuzzyClusteringResult() != null)
+		{
+			dataCount = this.clusterInfo.getFuzzyClusteringResult().size();
+			for(double[] membershipValues : this.clusterInfo.getFuzzyClusteringResult())
+			{
+				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * membershipValues[i];
+			}	
+		}
+		else
+		{
+			dataCount = this.clusterInfo.getFuzzyClusteringProvider().getDataSet().size();
+			double[] membershipValues;
+			for(IndexedDataObject<T> d : this.clusterInfo.getFuzzyClusteringProvider().getDataSet())
+			{
+				membershipValues = this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(d);
+				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * membershipValues[i];
+			}
+		}
+		
+		for(int j=0; j<noiseMemberships.length; j++)
+		{
+			sum += noiseMemberships[j] * noiseMemberships[j];
+		}
+		
+		return sum / ((double)dataCount);
 	}
 
 }

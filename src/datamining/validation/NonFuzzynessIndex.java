@@ -57,6 +57,15 @@ public class NonFuzzynessIndex<T> extends PartitionCoefficient<T>
 
 	public double index()
 	{
-		return 1.0d - (((double)this.clusterInfo.getClusterCount())/(((double)this.clusterInfo.getClusterCount()) - 1.0d))*(1.0d - super.index());
+		if(this.clusterInfo.getNoiseDistance() >= 0.0)
+		{
+			double c = this.clusterInfo.getClusterCount();
+			return 1.0d - ((c + 1.0d)/c)*(1.0d - super.index());
+		}
+		else
+		{
+			double c = this.clusterInfo.getClusterCount();
+			return 1.0d - (c/(c - 1.0d))*(1.0d - super.index());
+		}
 	}
 }

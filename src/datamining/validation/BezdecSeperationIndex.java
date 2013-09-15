@@ -69,6 +69,7 @@ public class BezdecSeperationIndex<T> extends ClusterValidation<T>
 	{
 		this.clusterInfo.checkClusterDistances();
 		this.clusterInfo.checkClusterDiameters();
+		if(this.clusterInfo.getNoiseDistance() >= 0.0) return this.noiseIndex(); 
 		
 		double minClusterDistance = Double.POSITIVE_INFINITY;
 		for(int i=0; i<this.clusterInfo.getClusterCount(); i++)
@@ -89,5 +90,26 @@ public class BezdecSeperationIndex<T> extends ClusterValidation<T>
 		return minClusterDistance/maxDiameter;
 	}
 
+	public double noiseIndex()
+	{
+		double minClusterDistance = Double.POSITIVE_INFINITY;
+		for(int i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			for(int k=i+1; k<this.clusterInfo.getClusterCount(); k++)
+			{
+				if(this.clusterInfo.getClusterDistances()[i][k] < minClusterDistance) minClusterDistance = this.clusterInfo.getClusterDistances()[i][k];
+			}
+		}
+		if(2.0 * this.clusterInfo.getNoiseDistance() < minClusterDistance) minClusterDistance = 2.0 * this.clusterInfo.getNoiseDistance();
+		
+		// maximal diameter of cluster	
+		double maxDiameter = Double.NEGATIVE_INFINITY;
+		for(int i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			if(this.clusterInfo.getClusterDiameters()[i] > maxDiameter) maxDiameter = this.clusterInfo.getClusterDiameters()[i];
+		}
+		if(2.0 * this.clusterInfo.getNoiseDistance() > maxDiameter) maxDiameter = 2.0 * this.clusterInfo.getNoiseDistance();
 
+		return minClusterDistance/maxDiameter;
+	}
 }

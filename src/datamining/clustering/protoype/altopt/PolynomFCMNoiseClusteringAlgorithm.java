@@ -51,6 +51,7 @@ import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
 import datamining.resultProviders.FuzzyNoiseClassificationProvider;
 import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+import datamining.resultProviders.NoiseDistanceProvider;
 
 /**
  * This is an implementation of the fuzzy c-means clustering algorithm with additional noise cluster and with a polynomial fuzzifier function.
@@ -90,7 +91,7 @@ import datamining.resultProviders.FuzzyNoiseClusteringProvider;
  * 
  * @author Roland Winkler
  */
-public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>
+public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>, NoiseDistanceProvider
 {	
 	/**  */
 	private static final long	serialVersionUID	= -4173377426715965448L;
@@ -1107,12 +1108,9 @@ if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not
 		
 		return noiseMembershipValues;
 	}
-	
 
-	/**
-	 * Returns the noise distance.
-	 * 
-	 * @return The noise distance.
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.NoiseDistanceProvider#getNoiseDistance()
 	 */
 	public double getNoiseDistance()
 	{

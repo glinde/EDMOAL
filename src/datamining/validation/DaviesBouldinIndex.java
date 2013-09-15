@@ -64,6 +64,7 @@ public class DaviesBouldinIndex<T> extends ClusterValidation<T>
 	{	
 		this.clusterInfo.checkClusterDistances();
 		this.clusterInfo.checkClusterDiameters();
+		if(this.clusterInfo.getNoiseDistance() >= 0.0) return this.noiseIndex(); 
 		
 		// maximal diameter of cluster		
 		double maxRatio = 0.0d;
@@ -82,5 +83,37 @@ public class DaviesBouldinIndex<T> extends ClusterValidation<T>
 		}
 		
 		return maxRatioSum/this.clusterInfo.getClusterCount();
+	}
+
+	public double noiseIndex()
+	{	
+		this.clusterInfo.checkClusterDistances();
+		this.clusterInfo.checkClusterDiameters();
+		
+		// maximal diameter of cluster		
+		double maxRatio = 0.0d;
+		double maxRatioSum = 0.0d;
+		double doubleTMP;
+		
+		for(int i=0; i<this.clusterInfo.getClusterCount(); i++)
+		{
+			maxRatio = 0.0d;
+			for(int k=i+1; k<this.clusterInfo.getClusterCount(); k++)
+			{
+				doubleTMP = (this.clusterInfo.getClusterDiameters()[i] + this.clusterInfo.getClusterDiameters()[k])/this.clusterInfo.getClusterDistances()[i][k];
+				maxRatio = (maxRatio < doubleTMP)? doubleTMP : maxRatio;
+			}
+			maxRatioSum += maxRatio;
+		}
+		
+		maxRatio = 0.0d;
+		for(int k=0; k<this.clusterInfo.getClusterCount(); k++)
+		{
+			doubleTMP = (this.clusterInfo.getNoiseDistance() + 0.5*this.clusterInfo.getClusterDiameters()[k])/(2.0d*this.clusterInfo.getNoiseDistance());
+			maxRatio = (maxRatio < doubleTMP)? doubleTMP : maxRatio;
+		}
+		maxRatioSum += maxRatio;
+		
+		return maxRatioSum/(this.clusterInfo.getClusterCount() + 1);
 	}
 }
