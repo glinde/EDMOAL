@@ -347,7 +347,7 @@ public class ClusteringInformation<T>
 		
 		for(i=0; i<this.clusterCount; i++)
 		{
-			for(j=0; j<clusters.get(i).size(); i++)
+			for(j=0; j<clusters.get(i).size(); j++)
 			{
 				for(k=j+1; k<clusters.get(i).size(); k++)
 				{
