@@ -33,6 +33,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
  */
 package datamining.validation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import data.set.IndexedDataObject;
 
 /**
@@ -76,7 +79,7 @@ public class PartitionEntropy<T> extends ClusterValidation<T>
 			for(IndexedDataObject<T> d : this.clusterInfo.getFuzzyClusteringProvider().getDataSet())
 			{
 				membershipValues = this.clusterInfo.getFuzzyClusteringProvider().getFuzzyAssignmentsOf(d);
-				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * Math.log(membershipValues[i])/Math.log(2.0d);
+				for(i=0; i<this.clusterInfo.getClusterCount(); i++) sum += membershipValues[i] * (membershipValues[i]>0.0? Math.log(membershipValues[i])/Math.log(2.0d) : 0.0d);
 			}
 		}
 
