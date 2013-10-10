@@ -126,7 +126,7 @@ public class ClusteringInformation<T>
 				
 				for(i=0; i<this.clusterCount; i++)
 				{
-					for(k=i+1; k<this.clusterCount; k++)
+					for(k=0; k<this.clusterCount; k++)
 					{
 						this.clusterDistances[i][k] += 2.0d * membershipValuesJ[i] * membershipValuesL[k] * doubleTMP;
 					}
@@ -136,7 +136,7 @@ public class ClusteringInformation<T>
 		
 		for(i=0; i<this.clusterCount; i++)
 		{
-			for(k=i+1; k<this.clusterCount; k++)
+			for(k=0; k<this.clusterCount; k++)
 			{
 				if(membershipValueSum[i] * membershipValueSum[k] == 0.0d) 
 				{
@@ -147,7 +147,7 @@ public class ClusteringInformation<T>
 				{
 					this.clusterDistances[i][k] /= membershipValueSum[i] * membershipValueSum[k];
 					this.clusterDistances[i][k] = Math.sqrt(this.clusterDistances[i][k]);
-					this.clusterDistances[k][i] = this.clusterDistances[i][k];
+//					this.clusterDistances[k][i] = this.clusterDistances[i][k];
 				}
 			}
 		}
@@ -198,6 +198,7 @@ public class ClusteringInformation<T>
 				}
 				else
 				{
+					this.clusterDistances[i][k] += this.clusterDistances[k][i];
 					this.clusterDistances[i][k] /= clusters.get(i).size() * clusters.get(k).size();
 					this.clusterDistances[i][k] = Math.sqrt(this.clusterDistances[i][k]);
 					this.clusterDistances[k][i] = this.clusterDistances[i][k];
