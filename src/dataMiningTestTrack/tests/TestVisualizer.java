@@ -330,7 +330,7 @@ public class TestVisualizer implements Serializable
 		if(this.explicitView != null && this.explicitView.size() >= 2 && this.explicitView.get(0).length >= 2) sv.screen.setScreenToDisplayAll(this.explicitView, projection);
 		sv.screen.setBackground(Color.WHITE);
 		sv.screen.setFileName(filename);
-		sv.setTitle(filename);
+		sv.setTitle(title);
 		sv.repaint();
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
