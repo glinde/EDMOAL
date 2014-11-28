@@ -114,7 +114,7 @@ public class OrthogonalProjection implements Projection, Invertible, Serializabl
 			
 			for(i=0; i<this.mapping.size();i++)
 			{
-				outP[this.mapping.get(i)[1]] = inP.element[this.mapping.get(i)[0]];
+				outP[this.mapping.get(i)[1]] = inP.x[this.mapping.get(i)[0]];
 			}
 			
 			outputPoints.add(outP);

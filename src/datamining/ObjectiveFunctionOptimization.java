@@ -38,11 +38,19 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining;
 
 /**
- * TODO Class Description
+ * An interface that states, an algorithm is based on optimizing an objective function,
+ * thus it must be possible to get the value of the objective function.
  *
  * @author Roland Winkler
  */
 public interface ObjectiveFunctionOptimization
 {
+	/**
+	 * Returns the value of the objective function at the current state of the algorithm. For a good
+	 * optimization algorithm, this function is supposed to continuously increase xor reduce over time. However, there might
+	 * be applications where this is not the case.
+	 * 
+	 * @return the value of the objective function at the current state of the algorithm.
+	 */
 	public double getObjectiveFunctionValue();
 }

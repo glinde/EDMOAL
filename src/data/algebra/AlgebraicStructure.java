@@ -40,7 +40,17 @@ package data.algebra;
 import java.io.Serializable;
 
 /**
- * TODO Class Description
+ * Algebraic Structures w.r.t. this interface are not only "real" algebraic structures like groups or vector spaces,
+ * but all classes that provide any kind of algebraic structure on objects of type <code>T</code>. This includes for example
+ * any operations that have objects of type <code>T</code> as parameters, like a distance or a scalar product and of course something
+ * like an addition etc.<br>  
+ * 
+ * This interface does not contain any functions but rather declares that there is some functionality provided for the
+ * type <code>T</code>. In subinterfaces the exact functionality is specified.
+ * <br>
+ * 
+ * At the moment, only the most important algebraic structures are implemented as interface. As it is requires by future algorithms,
+ * a more versatile interface class structure is provided.
  *
  * @author Roland Winkler
  */

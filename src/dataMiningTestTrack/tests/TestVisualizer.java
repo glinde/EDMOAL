@@ -38,12 +38,16 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package dataMiningTestTrack.tests;
 
 import gui.ColorList;
+import gui.DrawableObject;
+import gui.Scheme;
 import gui.Screen;
 import gui.ScreenViewer;
+import gui.DataMiningGraphics.GCentroid;
 import gui.DataMiningGraphics.GCentroidClusteringAlgorithm;
 import gui.DataMiningGraphics.GClusteredDataSet;
 import gui.DataMiningGraphics.GDataSet;
-import gui.generalGraphics.GScale;
+import gui.generalGraphics.GImage;
+import gui.projections.Orthogonal2DProjection;
 import io.BatikExport;
 
 import java.awt.BasicStroke;
@@ -51,42 +55,132 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Stroke;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.swing.JFrame;
 
+import data.objects.matrix.FeatureSpaceClusterSampling2D;
+import data.objects.matrix.FeatureSpaceSampling2D;
 import data.set.IndexedDataObject;
+import datamining.DataMiningAlgorithm;
 import datamining.clustering.ClusteringAlgorithm;
 import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.Prototype;
 import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
+import datamining.gradient.GradientOptimization;
+import datamining.gradient.centroid.SingleCentroidGradientOptimizationAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
+import datamining.resultProviders.PrototypeProvider;
+import datamining.resultProviders.ResultProvider;
 
 /**
- * TODO Class Description
+ * A class to provide basic functions for visualisation and defines some layout constants.
+ * It takes care of transforming clustering algorithm objects or data set objects into
+ * their graphical representation.
  *
  * @author Roland Winkler
  */
-public abstract class TestVisualizer implements Serializable
+public class TestVisualizer implements Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 121707857795848952L;
 	
 	
+	/**
+	 * The font for text in the figure.
+	 */
 	public static final Font FIGURE_TEXT_FONT = new Font("Dialog", Font.PLAIN, 50);
+	
+	/**
+	 * The font for naming the axis.
+	 */
 	public static final Font AXIS_TEXT_FONT = new Font("Dialog", Font.PLAIN, 50);
+	
+	/**
+	 * The font for the axis ticks, e.g. the numbers next to the axis.
+	 */
 	public static final Font TICK_TEXT_FONT = new Font("Dialog", Font.PLAIN, 40);
+	
+	/**
+	 * The font for the legend.
+	 */
 	public static final Font LEGEND_TEXT_FONT = new Font("Dialog", Font.PLAIN, 45);
+	
+	/**
+	 * The font for the figure title.
+	 */
 	public static final Font TITLE_TEXT_FONT = new Font("Dialog", Font.BOLD, 60);
+	
+	/**
+	 * The stroke object for the axis lines and ticks.
+	 */
 	public static final Stroke LINE_STROKE = new BasicStroke(5.0f);
 		
+	/**
+	 * A list of predefined colours. 
+	 */
 	public Color[] seriesColorList;
+	
+	public Color[] overlayColors;
 
+	/**
+	 * States if the figure is saved in the SVG format, if the figure is printed to a file.
+	 */
 	public boolean printSVG;
+
+	/**
+	 * States if the figure is saved in the JPG format, if the figure is printed to a file.
+	 */
 	public boolean printJPG;
+
+	/**
+	 * States if the figure is saved in the PDF format, if the figure is printed to a file.
+	 */
 	public boolean printPDF;
+
+	/**
+	 * States if the figure is saved in the PNG format, if the figure is printed to a file.
+	 */
 	public boolean printPNG;
 	
+	/**
+	 * The visual size of a data object in pixels.
+	 */
 	public float dataObjectSize;
 	
+	public float lineThickness;
+	
+	
+	/**  */
+	public int xIndex;
+	
+	/**  */
+	public int yIndex;
+	
+	/**  */
+	public int xRes;
+	
+	/**  */
+	public int yRes;
+	
+	public ArrayList<double[]> explicitView;
+	
+	public boolean drawCrispMembershipLevels;
+	
+	public boolean drawOverlays;
+	
+	public boolean drawMembershipHeightLines;
+	
+	public double[] membershipLevels;
+	
+	public int membershipLevelLineWidth;
+	
+		
+	/**
+	 * The standard constructor.
+	 */
 	public TestVisualizer()
 	{
 		this.printSVG = false;
@@ -94,7 +188,16 @@ public abstract class TestVisualizer implements Serializable
 		this.printPDF = false;
 		this.printPNG = false;
 		
+		this.explicitView = null;
+		
+		this.drawCrispMembershipLevels = false;
+		this.drawOverlays = true;
+		this.drawMembershipHeightLines = false;
+		this.membershipLevels = new double[0];
+		
 		this.dataObjectSize = 5.0f;
+		this.lineThickness = 1.0f;
+		this.membershipLevelLineWidth = 2;
 		this.seriesColorList = new Color[]{
 				ColorList.RED,				ColorList.GREEN,			ColorList.BLUE,
 				ColorList.ORANGE,			ColorList.MAGENTA,			ColorList.CYAN,
@@ -103,99 +206,147 @@ public abstract class TestVisualizer implements Serializable
 				ColorList.DARK_RED,			ColorList.DARK_GREEN,		ColorList.DARK_BLUE,
 				ColorList.DARK_ORANGE,		ColorList.DARK_MAGENTA,		ColorList.DARK_CYAN
 			};
+		
+		this.overlayColors = new Color[]{Color.GREEN, Color.RED};
+		
+		this.xIndex = 0;
+		this.yIndex = 1;
+		
+		this.xRes = 1050;
+		this.yRes = 1050;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void showClusteringAlgorithm(ClusteringAlgorithm<double[]> clusterAlgo, String title, String filename)
+	/**
+	 * Creates a visualisation of the specified data
+	 * 
+	 * @param dataSet the data set to be visualized. May not be null!
+	 * @param prototypeProvider the prototypes to visualize. May be null.
+	 * @param resProv the clustering result for coloring the data objects. May be null.
+	 * @param matrix the data overlay that is printed in the background. May be null.
+	 * @param dataObjectSubsectionIndexes if only a subset of the data objects should be printed, set this list. May be null.
+	 * @param title The title of the window. May be null.
+	 * @param filename The filename for storing the image to the hard disk. May be null. 
+	 */
+	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resProv, Collection<? extends FeatureSpaceSampling2D> matrices, int[] dataObjectSubsectionIndexes, String title, String filename)
 	{
-		GClusteredDataSet gClusteredDS;
-		ScreenViewer sv;
+		ScreenViewer sv  = new ScreenViewer(this.xRes, this.yRes);
 		
-		if(clusterAlgo instanceof PrototypeClusteringAlgorithm)
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+
+		if(matrices != null)
 		{
-			try
+			if(this.drawMembershipHeightLines)
 			{
-				gClusteredDS = new GCentroidClusteringAlgorithm((PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>>) clusterAlgo);
-			}
-			catch(ClassCastException e)
-			{
-				gClusteredDS = new GClusteredDataSet(clusterAlgo);
+				GImage image = new GImage(null);
+				
+				for(FeatureSpaceSampling2D matrix:matrices)
+				{
+					if(matrix instanceof FeatureSpaceClusterSampling2D)
+					{
+						Color rgbColor  = Color.BLACK;
+						Color rgbaColor = new Color(rgbColor.getRed(), rgbColor.getGreen(), rgbColor.getBlue(), 220);
+						
+						image.setLowerLeftCorner(matrix.getLowerLeftCorner());
+						image.setUpperRightCorner(matrix.getUpperRightCorner());
+						
+						if(((FeatureSpaceClusterSampling2D) matrix).getClusterID()>=0)
+						{
+							rgbColor  = ColorList.clusterColors[((FeatureSpaceClusterSampling2D) matrix).getClusterID()%ColorList.clusterColors.length];
+							rgbaColor = new Color(rgbColor.getRed(), rgbColor.getGreen(), rgbColor.getBlue(), 200);
+						}
+						image.fillAboveHeight(matrix, this.membershipLevels[0], rgbaColor);
+						for(int k=0; k<this.membershipLevels.length; k++)
+						{
+							image.addHeightLines(matrix, this.membershipLevels[k], this.membershipLevelLineWidth, rgbColor);
+						}
+					}
+				}
+				image.gaussFilterImage(2);
+				sv.screen.addDrawableObject(image);
 			}
 			
+			if(this.drawOverlays) for(FeatureSpaceSampling2D matrix:matrices)
+			{
+				GImage image = new GImage(null);
+				image.setImageData(matrix, this.overlayColors[0].getRGB(), this.overlayColors[1].getRGB());
+				image.setLowerLeftCorner(matrix.getLowerLeftCorner());
+				image.setUpperRightCorner(matrix.getUpperRightCorner());
+				sv.screen.addDrawableObject(image);
+			}
 		}
-		else
-		{
-			gClusteredDS = new GClusteredDataSet(clusterAlgo);
-		}
-
-		gClusteredDS.setDrawMembershipLevels(true);
 		
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
-
-		sv = new ScreenViewer();
-		sv.screen.setFileName(filename);
+		if(dataSet != null)
+		{
+			DrawableObject gDataSet = null;		
+			if(resProv != null)
+			{
+				int clusterCount = 0;
+				if(resProv instanceof FuzzyClusteringProvider) clusterCount = ((FuzzyClusteringProvider<double[]>)resProv).getClusterCount();
+				else if (resProv instanceof CrispClusteringProvider) clusterCount = ((CrispClusteringProvider<double[]>)resProv).getClusterCount();
+				
+				GClusteredDataSet gClusteredDataSet;
+				if(prototypeProvider == null)gClusteredDataSet = new GClusteredDataSet(resProv, dataObjectSubsectionIndexes, clusterCount);
+				else gClusteredDataSet = new GCentroidClusteringAlgorithm(prototypeProvider, resProv, dataObjectSubsectionIndexes);
+				for(Scheme s:gClusteredDataSet.getClusterSchemes())
+				{
+					s.setStrokeThickness(0, this.lineThickness);
+				}
+				gClusteredDataSet.setDataSubsetList(dataObjectSubsectionIndexes);
+				gClusteredDataSet.setDrawMembershipLevels(this.drawCrispMembershipLevels);
+				gClusteredDataSet.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+				gDataSet = gClusteredDataSet;
+			}
+			else
+			{
+				if(prototypeProvider != null)
+				{
+					int i=0;
+					for(Prototype<double[]> p: prototypeProvider.getPrototypes())
+					{
+						GCentroid gCentroid = new GCentroid();
+						gCentroid.setPrototype(p);
+						gCentroid.setProjection(projection);
+						gCentroid.getScheme().setColor(0, ColorList.clusterColors[i]);
+						gCentroid.getScheme().setStrokeThickness(0, this.lineThickness);
+						sv.screen.addDrawableObject(gCentroid);
+						i++;
+					}
+				}
+					
+				GDataSet gPureDataSet = new GDataSet(dataSet);
+				gPureDataSet.setDataSubsetList(dataObjectSubsectionIndexes);
+				gPureDataSet.getScheme().setColor(0, ColorList.BLACK);
+				gPureDataSet.getDataObjectsTemplate().setPixelSize(this.dataObjectSize);
+				gDataSet = gPureDataSet;
+			}
+	
+			gDataSet.setProjection(projection);
+			sv.screen.addDrawableObject(gDataSet);
+			sv.screen.setScreenToDisplayAllIndexed(dataSet, projection);
+		}
+		
+		if(this.explicitView != null && this.explicitView.size() >= 2 && this.explicitView.get(0).length >= 2) sv.screen.setScreenToDisplayAll(this.explicitView, projection);
 		sv.screen.setBackground(Color.WHITE);
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.setScreenToDisplayAllIndexed(clusterAlgo.getDataSet());
+		sv.screen.setFileName(filename);
 		sv.setTitle(title);
 		sv.repaint();
 		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		this.print(sv.screen, filename);
 	}
-		
-	public void showDataSet(Collection<IndexedDataObject<double[]>> dataSet, String filename)
-	{
-		ScreenViewer sv  = new ScreenViewer();
-		GDataSet gCluster = new GDataSet();
-		
-		gCluster.setDataObjects(dataSet);
-		gCluster.getScheme().setColor(0, ColorList.BLACK);
-		gCluster.getDataObjectsTemplate().setPixelSize(4.0d);
-		
-		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(gCluster);
-		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
-		sv.repaint();
-		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
-
-	public void showCrispDataSetClustering(Collection<IndexedDataObject<double[]>> dataSet, int clusterCount, int[] crispClister, String filename)
-	{
-		GClusteredDataSet gClusteredDS;
-		ScreenViewer sv;
-		
-		gClusteredDS = new GClusteredDataSet(clusterCount);
-		gClusteredDS.setDrawMembershipLevels(true);
-		gClusteredDS.getDataObjectsTemplate().setPixelSize(4.0d);
-		gClusteredDS.setFuzzyColoring(false);
-		gClusteredDS.setDataSet(dataSet);
-		gClusteredDS.setCrispClusterAssignments(crispClister);
-
-		sv = new ScreenViewer();
-		sv.screen.setFileName(filename);
-//		sv.setPreferredSize(new Dimension(1200, 800));
-//		sv.setSize(new Dimension(1200, 800));
-		sv.screen.addDrawableObject(gClusteredDS);
-		sv.screen.addDrawableObject(new GScale());
-//		sv.screen.getTranslator().moveOffset(new double[]{0.0d, 1.0d});
-//		sv.screen.zoomToDisplay(data);
-		sv.screen.setScreenToDisplayAllIndexed(dataSet);
-		sv.repaint();
-		sv.setTitle(filename);
-		sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		this.print(sv.screen, filename);
-	}
 	
+	
+	/**
+	 * Prints the specified screen to the hard disk. Note, that the
+	 * fields <code>printSVG</code>, <code>printJPG</code>, <code>printPDF</code> and <code>printPNG</code>
+	 * specify the data type the screen should be saved in. Any combination of the
+	 * print-fields are possible.
+	 * 
+	 * @param screen The screen to be printed.
+	 * @param filename The filename if the figure is supposed to be saved as picture on the hard disk.
+	 */
 	private void print(Screen screen, String filename)
 	{
 		if(filename!=null && !filename.equals(""))

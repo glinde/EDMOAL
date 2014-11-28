@@ -48,15 +48,32 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
 
-
 /**
- * This class ensures an integrity of data object indices.
+ * Together with the <code>IndexedDataObject</code>, this class is the backbone of the entire data analysis structure.
+ * The class is designed to give a fast two-way index information about a data object.
+ * Data in the EDMOAL project should always be organized in a <code>IndexedDataSet</code> and all
+ * classes and methods concerned with the organization of the data should also store these container classes.<br>
+ * 
+ * The reason for this is the index integrity <code>IndexedDataObject</code> and <code>IndexedDataSet</code> provides.
+ * This is a design decision that is done to simplify the handling of data for many different algorithms. If an
+ * algorithm wants to provide additional information for a data set (for example a classification),
+ * it just needs to provide a list, containing this additional data. The raw data is unaffected. This way, many
+ * different algorithms can simultaneously provide different information for the same data set. The
+ * index integrity of the <code>IndexedDataSet</code> guarantees, that the additional information is valid
+ * if the data set is sealed. <br>
+ * 
+ * Index integrity means, this class guarantees a 1:1 relationship between indices and data objects, once it is sealed.
  * It is not possible to have the same data object in more than one data set.
  * It is not possible to have the same data object multiple times in a data set.
- * It is however possible to have multiple data objects with the same content (but different index).  
+ * It is however possible to have multiple data objects with the same content (but different index) which essencially
+ * means, that the data object is available multiple times in the data set. <br>
  * 
- * TODO Class Description
- *
+ * This class is essentially an container for the <code>ArrayList</code> class and implements the <code>List</code> and
+ * <code>Set</code> interfaces. However, it masks all functionality of <code>ArrayList</code> w.r.t. the integrity
+ * of the indices of its <code>IndexedDataObejcts</code> and it provides the <code>Sealable</code> functionality.
+ * Note that also the iterator is affected by that because it can be used to modify the contents of a <code>IndexedDataSet</code>. 
+ * 
+ * @see IndexedDataObject
  * @author Roland Winkler
  */
 public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedDataObject<T>>, Set<IndexedDataObject<T>>, RandomAccess, Serializable
@@ -64,16 +81,19 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	/**  */
 	private static final long	serialVersionUID	= 7004911926477840555L;
 
+	/** The number of IndexedDataSets initialized by the virtual mashiene */
 	private static int instanceCounter = 0;
 	
-	/** the number of instances of IndexedDataSets. To provide an ordering of indexed data objects (and thus make them comparable). */
+	/** The number of instances of IndexedDataSets that were initialized before this instance.
+	 * This information provides an ordering of indexed data sets and thus make indexed data objects comparable w.r.t. to their
+	 * index and the IndexedDataSet they are assigned to. */
 	private int instanceNumber;
 	
-	/**  */
+	/** The ArrayList holding the indexedDataObjects */
 	private ArrayList<IndexedDataObject<T>> list;
 	
 	
-	/** */
+	/** The default constructor, creates a new IndexedDataSet instance. */
 	public IndexedDataSet()
 	{
 		this.list = new ArrayList<IndexedDataObject<T>>();
@@ -81,16 +101,29 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		IndexedDataSet.instanceCounter++;
 	}
 
-	/** */
+	/** 
+	 * A constructor which provides information for the initial capacity of the set.
+	 *  
+	 * @param initialCapacity The initial capacity
+	 * 
+     * @throws IllegalArgumentException - if the specified initial capacity is negative
+     */
 	public IndexedDataSet(int initialCapacity)
 	{
+	    if (initialCapacity < 0) throw new IllegalArgumentException("Illegal Capacity: "+ initialCapacity);
+	    
 		this.list = new ArrayList<IndexedDataObject<T>>(initialCapacity);
 		this.instanceNumber = IndexedDataSet.instanceCounter;
 		IndexedDataSet.instanceCounter++;
 	}
 	
 	/**
-	 * @param col
+	 * A constructor which produces a IndexedDataSet and it creates for each element of the
+	 * specified collection an IndexedDataObject for this instance of the IndexedDataSet. 
+	 * 
+	 * @param col A collection of Elements that should be added to this instance 
+	 * 
+	 * @throws NullPointerException - if the specified collection contains one or more null elements
 	 */
 	public IndexedDataSet(Collection<T> col)
 	{
@@ -104,37 +137,59 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 	}
 	
-	/** O(n-index), 
-	 * n = this.size()
+	/** 
+	 * Recalculates the indices for all elements starting with <code>startIndex</code>.<br>
 	 * 
-	 * @param index
+	 * Complexity: O(n-startIndex), n = this.size()
+	 * 
+	 * @param startIndex The start index for reindexation
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 */
-	private void reindexFrom(int index)
+	private void reindexFrom(int startIndex)
 	{
-		this.registerChange();
+		this.registerModification();
 		
-		for(int i=index; i<this.list.size(); i++)
+		for(int i=startIndex; i<this.list.size(); i++)
 		{
 			this.list.get(i).setID(i);
 		}
 	}
 
-	/** O(1)
+	/**
+	 *  Adds an <code>IndexedDataObject</code> to the list. 
+	 *  It will throw an illegal argument exception if the <code>IndexedDataObject</code> is already part of an <code>IndexedDataSet</code>.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @param e The IndexedDayaObject to add	 * 
+	 * @return always true if no exception is provoked
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * 
 	 * @see java.util.List#add(java.lang.Object)
 	 */
-	@Override
 	public boolean add(IndexedDataObject<T> e)
 	{
 		if(e.isInSet()) throw new IllegalArgumentException("Data Object " + e + " is member of a data set.");
-		this.registerChange();
+		this.registerModification();
 		
 		e.setDataSetConnection(this.size(), this);
 		this.list.add(e);
 		return true;
 	}
 
-	/** O(n-index), 
-	 * n = this.size()
+	/**
+	 * Adds an <code>IndexedDataObject</code> to the list at index <code>index</code>.<br>
+	 * It will throw an illegal argument exception if the <code>IndexedDataObject</code> is already part of an <code>IndexedDataSet</code>.<br>
+	 * 
+	 * Complexity: O(n-index),  n = this.size()
+	 * 
+	 * @param index The index at which position the <code>IndexedDataObject</code> should be added
+	 * @param e The <code>IndexedDataObject</code> to add
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
 	 * 
 	 * @see java.util.List#add(int, java.lang.Object)
 	 */
@@ -142,7 +197,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public void add(int index, IndexedDataObject<T> e)
 	{
 		if(e.isInSet()) throw new IllegalArgumentException("Data Object " + e + " is member of a data set.");
-		this.registerChange();
+		this.registerModification();
 				
 		if (index > this.size() || index < 0) throw new IndexOutOfBoundsException("Index: "+index+", Size: "+this.size());
 		
@@ -152,9 +207,18 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		
 	}
 
-	/** O(k), 
-	 * k = c.size()
+	/** 
+	 * Adds all <code>IndexedDataObject</code>s of the Collection to the list.
+	 * It will throw an illegal argument exception if any of the <code>IndexedDataObject</code>s is already part of an <code>IndexedDataSet</code>.<br>
 	 * 
+	 * Complexity: O(k), k = c.size()
+	 * 
+	 * @param c The Collection of <code>IndexedDataObject</code>s that should be added
+	 * 
+	 * @return always true if no exception is provoked
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws NullPointerException - if the specified collection contains one or more null elements
 	 * 
 	 * @see java.util.List#addAll(java.util.Collection)
 	 */
@@ -167,7 +231,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 			if(e.isInSet()) throw new IllegalArgumentException("The collection contains a data object (" + e + ") which is member of a data set.");
 		}
 
-		this.registerChange();
+		this.registerModification();
 		
 		int newIndex = this.size();
 		this.list.addAll(c);
@@ -176,9 +240,19 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	}
 
 	/**
-	 * O(n-index + k)
-	 * n = this.size(), 
-	 * k = c.size()
+	 * Adds all <code>IndexedDataObject</code>s of the Collection to the list, at position <code>index</code>.
+	 * It will throw an illegal argument exception if any of the <code>IndexedDataObject</code>s is already part of an <code>IndexedDataSet</code>.<br>
+	 * 
+	 * Complexity: O(n-index + k) n = this.size(), k = c.size()
+	 * 
+	 * @param index The index at which position the <code>IndexedDataObject</code> should be added
+	 * @param c The Collection of <code>IndexedDataObject</code>s that should be added
+	 * 
+	 * @return always true if no exception is provoked
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws NullPointerException - if the specified collection contains one or more null elements
+	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
 	 * 
 	 * @see java.util.List#addAll(int, java.util.Collection)
 	 */
@@ -189,22 +263,27 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		{
 			if(e.isInSet()) throw new IllegalArgumentException("The collection contains a data object (" + e + ") which is member of a data set.");
 		}
-		this.registerChange();
+		this.registerModification();
 		
 		this.list.addAll(index, c);
 		this.reindexFrom(index);
 		return true;
 	}
 
-	/** O(n)
-	 * n = this.size()
+	/**
+	 * Removes all <code>IndexedDataObject</code>s from this set. And clears the connection of the <code>IndexedDataObject</code>s 
+	 * to this <code>IndexedDataSet</code><br>
+	 * 
+	 * Complexity: O(n) n = this.size()
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#clear()
 	 */
 	@Override
 	public void clear()
 	{
-		this.registerChange();
+		this.registerModification();
 		
 		for(IndexedDataObject<T> d:this.list)
 		{
@@ -214,7 +293,17 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		this.list.clear();
 	}
 
-	/** O(1)
+	/**
+	 * Checks whether an object is contained in this this set. It needs to be an <code>IndexedDataObject</code>
+	 * to be part of this set, but as the interface does only allow the type Object as parameter for this function,
+	 * it is used. Calling this function with a different types than <code>IndexedDataObject</code> will not
+	 * result in an exception, the function will simply return false.<br> 
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @param o The object that should be checked
+	 * 
+	 * @return true if the Object is contained, false otherwise
 	 *
 	 * @see java.util.List#contains(java.lang.Object)
 	 */
@@ -226,10 +315,18 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return ((IndexedDataObject<T>)o).isInSet(this);
 	}
 
-	/** O(k) 
-	 * k = c.size()
+	/**
+	 * Checksfor all Objects in the specified collection whether they are contained in this set. In short, 
+	 * for all objects in the collection <code>contains(Object)<\code> is called.<br> 
+	 * 
+	 * Complexity: O(k), k = c.size()
+	 *  
+	 * @param c The collection of objects that should be checked
+	 * 
+	 * @return true if all Objects are contained in this set, false otherwise. 
 	 * 
 	 * @see java.util.List#containsAll(java.util.Collection)
+	 * @see IndexedDataSet#contains(Object)
 	 */
 	@Override
 	public boolean containsAll(Collection<?> c)
@@ -241,7 +338,15 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return contained;
 	}
 
-	/** O(1)
+	/**
+	 * Gets the <code>IndexedDataObject</code> of the specified index.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @param index The index of the <code>IndexedDataObject</code> that should be returned 
+	 * @return The <code>IndexedDataObject</code> at the position of <code>index</code>
+	 * 
+	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size())
 	 * 
 	 * @see java.util.List#get(int)
 	 */
@@ -251,7 +356,13 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return this.list.get(index);
 	}
 
-	/** O(1)
+	/**
+	 * Gets the index of the specified Object or -1 if it is not contained.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @param o The object for which the index should be return
+	 * @return the index of the specified object or -1 if it is not contained
 	 *
 	 * @see java.util.List#indexOf(java.lang.Object)
 	 */
@@ -265,7 +376,12 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return ((IndexedDataObject<T>)o).getID();
 	}
 
-	/** O(1)
+	/**
+	 * Checks whether or not the set contains any objects.
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @return true if this set is empty.
 	 * 
 	 * @see java.util.List#isEmpty()
 	 */
@@ -275,7 +391,14 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return this.list.isEmpty();
 	}
 
-	/** O(1)
+	/**
+	 * Gets a new Iterator for iterating over all elements of the set. Note that the Iterator
+	 * is an instance of the class <code>IndexedDataSet.UnmodifyingIterator</code> which is not able
+	 * to modify the sets content.<br>
+	 *  
+	 * Complexity: O(1)
+	 * 
+	 * @result A new UnmodifyingIterator instance
 	 * 
 	 * @see java.util.List#iterator()
 	 */
@@ -285,9 +408,17 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return new UnmodifyingIterator();
 	}
 
-	/** O(1)
+	/**
+	 * Gets the (last) index of the specified Object or -1 if it is not contained. due to the set property of
+	 * the <code>IndexedDataSet</code>, this function is identical to <code>indexOf(Object)</code>.<br>
 	 * 
-	 * @see java.util.List#lastIndexOf(java.lang.Object)
+	 * Complexity: O(1)
+	 * 
+	 * @param o The object for which the index should be return
+	 * @return the index of the specified object or -1 if it is not contained
+	 *
+	 * @see java.util.List#indexOf(java.lang.Object)
+	 * @see IndexedDataSet#indexOf(Object)
 	 */
 	@Override
 	public int lastIndexOf(Object o)
@@ -295,9 +426,16 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return this.indexOf(o);
 	}
 
-	/** O(1)
+	/**
+	 * Gets a new Iterator for iterating over all elements of the list. Note that the Iterator
+	 * is an instance of the class <code>IndexedDataSet.UnmodifyingIterator</code> which is not able
+	 * to modify the sets content.<br>
+	 *  
+	 * Complexity: O(1)
 	 * 
-	 * @see java.util.List#listIterator()
+	 * @result A new UnmodifyingIterator instance
+	 * 
+	 * @see java.util.List#iterator()
 	 */
 	@Override
 	public ListIterator<IndexedDataObject<T>> listIterator()
@@ -305,9 +443,17 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return new UnmodifyingListIterator();
 	}
 
-	/** O(1)
+	/**
+	 * Gets a new Iterator for iterating over all elements of the set. Note that the Iterator
+	 * is an instance of the class <code>IndexedDataSet.UnmodifyingIterator</code> which is not able
+	 * to modify the sets content.<br>
+	 *  
+	 * Complexity: O(1)
 	 * 
-	 * @see java.util.List#listIterator(int)
+	 * @param index The start index of the iterator
+	 * @result A new UnmodifyingIterator instance which starts at index <code>index</code>
+	 * 
+	 * @see java.util.List#iterator()
 	 */
 	@Override
 	public ListIterator<IndexedDataObject<T>> listIterator(int index)
@@ -315,8 +461,15 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return new UnmodifyingListIterator(index);
 	}
 
-	/** O(n-o.id)
-	 * n = this.size()
+	/** 
+	 * Removes the specified object and reindexes all subsequent <code>IndexedDataObject</code>s.<br>
+	 * 
+	 * Complexity: O(n-o.id), n = this.size()
+	 * 
+	 * @param o The object to be removed
+	 * @result true if the Object was removed
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#remove(java.lang.Object)
 	 */
@@ -325,7 +478,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public boolean remove(Object o)
 	{
 		if(!this.contains(o)) return false;
-		this.registerChange();
+		this.registerModification();
 		
 		IndexedDataObject<T> d = (IndexedDataObject<T>)o;
 		
@@ -336,8 +489,16 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return true;
 	}
 
-	/** O(n-index)
-	 * n = this.size()
+	/** 
+	 * Removes the object at the specified index and reindexes all subsequent <code>IndexedDataObject</code>s.<br>
+	 * 
+	 * Complexity: O(n-index), n = this.size()
+	 * 
+	 * @param index The index of the object to be removed
+	 * @result the removed Object
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size())
 	 * 
 	 * @see java.util.List#remove(int)
 	 */
@@ -345,7 +506,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public IndexedDataObject<T> remove(int index)
 	{
 		IndexedDataObject<T> d = this.list.get(index);		
-		this.registerChange();
+		this.registerModification();
 		
 		this.list.remove(index);
 		d.clearDataSetConnection();
@@ -354,9 +515,15 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return d;
 	}
 
-	/** O(n+k)
-	 * n = this.size(), 
-	 * k = c.size()
+	/** 
+	 * Removes all objects, contained in the collection and reindexes all other <code>IndexedDataObject</code>s.<br>
+	 * 
+	 * O(n+k), n = this.size(), k = c.size()
+	 * 
+	 * @param c The collection of object that are to be removed
+	 * @result true if at least one object is removed
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#removeAll(java.util.Collection)
 	 */
@@ -376,7 +543,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 		
 		if(removeCounter == 0) return false;
-		this.registerChange();
+		this.registerModification();
 		
 		for(IndexedDataObject<T> d:this.list)
 		{
@@ -388,9 +555,16 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return true;
 	}
 
-	/** approximately O(n+k)
-	 * n = this.size(), 
-	 * k = c.size()
+	
+	/**
+	 * Removes all objects, that are NOT contained in the collection and reindexes all others <code>IndexedDataObject</code>s.<br>
+	 *  
+	 * Approximate complexity: O(n+k), n = this.size(), k = c.size()
+	 * 
+	 * @param c The collection of object that are NOT to be removed
+	 * @result true if at least one object is removed
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
 	 * 
 	 * @see java.util.List#retainAll(java.util.Collection)
 	 */
@@ -412,7 +586,21 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return true;
 	}
 
-	/** O(1)
+	/** 
+	 * Replaces the <code>IndexedDataObject</code> at the specified index and returns the replaced one. The old
+	 * <code>IndexedDataObject</code> is disconnected from this <code>IndexedDataSet</code> and is after this function
+	 * not longer connected to this <code>IndexedDataSet</code>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @param index The index of the object that is to be replaced
+	 * @param e the new <code>IndexedDataObject</code> at position <code>index</code>
+	 * @return The <code>IndexedDataObject</code> that was replaced at position <code>index</code>
+	 * 
+	 * @throws ModificationNotAllowedException - if the <code>IndexedDataSet</code> is sealed
+	 * @throws NullPointerException - if the specified element is null
+	 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size())
+	 * 
 	 * 
 	 * @see java.util.List#set(int, java.lang.Object)
 	 */
@@ -420,7 +608,7 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	public IndexedDataObject<T> set(int index, IndexedDataObject<T> e)
 	{
 		if(e.isInSet()) throw new IllegalArgumentException("Data Object " + e + " is member of a data set.");
-		this.registerChange();
+		this.registerModification();
 		
 		IndexedDataObject<T> removed = this.list.set(index, e);
 		removed.clearDataSetConnection();
@@ -429,7 +617,12 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return removed;
 	}
 
-	/** O(1)
+	/**
+	 * Returns the number of stored <code>IndexedDataObject</code>s.<br>
+	 * 
+	 * Complexity: O(1)
+	 * 
+	 * @return The number of stored <code>IndexedDataObject</code>s
 	 * 
 	 * @see java.util.List#size()
 	 */
@@ -439,7 +632,18 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return this.list.size();
 	}
 
-	/** O(toIndex-fromIndex)
+	/**
+	 * Gets a sublist of all <code>IndexedDataObject</code>s between the two specified indices. Note that the 
+	 * first index is included and the last index is excluded. Also the returned List instance is not an 
+	 * <code>IndexedDataSet</code> because the contained <code>IndexedDataObject</code>s can only be in one <code>IndexedDataSet</code>.
+	 * And they are already contained in this instance. <br>
+	 * 
+	 * Complexity:  O(k), k = toIndex - fromIndex
+	 * 
+	 * @param fromIndex The first index of the sublist (included)
+	 * @param toIndex The last index of the sublist (excluded)
+	 * @return A sublist of all <code>IndexedDataObject</code>s between the two specified indices
+	 * @throws: IndexOutOfBoundsException - for illegal index values (fromIndex < 0 || toIndex > size || fromIndex > toIndex)
 	 * 
 	 * @see java.util.List#subList(int, int)
 	 */
@@ -449,8 +653,12 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return this.list.subList(fromIndex, toIndex);
 	}
 
-	/** O(n)
-	 * n = this.size()
+	/**
+	 *  Creates an array, containing all <code>IndexedDataObject</code>s of this <code>IndexedDataSet</code> in ascending order.<br>
+	 * 
+	 * Complexity: O(n), n = this.size()
+	 * 
+	 * @return A new array containing all <code>IndexedDataObject</code>s of this <code>IndexedDataSet</code>.
 	 * 
 	 * @see java.util.List#toArray()
 	 */
@@ -460,9 +668,20 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		return this.list.toArray();
 	}
 
-	/** O(n)
-	 * n = this.size()
+	/**
+	 * Fills all <code>IndexedDataObject</code>s of this <code>IndexedDataSet</code> into the specified array in ascending order.
+	 * If the array is too small, a new instance of the array is created and returned.
+	 * The specified type of the array must be a supertype of <code>IndexedDataObject</code>.
 	 * 
+	 * Complexity: O(n),  n = this.size()
+	 * 
+     * @param a the array into which the elements of the list are to be stored, if it is big enough;
+     * 			otherwise, a new array of the same runtime type is allocated for this purpose.
+     * @return an array containing the elements of the list
+     * @throws ArrayStoreException if the runtime type of the specified array
+     *         is not a supertype of <code>IndexedDataObject</code>
+     * @throws NullPointerException if the specified array is null
+     * 
 	 * @see java.util.List#toArray(T[])
 	 */
 	@Override
@@ -472,13 +691,13 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	}
 	
 
-    /*** O(1)
-	 * n = this.size()
-	 * 
-     * Returns the first data object (the item with id 0) of the data set.
+    /**
+     * Returns the first <code>IndexedDataObject</code> (the item with index 0) of the <code>IndexedDataSet</code>.
+     * 
+     * Complexity:  O(1)
      *
      * @return the first data object of the data set.
-     * @throws NoSuchElementException if the date set is empty
+     * @throws NoSuchElementException if the <code>IndexedDataSet</code> is empty
      */
     public IndexedDataObject<T> first()
     {
@@ -487,10 +706,11 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
     	return this.list.get(0);
     }
 
-    /*** O(1)
+    /**
+     * Returns the last <code>IndexedDataObject</code> (the item with index this.size() - 1) of the <code>IndexedDataSet</code>.
+     * 
+     * Complexity:  O(1)
 	 * 
-     * Returns the last data object (the item with highest id) of the data set.
-     *
      * @return the last data object of the data set.
      * @throws NoSuchElementException if the date set is empty
      */
@@ -506,17 +726,15 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * The iterator does not support any modifications in order to ensure the integrity of the data set.
 	 * It throws a IteratorModificationsNotSupportedException when ever it is tried to modify the data set through the iterator.
 	 * 
-	 * @author wink_ro
-	 *
-	 * @param <S>
+	 * @author Roland Winkler
 	 */
 	private class UnmodifyingIterator implements Iterator<IndexedDataObject<T>>
 	{
-		/**  */
+		/** The iterator that is masked by this class. */
 		private Iterator<IndexedDataObject<T>> iter;
 		
 		/**
-		 * 
+		 * The standard constructor
 		 */
 		public UnmodifyingIterator()
 		{
@@ -524,7 +742,9 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 		
 		/**
-		 * @return
+		 * Checks whether more elements are in the iteration queue
+		 * 
+		 * @return true if the iteration has more elements
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext()
@@ -533,7 +753,11 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Returns the next element of the iteration.
+		 * 
+		 * @return the next element of the iteration
+		 * @throws NoSuchElementException - if the iteration has no more elements
+		 * 
 		 * @see java.util.Iterator#next()
 		 */
 		public IndexedDataObject<T> next()
@@ -542,7 +766,9 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
+		 * Not supported.
 		 * 
+		 * @throws Throws always an IteratorModificationsNotSupportedException to ensure the integrity of the <code>IndexedDataSet</code> index structure
 		 * @see java.util.Iterator#remove()
 		 */
 		public void remove()
@@ -557,26 +783,39 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 	 * It throws a IteratorModificationsNotSupportedException when ever it is tried to modify the data set through the iterator.
 	 * 
 	 * @author wink_ro
-	 *
-	 * @param <S>
 	 */
 	private class UnmodifyingListIterator implements ListIterator<IndexedDataObject<T>>
 	{
+		/** The iterator that is masked by this class. */
 		private ListIterator<IndexedDataObject<T>> listIter;
-		
+
+		/**
+		 * The standard constructor
+		 */
 		public UnmodifyingListIterator()
 		{
 			this(0);
 		}
 		
-		/** */
+		
+		/**
+		 * The constructor for <code>UnmodifyingListIterator</code> which starts at the specified index.
+		 * 
+		 * @param index index of the first element to be returned from the list iterator (by a call to next)
+		 * @returns	a list iterator over the elements in this list (in proper sequence), starting at the specified position in the list
+		 * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
+		 */
 		public UnmodifyingListIterator(int index)
-		{		
+		{
 			this.listIter = IndexedDataSet.this.list.listIterator(index);
 		}
 
 		/**
-		 * @param e
+		 * Not supported.
+		 * 
+		 * @param e An element to be added 
+		 * @throws Throws always an IteratorModificationsNotSupportedException to ensure the integrity of the <code>IndexedDataSet</code> index structure
+		 * 
 		 * @see java.util.ListIterator#add(java.lang.Object)
 		 */
 		public void add(IndexedDataObject<T> e)
@@ -585,7 +824,9 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Checks whether more elements are in the iteration
+		 * 
+		 * @return true if the iteration has more elements
 		 * @see java.util.ListIterator#hasNext()
 		 */
 		public boolean hasNext()
@@ -594,7 +835,9 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Checks whether there elements before the current iterator position
+		 * 
+		 * @return true if the iteration has more elements
 		 * @see java.util.ListIterator#hasPrevious()
 		 */
 		public boolean hasPrevious()
@@ -603,7 +846,11 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Returns the next element of the iteration.
+		 * 
+		 * @return the next element of the iteration
+		 * @throws NoSuchElementException - if the iteration has no more elements
+		 * 
 		 * @see java.util.ListIterator#next()
 		 */
 		public IndexedDataObject<T> next()
@@ -612,7 +859,10 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Returns the next index of the iteration, that is the index of <code>IndexedDataObject</code> that is returned
+		 * by calling the <code>next()</code> function.
+		 * 
+		 * @return the next index of the iteration
 		 * @see java.util.ListIterator#nextIndex()
 		 */
 		public int nextIndex()
@@ -621,7 +871,11 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Returns the previous element of the iteration.
+		 * 
+		 * @return the previous element of the iteration
+		 * @throws NoSuchElementException - if the iteration has no more elements
+		 * 
 		 * @see java.util.ListIterator#previous()
 		 */
 		public IndexedDataObject<T> previous()
@@ -630,7 +884,10 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @return
+		 * Returns the previous index of the iteration, that is the index of <code>IndexedDataObject</code> that is returned
+		 * by calling the <code>previous()</code> function.
+		 * 
+		 * @return the next index of the iteration
 		 * @see java.util.ListIterator#previousIndex()
 		 */
 		public int previousIndex()
@@ -639,6 +896,9 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
+		 * Not supported.
+		 * 
+		 * @throws Throws always an IteratorModificationsNotSupportedException to ensure the integrity of the <code>IndexedDataSet</code> index structure
 		 * 
 		 * @see java.util.ListIterator#remove()
 		 */
@@ -648,7 +908,11 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 		}
 
 		/**
-		 * @param e
+		 * Not supported.
+		 * 
+		 * @throws Throws always an IteratorModificationsNotSupportedException to ensure the integrity of the <code>IndexedDataSet</code> index structure
+		 * 
+		 * @param e An element to set
 		 * @see java.util.ListIterator#set(java.lang.Object)
 		 */
 		public void set(IndexedDataObject<T> e)
@@ -659,6 +923,13 @@ public class IndexedDataSet<T> extends AbstractSealable implements List<IndexedD
 
 
 	/**
+	 * The <code>instanceNumber</code> is the counter of instances that are created by this VM. The <code>instanceNumber</code> of this particular
+	 * <code>IndexedDataSet</code> means that <code>instanceNumber</code> - many other <code>IndexedDataSet</code> have been initialized and
+	 * this <code>IndexedDataSet</code> is number <code>instanceNumber</code>.
+	 * This information provides an ordering of <code>IndexedDataSet</code>s and thus make <code>IndexedDataSet</code>s comparable w.r.t. to their
+	 * index and the <code>IndexedDataSet</code> they are assigned to. So there is a total ordering for all <code>IndexedDataObjects</code>
+	 * that are assigned to an <code>IndexedDataSet</code>.
+	 * 	
 	 * @return the instanceNumber
 	 */
 	public int getInstanceNumber()

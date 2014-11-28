@@ -42,6 +42,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.set.IndexedDataObject;
+import data.set.IndexedDataSet;
+
 /**
  * TODO Class Description
  *
@@ -66,26 +69,37 @@ public class CSVFileWriter extends FileLineWriter implements Serializable
 		this.addFirstAttributeAsID = false;
 		this.defaultAttributeName = "attribute ";
 	}
+
 	
+	public void writeDoubleDataTableIndexed(IndexedDataSet<double[]> dataSet, List<String> attributeNames) throws IOException
+	{
+		ArrayList<double[]> data = new ArrayList<double[]>(dataSet.size());
+		for(IndexedDataObject<double[]> d:dataSet) data.add(d.x);
+		
+		this.writeDoubleDataTable(data, attributeNames);
+	}
 	
 	public void writeDoubleDataTable(List<double[]> data, List<String> attributeNames) throws IOException
 	{
 		int i, j;
+		ArrayList<String> attributeNamesList;
 		
 		if(this.firstLineAsAtributeNames)
 		{
-			if(attributeNames == null) attributeNames = new ArrayList<String>(data.get(0).length+2); 
-			if(data.get(0).length > attributeNames.size())
+			if(attributeNames == null) attributeNamesList = new ArrayList<String>(data.get(0).length+2);
+			else attributeNamesList = new ArrayList<String>(attributeNames);
+			
+			if(data.get(0).length > attributeNamesList.size())
 			{
-				for(i=attributeNames.size();i<data.get(0).length;i++)
+				for(i=attributeNamesList.size();i<data.get(0).length;i++)
 				{
-					attributeNames.add(this.defaultAttributeName + i);
+					attributeNamesList.add(this.defaultAttributeName + i);
 				}
 			}
-			if(this.addFirstAttributeAsID) attributeNames.add(0, "ID");
+			if(this.addFirstAttributeAsID) attributeNamesList.add(0, "ID");
 			
 			//System.out.println("attributes: " + attributeNames.toString());
-			this.writeStringListLine(attributeNames);
+			this.writeStringListLine(attributeNamesList);
 		}
 		
 		ArrayList<ArrayList<String>> dataStringTable = new ArrayList<ArrayList<String>>();
@@ -93,7 +107,7 @@ public class CSVFileWriter extends FileLineWriter implements Serializable
 		for(i=0; i<data.size(); i++)
 		{
 			line = new ArrayList<String>();
-			if(this.addFirstAttributeAsID) line.add("" + (i+1));
+			if(this.addFirstAttributeAsID) line.add("" + i);
 			for(j=0;j<data.get(i).length; j++)
 			{
 				line.add("" + data.get(i)[j]);

@@ -40,46 +40,86 @@ package datamining.clustering.protoype;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 import datamining.IterativeObjectiveFunctionOptimization;
 import datamining.clustering.AbstractClusteringAlgorithm;
+import datamining.resultProviders.PrototypeProvider;
 
 /**
- * TODO Class Description
- *
+ * An abstract class for all prototype based clustering algorithms, without specifying the class of the prototype.
+ * It provides functionalities to record the objective function and a counter for the number of iterations.
+ * The most important functionality of this class is, that it takes care of storing and initializing the prototypes.
+ * It is possible to take the prototypes of a different prototype based clustering algorithm or to put in some existing
+ * prototypes. Initializing with position however, is not possible at this point because the
+ * class of the prototypes is yet unspecified.<br>
+ * 
+ * The {@link #learningFactor} influences the movement speed of the prototypes. When setting a prototype
+ * to a new position, the difference vector from the current to the new position is multiplied
+ * by the learning factor. Thus, it is possible to slow down the clustering process or to speed
+ * it up.<br>
+ * 
+ * Typical for prototype based clustering algorithms is, that they are performed until the algorithm stabilizes (i.e.
+ * nothing changes any more). This is reflected by the parameter {@link #epsilon}. It should be used to terminate
+ * the clustering algorithm if the change in prototype position (either the sum of changes or the change of all
+ * individual prototypes) is below this value {@link #epsilon}.<br>
+ * 
+ * Prototype based algorithms require to calculate the position of a prototype, based on the location of the 
+ * data objects of the represented clusters. Algebraically, a vector space is necessary to do these calculations
+ * and therefore, this class requires a {@link VectorSpace} on the type <code>T</code> to be specified. 
+ * 
  * @author Roland Winkler
  */
-public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends AbstractClusteringAlgorithm<T> implements PrototypeClusteringAlgorithm<T, S>, IterativeObjectiveFunctionOptimization
+public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends AbstractClusteringAlgorithm<T> implements PrototypeProvider<T, S>, IterativeObjectiveFunctionOptimization
 {
 	/**  */
 	private static final long	serialVersionUID	= -7799213874962389902L;
 
-	/** The percentage of which the cluster centers shell be moved at an updating step */
+	/**
+	 * The learning factor influences the movement speed of the prototypes. When setting a prototype
+	 * to a new position, the difference vector from the current to the new position is multiplied
+	 * by the learning factor. Thus, it is possible to slow down the clustering process or to speed
+	 * it up. 
+	 */
 	protected double learningFactor;
 	
-	/**  */
+	/** The vector space that is used for prototype position calculations. */
 	protected final VectorSpace<T> vs;
 	
 	/** 
-	 *	the vector of prototypes used for the clustering. 
+	 *	The vector of prototypes used for the clustering. 
 	 */
 	protected ArrayList<S> prototypes;
 	
 	/** 
-	 *  true if the prototypes have been initialized after object construction or a reset.<br>
-	 *  false if the prototypes have not been initialized yet or if they have been reseted.
+	 *  True if the prototypes have been initialised after object construction or a reset.
+	 *  False if the prototypes have not been initialised yet or if they have been reseted.
 	 */
 	protected boolean initialized;
 	
-	/** counts the steps the clustering algorithm is performed */
+	/** The number of iteration steps the algorithm has performed. */
 	protected int iterationCount;
+	
+	/** Specifies how many iterations the algorithm must go through to consider the result as valid. */
+	protected int minIterations;
 		
 	/** If true, the objective function values are recorded. */
 	protected boolean monitorObjectiveFunctionValues;
 	
-	/** The recorded objective function values */
+	/** The recorded objective function values. */
 	protected ArrayList<Double> objectiveFunctionValues;
+	
+	/** A metric, specifically to detect the convergence of the algorithm. This can differ from the metric, specified for the
+	 * clustering process because there might be advantages in using a different approach. If this value is left
+	 * null, the clustering metric is used instead. */
+	protected Metric<T> convergenceMetric;
+	
+	
+	/** The recorded maximum distances that prototypes travelled in each iteration. It records the history how fast the
+	 * algorithm converged on a prototype level. Recording the objective function history might be too expensive at times,
+	 * which makes the convergence history a cheap alternative. No extra costs are involved. */
+	protected ArrayList<Double> convergenceHistory;
 	
 	/**
 	 *	If the square of prototype movement distance is smaller than <code>epsilon</code>, the calculation stops.<br>
@@ -88,12 +128,16 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	protected double epsilon;
 		
 	/**
-	 *	The initial constructor for clustering. The number of clusters can be changed after initialization, but it
-	 * is not recommended because some algorithms have to be reinitialized.
+	 * The initial constructor for clustering. The number of clusters can be changed after initialisation, but it
+	 * is not recommended because some algorithms have to be reinitialised.
+	 * 
+	 * @param data The data set for clustering.
+	 * @param vs The vector space of which the data objects are elements.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
-	public AbstractPrototypeClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs)
+	public AbstractPrototypeClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data);
+		super(data, metric);
 		
 		this.vs								= vs;
 		this.initialized					= false;
@@ -101,24 +145,29 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		this.iterationCount					= 0;
 		this.monitorObjectiveFunctionValues	= true;
 		this.objectiveFunctionValues		= new ArrayList<Double>(100);
+		this.convergenceHistory				= new ArrayList<Double>(100);
 		this.epsilon						= 0;
+		this.minIterations					= 10;
 		
 		this.prototypes						= new ArrayList<S>();
 	}
 	
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to skip some clusters
-	 * if they are not needed any more.
+	 * This constructor creates a new clustering algorithm, taking an existing one. It has the option to use only
+	 * active prototypes from the old clustering algorithm. This constructor is especially useful if the clusteing is done
+	 * in multiple steps. So the first clustering algorithm can for example calculate the initial positions of the 
+	 * prototypes for the second clustering algorithm. An other option is, that the first clustering algorithm
+	 * creates a set of deactivated prototypes and the second clustering algorithm is initialised with less clusters than the
+	 * first.
 	 * 
 	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	@SuppressWarnings("unchecked")
 	public AbstractPrototypeClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, S> c, boolean useOnlyActivePrototypes)
 	{
-		super(c.data);
+		super(c.data, c.getMetric());
 		
 		this.vs								= c.vs;
 		this.prototypes						= new ArrayList<S>(c.getClusterCount());
@@ -127,7 +176,9 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		this.iterationCount					= 0;
 		this.monitorObjectiveFunctionValues	= c.monitorObjectiveFunctionValues;
 		this.objectiveFunctionValues		= new ArrayList<Double>(100);
+		this.convergenceHistory				= new ArrayList<Double>(100);
 		this.epsilon						= c.epsilon;
+		this.minIterations					= c.minIterations;
 		
 		if(useOnlyActivePrototypes)
 		{
@@ -147,11 +198,12 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 			}
 		}
 	}
-		
-	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initialize(java.util.Collection)
+
+	/**
+	 * Initialises the clustering algorithm with the specified prototypes.
+	 * 
+	 * @param initialPrototypes The prototypes for initialising the clustering algorithm.
 	 */
-	@Override
 	public void initializeWithPrototypes(Collection<S> initialPrototypes)
 	{
 		this.prototypes.clear();		
@@ -159,11 +211,17 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		for(int i=0; i<this.prototypes.size(); i++) this.prototypes.get(i).setClusterIndex(i);
 		this.initialized = true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#initialize(java.lang.Object)
+
+	/**
+	 * Initialises the clustering algorithm and puts prototypes at the specified positions.
+	 * This requires the clustering algorithm to inherit its clustering procedure with its
+	 * standard prototype.<br>
+	 * 
+	 * the number of positions in the specified collection determines the number of prototypes initialised:
+	 * for each position, one prototype is initialised.
+	 * 
+	 * @param initialPrototypePositions The positions at which the prototypes are allowed to be initialised.
 	 */
-	@Override
 	public abstract void initializeWithPositions(Collection<T> initialPrototypePositions);
 
 	/* (non-Javadoc)
@@ -299,12 +357,11 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 		return inactive;
 	}
 
-	
-	
-	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.PrototypeClusteringAlgorithm#getVectorSpace()
+	/**
+	 * Returns the vector space the clustering algorithm uses to calculate prototype positions.
+	 * 
+	 * @return The vector space.
 	 */
-	@Override
 	public VectorSpace<T> getVectorSpace()
 	{
 		return this.vs;
@@ -345,9 +402,89 @@ public abstract class AbstractPrototypeClusteringAlgorithm<T, S extends Prototyp
 	{
 		return this.prototypes.size();
 	}
+	/**
+	 * @return the minIterations
+	 */
+	public int getMinIterations()
+	{
+		return this.minIterations;
+	}
 
 	/**
-	 * @param clone
+	 * @param minIterations the minIterations to set
+	 */
+	public void setMinIterations(int minIterations)
+	{
+		this.minIterations = minIterations;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getPrototypeCount()
+	 */
+	@Override
+	public int getPrototypeCount()
+	{
+		return this.prototypes.size();
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.PrototypeProvider#getActivePrototypesCount()
+	 */
+	@Override
+	public int getActivePrototypesCount()
+	{
+		int active=0;
+		
+		for(Prototype<T> p:this.prototypes)
+		{
+			if(p.isActivated()) active++;
+		}
+		
+		return active;
+	}
+		
+	/**
+	 * Returns the convergence Metric.<br>  
+	 * This metric is specifically used to detect the convergence of the algorithm. This can differ from the clustering metric,
+	 * because there might be advantages in using a different approach. If this value is null, the clustering metric is used instead. 
+	 * 
+	 * @return the convergence Metric. If the value is null, no special convergence metric is defined.
+	 */
+	public Metric<T> getConvergenceMetric()
+	{
+		return convergenceMetric;
+	}
+
+	/**
+	 * Sets the convergence Metric.<br>  
+	 * This metric is specifically used to detect the convergence of the algorithm. This can differ from the clustering metric,
+	 * because there might be advantages in using a different approach. If this value is set to null, the clustering metric is used instead. 
+	 * 
+	 * @param convergenceMetric The metric that should be used for detecting the convergence of the algorithm. If it is set to null, the clustering metric is used instead.
+	 */
+	public void setConvergenceMetric(Metric<T> convergenceMetric)
+	{
+		this.convergenceMetric = convergenceMetric;
+	}
+
+	/**
+	 * Returns the recorded maximum distances that prototypes travelled in each iteration. The history records how fast the
+	 * algorithm converged on a prototype level. Recording the objective function history might be too expensive at times,
+	 * which makes the convergence history a cheap alternative. No extra costs are involved.
+	 * 
+	 * @return
+	 */
+	public double[] getConvergenceHistory()
+	{
+		double[] history = new double[this.convergenceHistory.size()];
+		
+		for(int i=0; i<this.convergenceHistory.size(); i++) history[i] = this.convergenceHistory.get(i);
+		
+		return history;
+	}
+
+	/**
+	 * @TODO: remove.  
 	 */
 	@SuppressWarnings("unchecked")
 	public void clone(AbstractPrototypeClusteringAlgorithm<T, S> clone)

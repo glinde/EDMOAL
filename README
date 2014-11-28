@@ -1,0 +1,170 @@
+Copyright (c) 2011, The EDMOAL Project
+
+	DLR Deutsches Zentrum fuer Luft- und Raumfahrt e.V.
+	German Aerospace Center e.V.
+	Institut fuer Flugfuehrung/Institute of Flight Guidance
+	Tel. +49 531 295 2500, Fax: +49 531 295 2550
+	WWW: http://www.dlr.de/fl/		
+ 
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+    	this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+    	this list of conditions and the following disclaimer in the documentation and/or
+    	other materials provided with the distribution.
+    * Neither the name of the DLR nor the names of its contributors
+    	may be used to endorse or promote products derived from this software
+    	without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+Author: Roland Winkler
+
+
+EDMOAL: Efficient Data Mining on Algebraic Limits
+
+Contents: 
+1. Motivation for EDMOAL
+2. How to use
+3. The Basic Structure
+4. The Future
+
+
+
+1. Motivation for EDMOAL
+1.1 Why yet an other data mining tool?
+
+Many algorithms in data mining tools, work based on arrays of floating point values. For data that
+can not be expressed by such an array, standard algorithms can't be used. However, most algorithms
+only require a certain algebraic structure on the data objects, depending on the algorithm. Also
+data structures sometimes require a certain algebraic structure rather than a specific form like
+a floating point array.
+
+EDMOAL is build to apply algorithms and data structures to their full potential, limited only by
+the algebraic structure underlying the data. For example if a data mining algorithm only examines
+the distances between data objects, it is not necessary to have a vector space algebra on top of the
+data objects. DBScan is an example for such an algorithm. However, all the clustering algorithms
+using prototypes as cluster representatives need a vector space on the data in order to compute
+the locations of the prototypes. But both types algorithms are not restricted to floating point
+arrays. Only the algebraic structure needs to be available for what ever data that should be
+analysed. The same is true for some data structures. A k-d-tree for example needs an array
+structure, but a ball-tree does not while a centered ball tree requires a vector space.
+
+Keeping only the algebraic limits in mind for all algorithms and data structures enables it to
+design one algorithm for all kinds of data, provided an algebraic structure can be provided for
+the algorithm. Most other data mining tools to my knowledge are not capable of that or only very
+limited.
+
+1.2 The efficient E in EDMOAL
+
+The algorithms provided in EDMOAL are designed to save first and foremost computation time where
+possible without obfuscating the code. Also they are designed to use as little memory as possible.
+For example for Fuzzy-c Means, it is not required to store the membership matrix during the
+clustering process, so it is not done.
+
+In most other data mining tools, algorithms do not utilize a data structure in order to speed
+up data mining processes. For example DBScan implemented naively is in O(n^2) with n being the
+number of data objects. Implemented on a ball-tree requires roughly O(n*k*log_2(n)) with k being
+the minimal number of data objects for clusters, which is much faster for large data sets.
+
+The algorithms in EDMOAL are designed to require a certain data structure if that is necessary for
+the algorithm. That data structure is not always determined by the algorithm, it just requires
+some functionality like for example a nearest neighbour query. How that query is implemented is not
+always important for the algorithm.
+
+1.3 EDMOAL as an API
+
+EDMOAL is not intended to be used as a stand alone tool. Providing a GUI for the general purpose
+user requires a tremendous amount of work. Also EDMOAL should provide functionality for as many
+projects and scientists as possible. Adding a GUI limits its use more than it extends it.
+Therefore, there will be no easy to access GUI like in Weka, Knime or RapidMiner. EDMOAL is not
+intended to be a alternative or competitor to these tools. It might be an enrichment.
+
+The graphical representation of some algorithms is intended to be used for debugging purposes only.
+It might be used for screenshots in scientific papers, but it needs to be adjusted by the user if
+he wants more functionality than it currently has. There might be an other project in the future
+to provide suitable graphical output for EDMOAL algorithms, but it is not on the TODO list yet.
+
+
+
+2. How to use
+
+EDMOAL is intended to be an API and should be used as such. It is provided as an eclipse project.
+To use EDMOAL as is, create a new eclipse project with the provided project files and set the
+classpath to the jars of the batik project in the lib-folder. After that, it should compile without
+any problems.
+
+To get a start on the existing functionality, the package "dataMiningTestTrack" contains some
+examples how to use the algorithms on some artificially generated data.
+
+
+
+3. The Basic Structure
+
+3.1 Indexed Data Set
+
+The core of all algorithms are the classes IndexedDataSet and IndexedDataObject. There are no
+algorithms yet that can deal with dynamic data sets (that is, data sets that change during the
+analysis process). The IndexedDataSet, once build and sealed, can not be changed any more. That
+is important in order to interpret the results of the algorithms properly, or provide O(1)
+access times for some functionalities in data structures. For that, some additional memory is
+required as each IndexedDataObject contains a reference to the IndexedDataSet it is associated to
+and an integer of its position in the array. However, that is a little price to pay because for
+the functionality it provides, especially compared to the size of very complex data objects.
+
+The IndexedDataObject is therefore a container for any class. This provides maximal freedom to
+other developers that want to utilize their existing class structure and apply EDMOAL on them.
+Data mining algorithms and data structures are then build on IndexedDataSets and IndexedDataObjects.
+
+3.2 Data Structures
+
+All data structures are required to implement an interface that masks their functionalities. This
+is useful in order to use data structures based on their functionality and not based on the class
+hierarchy. If algorithms use data structures, they should only use the functionality interfaces
+unless they require a specific implementation of a data structure.
+
+3.3 Data Mining Algorithms  
+
+All data mining algorithms are embedded in a interface hierarchy describing its capabilities. All
+is based on the interface "DataMiningAlgorithm" which just requires an algorithm to provide a
+function that applies the algorithm and return the data set it is applied on. That implies that
+the data set should be set in the constructor. All other interfaces the algorithms implement
+reflect their abilities and the results they are able to produce.
+
+
+
+4. The Future
+
+In the near future, the first task will be to add satisfactory commentary to all classes. The other
+tasks are more complex and may take more time. The tasks are roughly in the order of their
+importance and therefore in their probable order of implementation:
+
+1. Add matrix support classes (matrix algebra functions like inversion etc.) and add algorithms
+like the full expectation maximization algorithm with Gaussian mixture models and Gustafson Kessel
+FCM etc.
+2. Add more clustering algorithms, especially hierarchical and density based algorithms.
+3. Parallelize algorithms as far as possible using a predefined number of threads.
+4. Add more algorithms, not only clustering algorithms.
+5. Add a connection to openCL in order to further parallelize parts of the algorithms in case
+a graphics card is present.
+
+
+
+
+
+
+

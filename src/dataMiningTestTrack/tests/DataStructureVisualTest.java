@@ -37,30 +37,35 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package dataMiningTestTrack.tests;
 
-import gui.ColorList;
-import gui.ScreenViewer;
-import gui.DataMiningGraphics.GDataSet;
-import gui.generalGraphics.GCircle;
-import gui.templates.DrawableTemplate;
-import gui.templates.GeomTemplate;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import data.objects.doubleArray.DAEuclideanDistance;
+import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.BallTree;
-import data.set.structures.BallTreeNode;
-import data.set.structures.CenteredBallTree;
-import data.set.structures.CenteredBallTreeNode;
+import data.structures.balltree.BallTree;
+import data.structures.balltree.BallTreeNode;
+import data.structures.balltree.CenteredBallTree;
+import data.structures.balltree.CenteredBallTreeNode;
 import etc.DataGenerator;
+import gui.ColorList;
+import gui.ScreenViewer;
+import gui.DataMiningGraphics.GDataSet;
+import gui.generalGraphics.GCircle;
+import gui.projections.Orthogonal2DProjection;
+import gui.templates.DrawableTemplate;
+import gui.templates.GeomTemplate;
 
 
 /**
- * TODO Class Description
+ * This class provides some functionality to test data structure algorithms and to verify them visually.
+ * The data for testing is generated artificially, which is also done by this class.<br>
+ * 
+ * The data set is just 2-dimensional and semi-randomly generated.
+ * The actual location of the data objects is randomly generated, but the distribution
+ * of the data objects is predefined.
  *
  * @author Roland Winkler
  */
@@ -68,8 +73,19 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 {
 	/**  */
 	private static final long	serialVersionUID	= 7166084323032199964L;
+	
+	/**
+	 *  The data set, used for the tests.
+	 */
 	private IndexedDataSet<double[]> dataSet;
 	
+	/**
+	 * Generates a new test environment. The data set is just 2-dimensional and semi-randomly generated.
+	 * The actual location of the data objects is randomly generated, but the distribution
+	 * of the data objects is predefined.
+	 * 
+	 * @param dataObjectCount The number of data objects, generated for this test.
+	 */
 	public DataStructureVisualTest(int dataObjectCount)
 	{
 		ArrayList<double[]> data = new ArrayList<double[]>();
@@ -88,11 +104,21 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		this.dataSet.seal();
 	}
 	
+	/**
+	 * Organises the data set in a ball tree, using the naive build. It visualises
+	 * the data set according to each level of the tree. So for each level, a
+	 * new window is opened and the properties of the nodes of this level are
+	 * visualised.
+	 */
 	public void ballTreeStructureTest()
 	{
 		int k = 10;
 		int maxVisuaiDepth = 3;
-				
+
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
+		
 		ScreenViewer dataViewFrame;
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelList = new ArrayList<ArrayList<IndexedDataObject<double[]>>>();
 		GDataSet graphicsCluster;
@@ -103,7 +129,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelSets;
 		ArrayList<BallTreeNode<double[]>> nodesOfLevel;
 
-		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanDistance());
+		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanMetric());
 		ballTree.buildNaive();
 		
 
@@ -111,9 +137,9 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		for(k = 0; k<ballTree.height() && k<maxVisuaiDepth; k++)
 		{
 			levelList.clear();
-			dataViewFrame = new ScreenViewer();
+			dataViewFrame = new ScreenViewer(this.xRes, this.yRes);
 //			dataViewFrame.screen.getTranslator().moveOffset(0.5d, 0.5d);	
-			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet);
+			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet, projection);
 			levelSets = ballTree.subtreeElementsOfLevel(k);
 			nodesOfLevel = ballTree.nodesOfLevel(k);
 
@@ -122,9 +148,8 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			// draw subtree data objects
 			for(i=0; i<levelSets.size(); i++)
 			{
-				graphicsCluster = new GDataSet();
+				graphicsCluster = new GDataSet(levelSets.get(i));
 //				graphicsCluster.setDrawPrototype(false);
-				graphicsCluster.setDataObjects(levelSets.get(i));
 				graphicsCluster.calcCrispInternalSourrounding();
 				graphicsCluster.setDrawInternalArea(true);
 				graphicsCluster.setInternalAreaAlpha(50);
@@ -135,7 +160,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// add circles
 				graphicsCircle = new GCircle(null);
 				graphicsCluster.addChild(graphicsCircle);
-				graphicsCircle.setCenter(nodesOfLevel.get(i).getObj().element);
+				graphicsCircle.setCenter(nodesOfLevel.get(i).getObj().x);
 				graphicsCircle.setRadius(nodesOfLevel.get(i).getRadius());
 				graphicsCircle.getScheme().setColor(graphicsCircle.getBorderColorIndex(), ColorList.RED);
 				graphicsCircle.setDrawInternal(false);
@@ -144,7 +169,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// show center of circle
 				template = new DrawableTemplate(null, new GeomTemplate(GeomTemplate.FILL_CIRCLE));
 				graphicsCluster.addChild(template);
-				template.setPosition(nodesOfLevel.get(i).getObj().element);
+				template.setPosition(nodesOfLevel.get(i).getObj().x);
 				template.getBody().setPixelSize(32.0d);
 				template.getScheme().setColor(template.getBody().getInternalColorIndex(), ColorList.RED);
 				template.getScheme().setColor(template.getBody().getBorderColorIndex(), ColorList.BLACK);
@@ -153,7 +178,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// show node object
 				template = new DrawableTemplate(null, new GeomTemplate(GeomTemplate.FILL_CROSS));
 				graphicsCluster.addChild(template);
-				template.setPosition(nodesOfLevel.get(i).getObj().element);
+				template.setPosition(nodesOfLevel.get(i).getObj().x);
 				template.getBody().setPixelSize(16.0d);
 				template.getScheme().setColor(template.getBody().getInternalColorIndex(), ColorList.RED);
 				template.getScheme().setColor(template.getBody().getBorderColorIndex(), ColorList.BLACK);
@@ -167,11 +192,22 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			dataViewFrame.repaint();
 		}
 	}
+
 	
+	/**
+	 * Organises the data set in a centered ball tree, using the naive build. It visualises
+	 * the data set according to each level of the tree. So for each level, a
+	 * new window is opened and the properties of the nodes of this level are
+	 * visualised.
+	 */
 	public void centeredBallTreeStructureTest()
 	{
 		int k = 10;
 		int maxVisuaiDepth = 3;
+		
+		Orthogonal2DProjection projection = new Orthogonal2DProjection();
+		projection.setDimensionX(this.xIndex);
+		projection.setDimensionY(this.yIndex);
 				
 		ScreenViewer dataViewFrame;
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelList = new ArrayList<ArrayList<IndexedDataObject<double[]>>>();
@@ -183,7 +219,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		ArrayList<ArrayList<IndexedDataObject<double[]>>> levelSets;
 		ArrayList<CenteredBallTreeNode<double[]>> nodesOfLevel;
 
-		CenteredBallTree<double[]> cballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(2), new DAEuclideanDistance());
+		CenteredBallTree<double[]> cballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(2), new DAEuclideanMetric());
 		cballTree.buildNaive();
 		
 
@@ -191,9 +227,9 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 		for(k = 0; k<cballTree.height() && k<maxVisuaiDepth; k++)
 		{
 			levelList.clear();
-			dataViewFrame = new ScreenViewer();
+			dataViewFrame = new ScreenViewer(this.xRes, this.yRes);
 //			dataViewFrame.screen.getTranslator().moveOffset(0.5d, 0.5d);	
-			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet);
+			dataViewFrame.screen.setScreenToDisplayAllIndexed(this.dataSet, projection);
 			levelSets = cballTree.subtreeElementsOfLevel(k);
 			nodesOfLevel = cballTree.nodesOfLevel(k);
 
@@ -202,9 +238,8 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 			// draw subtree data objects
 			for(i=0; i<levelSets.size(); i++)
 			{
-				graphicsCluster = new GDataSet();
+				graphicsCluster = new GDataSet(levelSets.get(i));
 //				graphicsCluster.setDrawPrototype(false);
-				graphicsCluster.setDataObjects(levelSets.get(i));
 				graphicsCluster.calcCrispInternalSourrounding();
 				graphicsCluster.setDrawInternalArea(true);
 				graphicsCluster.setInternalAreaAlpha(50);
@@ -233,7 +268,7 @@ public class DataStructureVisualTest extends TestVisualizer implements Serializa
 				// show node object
 				template = new DrawableTemplate(null, new GeomTemplate(GeomTemplate.FILL_CROSS));
 				graphicsCluster.addChild(template);
-				template.setPosition(nodesOfLevel.get(i).getObj().element);
+				template.setPosition(nodesOfLevel.get(i).getObj().x);
 				template.getBody().setPixelSize(16.0d);
 				template.getScheme().setColor(template.getBody().getInternalColorIndex(), ColorList.RED);
 				template.getScheme().setColor(template.getBody().getBorderColorIndex(), ColorList.BLACK);

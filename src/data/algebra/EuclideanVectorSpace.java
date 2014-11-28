@@ -38,8 +38,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.algebra;
 
 
-/**
- * TODO Class Description
+/** 
+ * An Euclidean vector space is defined as a vector space with a scalar product which also can be used to define a norm.
  *
  * @author Roland Winkler
  */

@@ -42,10 +42,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import data.objects.doubleArray.DAEuclideanMetric;
 import data.set.IndexedDataObject;
 
 /**
- * TODO Class Description
+ * This class provides some basic statistical functions like calculating the mean or
+ * the sample variance of a collection of double values.
  *
  * @author Roland Winkler
  */
@@ -54,9 +56,15 @@ public class SimpleStatistics implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -4215266533598669192L;
 
+	/**
+	 * Calculates the mean of an array of double values.
+	 * 
+	 * @param data An array of double values.
+	 * @return The mean of the values in the double array.
+	 */
 	public static double mean(double[] data)
 	{
-		double mean =0;
+		double mean = 0.0d;
 		
 		for(int i=0; i<data.length; i++) mean+=data[i];
 		
@@ -64,17 +72,24 @@ public class SimpleStatistics implements Serializable
 		
 		return mean;
 	}
-	
+
+	/**
+	 * Calculates the multidimensional mean of a collection of double arrays, embedded in an
+	 * indexed data object.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional mean.
+	 */
 	public static double[] meanIndexed(Collection<IndexedDataObject<double[]>> data)
 	{
 		double[] mean = null;
 		
 		for(IndexedDataObject<double[]> d : data)
 		{
-			if(mean==null) mean = d.element.clone();
+			if(mean==null) mean = d.x.clone();
 			else
 			{
-				for(int k=0; k<mean.length; k++) mean[k] += d.element[k];
+				for(int k=0; k<mean.length; k++) mean[k] += d.x[k];
 			}
 		}
 		for(int k=0; k<mean.length; k++) mean[k] /= data.size();
@@ -82,6 +97,12 @@ public class SimpleStatistics implements Serializable
 		return mean;
 	}
 	
+	/**
+	 * Calculates the multidimensional mean of a collection of double arrays.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional mean.
+	 */
 	public static double[] mean(Collection<double[]> data)
 	{
 		double[] mean = null;
@@ -99,11 +120,20 @@ public class SimpleStatistics implements Serializable
 		return mean;
 	}
 	
+
+	/** 
+	 * Calculates the median of a collection of double arrays, embedded in an
+	 * indexed data object. The median is the multidimensional median, which is
+	 * composed of the individual median values for each dimension.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional median.
+	 */
 	public static double[] medianIndexed(Collection<IndexedDataObject<double[]>> data)
 	{
 		int i, k, m=data.size()/2;
 		double[][] list = new double[data.size()][];		
-		i=0; for(IndexedDataObject<double[]> d: data)	{ list[i] = d.element; i++;	}
+		i=0; for(IndexedDataObject<double[]> d: data)	{ list[i] = d.x; i++;	}
 		double[] median = new double[list[0].length];
 		ArrayIndexComparator aiComp = new ArrayIndexComparator(0);
 				
@@ -125,6 +155,14 @@ public class SimpleStatistics implements Serializable
 		return median;
 	}
 	
+	/** 
+	 * Calculates the median of a collection of double arrays. The median
+	 * is the multidimensional median, which is composed of the individual
+	 * median values for each dimension.
+	 * 
+	 * @param data The collection of double arrays.
+	 * @return The multidimensional median.
+	 */
 	public static double[] median(Collection<double[]> data)
 	{
 		int i, k, m=data.size()/2;
@@ -151,6 +189,12 @@ public class SimpleStatistics implements Serializable
 		return median;
 	}
 	
+	/**
+	 * Calculates the sample variance of a list of double values.
+	 * 
+	 * @param data The double values
+	 * @return The variance of a list of double value.
+	 */
 	public static double variance(double[] data)
 	{
 		double variance = 0.0d;
@@ -166,6 +210,13 @@ public class SimpleStatistics implements Serializable
 		return variance;
 	}
 	
+	/**
+	 * Calculates the sample variance of a list of double values, given the specified mean.
+	 * 
+	 * @param data The double values
+	 * @param mean The mean of the double values (to save some calculation time, because it usually is known already, if the sample variance is supposed to be of interest).
+	 * @return The variance of a list of double value.
+	 */
 	public static double variance(double[] data, double mean)
 	{
 		double variance = 0.0d;
@@ -182,10 +233,37 @@ public class SimpleStatistics implements Serializable
 
 	
 	/**
-	 * @param data
-	 * @return double[mean, variance]
+	 * Calculates the sample variance of a list of double vectors, given the specified mean. Assuming the variance in a spherical distribution
+	 * 
+	 * @param data The double vectors
+	 * @param mean The (sample) mean of the data
+	 * @return The (sample) variance given the data and specified (sample) mean
 	 */
-	public static double[] varianceMean(double[] data)
+	public static double variance(Collection<double[]> data, double[] mean)
+	{
+		double variance = 0.0d;
+		DAEuclideanMetric eucl = new DAEuclideanMetric();
+		
+		for(double[] x:data)
+		{
+			variance += eucl.distanceSq(x, mean);
+		}
+		
+		variance /= (double) (data.size()-1);
+		
+		return variance;
+	}
+
+	
+	/**
+	 * Calculates the mean and the sample variance of a set of double values and
+	 * returns it in form of an array where the first value holds the mean
+	 * and the second holds the sample variance.
+	 * 
+	 * @param data The double values.
+	 * @return The mean and sample variance as array: double[mean, variance].
+	 */
+	public static double[] mean_variance(double[] data)
 	{
 		double variance = 0.0d;
 		double mean = SimpleStatistics.mean(data);
@@ -195,73 +273,118 @@ public class SimpleStatistics implements Serializable
 			variance += (data[i]-mean)*(data[i]-mean);
 		}
 		
-		variance/=(double)data.length;
+		variance/=(double)(data.length-1);
 		
 		return new double[]{mean, variance};
 	}
 
+	/**
+	 * Calculates the mean and the sample standard deviation of a set of double values and
+	 * returns it in form of an array where the first value holds the mean
+	 * and the second holds the sample variance.
+	 * 
+	 * @param data The double values.
+	 * @return The mean and sample variance as array: double[mean, variance].
+	 */
+	public static double[] mean_deviation(double[] data)
+	{
+		double[] meanVar = mean_variance(data);
+		
+		return new double[]{meanVar[0], Math.sqrt(meanVar[1])};
+	}
+
+
+	/**
+	 * Calculates the mean and the sample standard deviation of a set of double values and
+	 * returns it in form of an array where the first value holds the mean
+	 * and the second holds the sample variance.
+	 * 
+	 * @param data The double values.
+	 * @return The mean and sample variance as array: double[mean, variance].
+	 */
+	public static double[] min_max_mean_deviation(double[] data)
+	{
+		double[] meanVar = mean_variance(data);
+		
+		return new double[]{MyMath.min(data), MyMath.max(data), meanVar[0], Math.sqrt(meanVar[1])};
+	}
+
+	/**
+	 * Calculates an axis parallel hyper rectangle as bounding box of the specified
+	 * list of double arrays that are stored as indexed data objects.
+	 * 
+	 * @param list The list of double arrays.
+	 * @return The axis parallel bounding box.
+	 */
 	public static ArrayList<double[]> boundingBoxCornersIndexed(Collection<IndexedDataObject<double[]>> list)
 	{
 		ArrayList<double[]> corners = new ArrayList<double[]>();
-		double[] upperLeft = null;
-		double[] lowerRight = null;
+		double[] lowerLeft = null;
+		double[] upperRight = null;
 		
 		for(IndexedDataObject<double[]> x:list)
 		{
-			if(upperLeft == null)
+			if(lowerLeft == null)
 			{
-				upperLeft = new double[x.element.length];
-				lowerRight = new double[x.element.length];
+				lowerLeft = new double[x.x.length];
+				upperRight = new double[x.x.length];
 				
-				for(int k=0; k<x.element.length; k++)
+				for(int k=0; k<x.x.length; k++)
 				{
-					upperLeft[k] = -Double.MAX_VALUE;
-					lowerRight[k] = Double.MAX_VALUE;
+					lowerLeft[k]  =  Double.MAX_VALUE;
+					upperRight[k] = -Double.MAX_VALUE;
 				}
 			}
 			
-			for(int k=0; k<x.element.length; k++)
+			for(int k=0; k<x.x.length; k++)
 			{
-				if(upperLeft[k] < x.element[k]) upperLeft[k] = x.element[k];
-				if(lowerRight[k] > x.element[k]) lowerRight[k] = x.element[k];
+				if(lowerLeft[k] > x.x[k]) lowerLeft[k] = x.x[k];
+				if(upperRight[k] < x.x[k]) upperRight[k] = x.x[k];
 			}
 		}
 		
-		corners.add(upperLeft);
-		corners.add(lowerRight);
+		corners.add(lowerLeft);
+		corners.add(upperRight);
 		
 		return corners;
 	}
 	
+	/**
+	 * Calculates an axis parallel hyper rectangle as bounding box of the specified
+	 * list of double arrays.
+	 * 
+	 * @param list The list of double arrays.
+	 * @return The axis parallel bounding box.
+	 */
 	public static ArrayList<double[]> boundingBoxCorners(Collection<double[]> list)
 	{
 		ArrayList<double[]> corners = new ArrayList<double[]>();
-		double[] upperLeft = null;
-		double[] lowerRight = null;
+		double[] lowerLeft = null;
+		double[] upperRight = null;
 		
 		for(double[] x:list)
 		{
-			if(upperLeft == null)
+			if(lowerLeft == null)
 			{
-				upperLeft = new double[x.length];
-				lowerRight = new double[x.length];
+				lowerLeft = new double[x.length];
+				upperRight = new double[x.length];
 				
 				for(int k=0; k<x.length; k++)
 				{
-					upperLeft[k] = -Double.MAX_VALUE;
-					lowerRight[k] = Double.MAX_VALUE;
+					lowerLeft[k]  =  Double.MAX_VALUE;
+					upperRight[k] = -Double.MAX_VALUE;
 				}
 			}
 			
 			for(int k=0; k<x.length; k++)
 			{
-				if(upperLeft[k] < x[k]) upperLeft[k] = x[k];
-				if(lowerRight[k] > x[k]) lowerRight[k] = x[k];
+				if(lowerLeft[k] > x[k]) lowerLeft[k] = x[k];
+				if(upperRight[k] < x[k]) upperRight[k] = x[k];
 			}
 		}
 		
-		corners.add(upperLeft);
-		corners.add(lowerRight);
+		corners.add(lowerLeft);
+		corners.add(upperRight);
 		
 		return corners;
 	}

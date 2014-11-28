@@ -41,7 +41,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * TODO Class Description
+ * A comparator for comparing double arrays at a specific index.
  *
  * @author Roland Winkler
  */
@@ -49,11 +49,26 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= 6817735594513021048L;
+	
+	/**
+	 * The index of the array that is used for comparisons.
+	 */
 	private int index;
 	
+	/**
+	 * If true, the order of comparing is decresing rather than the standard of increasing.
+	 */
+	private boolean decresing;
+	
+	/**
+	 * Creates a new comparator which addresses the specified index.
+	 * 
+	 * @param i The index of the array that is used for comparisons. 
+	 */
 	public ArrayIndexComparator(int i)
 	{
 		this.index = i;
+		this.decresing = false;
 	}
 
 	/* (non-Javadoc)
@@ -62,11 +77,13 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	@Override
 	public int compare(double[] a, double[] b)
 	{
-		return (a[this.index]==b[this.index])?0:((a[this.index]<b[this.index])?-1:1);
+		return (a[this.index]==b[this.index])?0:((this.decresing?-1:1) * ((a[this.index]<b[this.index])?-1:1));
 	}
 
 	/**
-	 * @return the index
+	 * Returns the index.
+	 * 
+	 * @return the index.
 	 */
 	public int getIndex()
 	{
@@ -74,10 +91,22 @@ public class ArrayIndexComparator implements Comparator<double[]>, Serializable
 	}
 
 	/**
-	 * @param index the index to set
+	 * Sets the index.
+	 * 
+	 * @param index The index to set.
 	 */
 	public void setIndex(int index)
 	{
 		this.index = index;
 	}
+
+	public boolean isDecresing() {
+		return decresing;
+	}
+
+	public void setDecresing(boolean decresing) {
+		this.decresing = decresing;
+	}
+	
+	
 }

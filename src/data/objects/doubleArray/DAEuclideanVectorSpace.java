@@ -39,220 +39,98 @@ package data.objects.doubleArray;
 
 import java.io.Serializable;
 
-import data.algebra.AbstractEuclideanVectorSpace;
 import data.algebra.EuclideanVectorSpace;
 
 /**
- * To avoid too much method-ping-pong, all functions are called directly rather than calling
- * the methods of the abstract superclass.
- * 
- * TODO Class Description
- *
+ * The standard Euclidean vector space for double arrays. That is the finite dimensional vector space of real values with orthonormal basis.
+ *  
  * @author Roland Winkler
  *
  */
-public class DAEuclideanVectorSpace extends AbstractEuclideanVectorSpace<double[]> implements EuclideanVectorSpace<double[]>, Serializable
+public class DAEuclideanVectorSpace extends DAStandardVectorSpace implements EuclideanVectorSpace<double[]>, Serializable
 {
 	/**  */
-	private static final long	serialVersionUID	= 3177664211525072147L;
-	private DAStandardVectorSpace vectorSpace;
-	private DAEuclideanDistance distance;
-	private DAEuclideanNorm norm;
-	private DAEuclideanScalarProduct scalarProduct;
-	
+	private static final long	serialVersionUID	= 8043684576211061723L;
+
 	/**
 	 * @param dim
 	 */
 	public DAEuclideanVectorSpace(int dim)
 	{
-		this.vectorSpace = new DAStandardVectorSpace(dim);
-		this.distance = new DAEuclideanDistance();
-		this.norm = new DAEuclideanNorm();
-		this.scalarProduct = new DAEuclideanScalarProduct();
+		super(dim);
 	}
 
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanDistance#distance(double[], double[])
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distance(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public double distance(double[] x, double[] y)
 	{
-		return distance.distance(x, y, this.vectorSpace.dim);
+		return Math.sqrt(this.distanceSq(x, y));
 	}
 
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanDistance#distanceSq(double[], double[])
+	/* (non-Javadoc)
+	 * @see data.algebra.Metric#distanceSq(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public double distanceSq(double[] x, double[] y)
 	{
-		return distance.distanceSq(x, y, this.vectorSpace.dim);
+		double dist = 0.0d;
+		
+		if(x.length < this.dim || y.length < this.dim) throw new IllegalArgumentException("The number of elements in x and y must be equal or larger than the dimension of this vector space.");
+		
+		for(int i=0; i<this.dim; i++)
+		{
+			dist += (x[i]-y[i])*(x[i]-y[i]);
+		}
+		
+		return dist;
 	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanNorm#length(double[])
+	
+	
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#length(data.objects.DataObject)
 	 */
+	@Override
 	public double length(double[] x)
 	{
-		return norm.length(x, this.vectorSpace.dim);
+		return Math.sqrt(this.lengthSq(x));
 	}
 
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanNorm#lengthSq(double[])
+	/* (non-Javadoc)
+	 * @see data.algebra.Norm#lengthSq(data.objects.DataObject)
 	 */
+	@Override
 	public double lengthSq(double[] x)
 	{
-		return norm.lengthSq(x, this.vectorSpace.dim);
+		double length = 0.0d;
+		
+		if(x.length < this.dim) throw new IllegalArgumentException("The number of elements in x must be equal or larger than the dimension of this vector space.");
+		
+		for(int i=0; i<this.dim; i++)
+		{
+			length += x[i]*x[i];
+		}
+		
+		return length;
 	}
 
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAEuclideanScalarProduct#scalarProduct(double[], double[])
+
+	/* (non-Javadoc)
+	 * @see data.algebra.ScalarProduct#scalarProduct(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public double scalarProduct(double[] x, double[] y)
 	{
-		return scalarProduct.scalarProduct(x, y, this.vectorSpace.dim);
+		double prod = 0.0d;
+		
+		if(x.length < this.dim || y.length < this.dim) throw new IllegalArgumentException("The number of elements in x and y must be equal or larger than the dimension of this vector space.");
+		
+		for(int i=0; i<dim; i++)
+		{
+			prod += x[i]*y[i];
+		}
+		
+		return prod;
 	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#add(double[], double[])
-	 */
-	public void add(double[] x, double[] y)
-	{
-		vectorSpace.add(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#addNew(double[], double[])
-	 */
-	public double[] addNew(double[] x, double[] y)
-	{
-		return vectorSpace.addNew(x, y);
-	}
-
-	/**
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#newAddNeutralElement()
-	 */
-	public double[] getNewAddNeutralElement()
-	{
-		return vectorSpace.getNewAddNeutralElement();
-	}	
-
-	/**
-	 * @param x
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#resetToAddNeutralElement(double[])
-	 */
-	public void resetToAddNeutralElement(double[] x)
-	{
-		vectorSpace.resetToAddNeutralElement(x);
-	}
-
-	/**
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#getDimension()
-	 */
-	public int getDimension()
-	{
-		return vectorSpace.getDimension();
-	}
-
-	/**
-	 * @param x
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#inv(double[])
-	 */
-	public void inv(double[] x)
-	{
-		vectorSpace.inv(x);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#invNew(double[])
-	 */
-	public double[] invNew(double[] x)
-	{
-		return vectorSpace.invNew(x);
-	}
-
-	
-
-	/**
-	 * @param x
-	 * @param a
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#mul(double[], double)
-	 */
-	public void mul(double[] x, double a)
-	{
-		vectorSpace.mul(x, a);
-	}
-
-	/**
-	 * @param x
-	 * @param a
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#mulNew(double[], double)
-	 */
-	public double[] mulNew(double[] x, double a)
-	{
-		return vectorSpace.mulNew(x, a);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#sub(double[], double[])
-	 */
-	public void sub(double[] x, double[] y)
-	{
-		vectorSpace.sub(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#subNew(double[], double[])
-	 */
-	public double[] subNew(double[] x, double[] y)
-	{
-		return vectorSpace.subNew(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#copy(double[], double[])
-	 */
-	public void copy(double[] x, double[] y)
-	{
-		vectorSpace.copy(x, y);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 * @see data.objects.doubleArray.DAStandardVectorSpace#copyNew(double[])
-	 */
-	public double[] copyNew(double[] x)
-	{
-		return vectorSpace.copyNew(x);
-	}
-	
 }

@@ -42,19 +42,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import data.objects.doubleArray.DAEuclideanDistance;
+import data.objects.doubleArray.DAEuclideanMetric;
 import data.objects.doubleArray.DAEuclideanVectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.BallTree;
-import data.set.structures.CenteredBallTree;
+import data.structures.balltree.BallTree;
+import data.structures.balltree.CenteredBallTree;
 import etc.DataGenerator;
 import etc.DataManipulator;
 
 
 /**
- * TODO Class Description
- *
+ * This class provides some functionality to test data structure algorithms and to verify their performance
+ * of applying queries. When performing tests, please do take care not to disturb the process
+ * by using other, CPU intensive or memory intensive applications.<br>
+ * 
+ * 
+ * The data for testing is generated artificially, which is also done by this class.
+ * 
  * @author Roland Winkler
  */
 public class DataStructureSpeedTest extends TestVisualizer implements Serializable
@@ -62,14 +67,40 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 	/**  */
 	private static final long	serialVersionUID	= 3319024847560964090L;
 
+	/**
+	 * The data set that is used for the tests.
+	 */
 	private IndexedDataSet<double[]> dataSet;
 	
+	/**
+	 * The list of sphere query centres that are used for testing.
+	 */
 	private ArrayList<double[]> sphereQueryList;
+	
+	/**
+	 * The list of sphere query radius values that are used for testing.
+	 */
 	private double[] shereQueryRadius;
+	
+	/**
+	 * Randomly generated data objects that are used for k-nearest neighbour queries.
+	 */
 	private ArrayList<double[]> knnQueryRandomList;
+	
+	/**
+	 * List of (randomly picked) data objects from the data set that are used for k-nearest neighbour queries.
+	 */
 	private ArrayList<IndexedDataObject<double[]>> knnQueryDataList;
 	
 	
+	/**
+	 * Creates a new test environment and generates a data set with the specified number of
+	 * dimensions and data objects. Also generates the queries, used for testing.
+	 * 
+	 * @param dim The dimension of the data set.
+	 * @param dataObjectCount The number of data objects in the data set.
+	 * @param queryNumber The number of queries that are to be performed on the data set.
+	 */
 	public DataStructureSpeedTest(int dim, int dataObjectCount, int queryNumber)
 	{
 		super();
@@ -104,7 +135,11 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 	}
 	
 	/**
-	 * @param numberOfDataObjects
+	 * Shows a subset of the data set. This is useful because the test may be performed for
+	 * very large data sets which are difficult to visualise. Therefore, this method
+	 * only visualises a randomly picked subset of data objects of the original data set.
+	 * 
+	 * @param numberOfDataObjects The number of data objects to be visualised.
 	 */
 	public void showSimplifiedDataSet(int numberOfDataObjects)
 	{
@@ -112,9 +147,13 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		
 		smallerDataSet = DataManipulator.selectWithoutCopy(this.dataSet, numberOfDataObjects);
 		
-		this.showDataSet(smallerDataSet, null);
+		this.showDataSet(smallerDataSet, null, null, null, null, null, null);
 	}
 	
+	/**
+	 * Performs a speed test on a ball tree structure, including
+	 * time to build the tree, and the time needed for performing the queries.
+	 */
 	public void ballTreeSpeedTest()
 	{
 		long milliseconds = 0;
@@ -129,7 +168,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		System.out.println("===== Ball Tree =====");
 		System.out.print("Build ball tree structure .. ");
 		milliseconds = -System.currentTimeMillis();
-		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanDistance());
+		BallTree<double[]> ballTree = new BallTree<double[]>(this.dataSet, new DAEuclideanMetric());
 		ballTree.buildNaive();
 		milliseconds += System.currentTimeMillis();
 		System.out.println("done: "+ milliseconds + "ms");
@@ -181,7 +220,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		{
 			if((i+1)%(queryNumber/10) == 0) System.out.print(".");
 			queryResults.clear();
-			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).element, knnK);
+			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).x, knnK);
 			queryResultCounter += queryResults.size(); 
 		}
 		milliseconds += System.currentTimeMillis();		
@@ -189,10 +228,14 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		System.out.println("Number of reported objects: " + queryResultCounter);
 	}
 
+	/**
+	 * Performs a speed test on a centered ball tree structure, including
+	 * time to build the tree, and the time needed for performing the queries.
+	 */
 	public void centeredBallTreeSpeedTest()
 	{
 		long milliseconds = 0;
-		int dim = dataSet.first().element.length;
+		int dim = dataSet.first().x.length;
 		int queryNumber = 100000;
 		int knnK = 20;
 		long queryResultCounter = 0L;
@@ -204,7 +247,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		System.out.println("===== Centered Ball Tree =====");
 		System.out.print("Build tree structure .. ");
 		milliseconds = -System.currentTimeMillis();
-		CenteredBallTree<double[]> ballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(dim), new DAEuclideanDistance());
+		CenteredBallTree<double[]> ballTree = new CenteredBallTree<double[]>(this.dataSet, new DAEuclideanVectorSpace(dim), new DAEuclideanMetric());
 		ballTree.buildNaive();
 		milliseconds += System.currentTimeMillis();
 		System.out.println("done: "+ milliseconds + "ms");
@@ -256,7 +299,7 @@ public class DataStructureSpeedTest extends TestVisualizer implements Serializab
 		{
 			if((i+1)%(queryNumber/10) == 0) System.out.print(".");
 			queryResults.clear();
-			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).element, knnK);
+			ballTree.knnQuery(queryResults, this.knnQueryDataList.get(i).x, knnK);
 			queryResultCounter += queryResults.size(); 
 		}
 		milliseconds += System.currentTimeMillis();		

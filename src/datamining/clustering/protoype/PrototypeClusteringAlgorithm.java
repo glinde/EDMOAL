@@ -37,26 +37,53 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining.clustering.protoype;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import data.algebra.VectorSpace;
 import datamining.clustering.ClusteringAlgorithm;
+import datamining.resultProviders.PrototypeProvider;
 
 /**
- * TODO Class Description
+ * The interface for all prototype based clustering algorithms.
  *
  * @author Roland Winkler
  */
-public interface PrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends ClusteringAlgorithm<T>
+public interface PrototypeClusteringAlgorithm<T, S extends Prototype<T>> extends ClusteringAlgorithm<T>, PrototypeProvider<T, S>
 {
-	public void initializeWithPrototypes(Collection<S> initialPrototypes);
-
-	public void initializeWithPositions(Collection<T> initialPrototypePositions);
-	
-	public ArrayList<S> getPrototypes();
-	
-	public ArrayList<S> getActivePrototypes();
-	
-	public VectorSpace<T> getVectorSpace();
+//	/**
+//	 * Initialises the clustering algorithm with the specified prototypes.
+//	 * 
+//	 * @param initialPrototypes The prototypes for initialising the clustering algorithm.
+//	 */
+//	public void initializeWithPrototypes(Collection<S> initialPrototypes);
+//
+//	/**
+//	 * Initialises the clustering algorithm and puts prototypes at the specified positions.
+//	 * This requires the clustering algorithm to inherit its clustering procedure with its
+//	 * standard prototype.<br>
+//	 * 
+//	 * the number of positions in the specified collection determines the number of prototypes initialised:
+//	 * for each position, one prototype is initialised.
+//	 * 
+//	 * @param initialPrototypePositions The positions at which the prototypes are allowed to be initialised.
+//	 */
+//	public void initializeWithPositions(Collection<T> initialPrototypePositions);
+//	
+//	/**
+//	 * Returns the prototypes.
+//	 * 
+//	 * @return The prototypes.
+//	 */
+//	public ArrayList<S> getPrototypes();
+//	
+//	/**
+//	 * Returns all active prototypes.
+//	 * 
+//	 * @return All active prototypes.
+//	 */
+//	public ArrayList<S> getActivePrototypes();
+//	
+//	/**
+//	 * Returns the vector space the clustering algorithm uses to calculate prototype positions.
+//	 * 
+//	 * @return The vector space.
+//	 */
+//	public VectorSpace<T> getVectorSpace();
 }

@@ -37,40 +37,65 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining.clustering;
 
+import data.algebra.Metric;
 import data.set.IndexedDataSet;
 import datamining.AbstractStaticDataMiningAlgorithm;
+import datamining.resultProviders.ResultProvider;
  
 /**
- * TODO Class Description
+ * Extends the {@link AbstractStaticDataMiningAlgorithm} class by adding the basic functionality of a clustering algorithms.
+ * Very abstract speaking, clustering is an analysis of the distances among data objects. Naturally,
+ * that distance needs to be measurable in order to do any analysis. Therefore, a metric is required for all clustering
+ * algorithms, independent of their nature.
  *
  * @author Roland Winkler
  */
-public abstract class AbstractClusteringAlgorithm<T> extends AbstractStaticDataMiningAlgorithm<T> implements ClusteringAlgorithm<T>
+public abstract class AbstractClusteringAlgorithm<T> extends AbstractStaticDataMiningAlgorithm<T> implements ClusteringAlgorithm<T>, ResultProvider<T>
 {	
 	/**  */
 	private static final long	serialVersionUID	= 4356769460943616262L;
 
+	
+	/**
+	 * A metric for measuring the distance between objects of type <code>T</code>, that can be data objects
+	 * or other locations in the feature space.
+	 */
+	protected final Metric<T> metric;
+	
 	/**
 	 *	The initial constructor for clustering. The number of clusters can be changed after initialization, but it
 	 * is not recommended because some algorithms have to be reinitialized.
+	 * 
+	 * @param data The data set that is to be analyzed.
+	 * @param metric The metric for calculating distances in the feature space.
 	 */
-	public AbstractClusteringAlgorithm(IndexedDataSet<T> data)
+	public AbstractClusteringAlgorithm(IndexedDataSet<T> data, Metric<T> metric)
 	{
 		super(data);
+		
+		this.metric = metric;
 	}
 	
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to scip some clusters
-	 * if they are not needed any more.
+	 * A copy constructor.
 	 * 
 	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
 	 */
 	public AbstractClusteringAlgorithm(AbstractClusteringAlgorithm<T> c)
 	{
 		super(c);
+		
+		this.metric = c.metric;
 	}
-	
+
+	/**
+	 * Returns the metric that is required to measure the distance among data objects or arbitrary locations
+	 * and data objects.
+	 * 
+	 * @return the metric.
+	 */
+	public Metric<T> getMetric()
+	{
+		return this.metric;
+	}	
 }

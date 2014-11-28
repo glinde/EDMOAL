@@ -37,6 +37,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package gui;
 
+import gui.projections.Projection;
 import io.BatikExport;
 
 import java.awt.Color;
@@ -124,6 +125,7 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 		
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		
 		synchronized(this.drawList)
 		{
@@ -231,28 +233,30 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 	/**
 	 * @param pCol
 	 */
-	public void setScreenToDisplayAll(Collection<double[]> pCol)
+	public void setScreenToDisplayAll(Collection<double[]> pCol, Projection proj)
 	{
 //		double screenH = this.getHeight()*0.5d;
 //		double screenW = this.getWidth()*0.5d;
 //		double[] screenCenter = this.translator.inverseTranslate(new double[]{screenW, screenH});
 		boolean first = true;
 		
-		double[] upperRight = null;
-		double[] lowerLeft = null;
+		double[] upperRight = new double[2];
+		double[] lowerLeft = new double[2];
 		double[] center = new double[]{0.0d, 0.0d};
+		double[] projX = new double[2];
 		
 		if(pCol.size() == 0) return;
 		
 		for(double[] p:pCol)
 		{
+			proj.project(p, projX);
 			if(first)
 			{
-				upperRight = p.clone();
-				lowerLeft = p.clone();
+				upperRight = projX.clone();
+				lowerLeft = projX.clone();
 				if(pCol.size()==1)
 				{
-					this.centerScreenTo(p);
+					this.centerScreenTo(projX);
 					return;
 				}
 				
@@ -260,10 +264,10 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 				continue;
 			}
 			
-			if(p[0] > upperRight[0]) upperRight[0] = p[0];
-			if(p[1] > upperRight[1]) upperRight[1] = p[1];
-			if(p[0] < lowerLeft[0]) lowerLeft[0] = p[0];
-			if(p[1] < lowerLeft[1]) lowerLeft[1] = p[1];
+			if(projX[0] > upperRight[0]) upperRight[0] = projX[0];
+			if(projX[1] > upperRight[1]) upperRight[1] = projX[1];
+			if(projX[0] < lowerLeft[0]) lowerLeft[0] = projX[0];
+			if(projX[1] < lowerLeft[1]) lowerLeft[1] = projX[1];
 		}
 		
 		center[0] = 0.5d*(upperRight[0]+lowerLeft[0]);
@@ -277,28 +281,30 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 	/**
 	 * @param pCol
 	 */
-	public void setScreenToDisplayAllIndexed(Collection<IndexedDataObject<double[]>> pCol)
+	public void setScreenToDisplayAllIndexed(Collection<IndexedDataObject<double[]>> pCol, Projection proj)
 	{
 //		double screenH = this.getHeight()*0.5d;
 //		double screenW = this.getWidth()*0.5d;
 //		double[] screenCenter = this.translator.inverseTranslate(new double[]{screenW, screenH});
 		boolean first = true;
 		
-		double[] upperRight = null;
-		double[] lowerLeft = null;
+		double[] upperRight = new double[2];
+		double[] lowerLeft = new double[2];
 		double[] center = new double[]{0.0d, 0.0d};
+		double[] projX = new double[2];
 		
 		if(pCol.size() == 0) return;
 		
 		for(IndexedDataObject<double[]> p:pCol)
 		{
+			proj.project(p.x, projX);
 			if(first)
 			{
-				upperRight = p.element.clone();
-				lowerLeft = p.element.clone();
+				upperRight = projX.clone();
+				lowerLeft = projX.clone();
 				if(pCol.size()==1)
 				{
-					this.centerScreenTo(p.element);
+					this.centerScreenTo(projX);
 					return;
 				}
 				
@@ -306,10 +312,10 @@ public class Screen extends JPanel implements MouseListener, MouseMotionListener
 				continue;
 			}
 			
-			if(p.element[0] > upperRight[0]) upperRight[0] = p.element[0];
-			if(p.element[1] > upperRight[1]) upperRight[1] = p.element[1];
-			if(p.element[0] < lowerLeft[0]) lowerLeft[0] = p.element[0];
-			if(p.element[1] < lowerLeft[1]) lowerLeft[1] = p.element[1];
+			if(projX[0] > upperRight[0]) upperRight[0] = projX[0];
+			if(projX[1] > upperRight[1]) upperRight[1] = projX[1];
+			if(projX[0] < lowerLeft[0]) lowerLeft[0] = projX[0];
+			if(projX[1] < lowerLeft[1]) lowerLeft[1] = projX[1];
 		}
 		
 		center[0] = 0.5d*(upperRight[0]+lowerLeft[0]);

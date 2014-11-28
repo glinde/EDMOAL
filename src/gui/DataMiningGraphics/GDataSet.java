@@ -46,15 +46,14 @@ import gui.templates.GeomTemplate;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
-import org.apache.batik.ext.awt.geom.Polygon2D;
-
 import data.set.IndexedDataObject;
 import etc.DataManipulator;
+//import org.apache.batik.ext.awt.geom.Polygon2D;
 
 /**
  * TODO Class Description
@@ -77,8 +76,11 @@ public class GDataSet extends DrawableObject implements Serializable
 	
 	protected int colorIndex;
 	protected int convexHullStrokeIndex;
+	
+	protected boolean dataSubsetPresentation;
+	protected int[] dataSubsetList;
 		
-	public GDataSet()
+	public GDataSet(Collection<IndexedDataObject<double[]>> dataObjects)
 	{
 		super();
 
@@ -87,7 +89,7 @@ public class GDataSet extends DrawableObject implements Serializable
 		this.scheme.addStroke(new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		this.scheme.addStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		
-		this.dataObjects = new ArrayList<IndexedDataObject<double[]>>();
+		this.dataObjects = new ArrayList<IndexedDataObject<double[]>>(dataObjects);
 		
 		this.resetSchemeIndices();
 		
@@ -98,6 +100,9 @@ public class GDataSet extends DrawableObject implements Serializable
 				
 		this.convexHull = new ArrayList<double[]>();	
 		this.drawInternalArea = false;
+		
+		this.dataSubsetPresentation = false;
+		this.dataSubsetList = null;
 	}
 	
 	/* (non-Javadoc)
@@ -107,11 +112,26 @@ public class GDataSet extends DrawableObject implements Serializable
 	public void draw(Graphics2D g2, Translation translator)
 	{
 		Color internalAreaColor;
-		Polygon2D surroundingPoly;
+		Polygon surroundingPoly;
 		double[] tmp;
 		double[] point;
+//		ArrayList<double[]> dataObjectList = new ArrayList<double[]>(this.dataSubsetList.length);
 		
-		this.dataObjectsTemplate.drawAtAll(g2, this.scheme, translator.translate(this.projection.projectIndexed(this.dataObjects, null), null));
+		if(this.dataSubsetPresentation)
+		{
+			ArrayList<double[]> dataObjectList = new ArrayList<double[]>(this.dataSubsetList.length);
+			for(int l=0; l<this.dataSubsetList.length; l++)
+			{
+				dataObjectList.add(this.dataObjects.get(this.dataSubsetList[l]).x);
+			}
+			
+			this.dataObjectsTemplate.drawAtAll(g2, this.scheme, translator.translate(this.projection.project(dataObjectList, null), null));
+			
+		}
+		else
+		{
+			this.dataObjectsTemplate.drawAtAll(g2, this.scheme, translator.translate(this.projection.projectIndexed(this.dataObjects, null), null));
+		}
 		
 		if(this.drawInternalArea)
 		{
@@ -120,12 +140,12 @@ public class GDataSet extends DrawableObject implements Serializable
 			
 			if(this.convexHull.size() > 1)
 			{
-				surroundingPoly = new Polygon2D();
+				surroundingPoly = new Polygon();
 				
 				for(double[] p:this.convexHull)
 				{
 					point = translator.translate(this.projection.project(p, tmp));
-					surroundingPoly.addPoint((float)point[0], (float)point[1]);
+					surroundingPoly.addPoint((int)point[0], (int)point[1]);
 		//					System.out.println(Arrays.toString(point));
 				}
 				
@@ -141,8 +161,23 @@ public class GDataSet extends DrawableObject implements Serializable
 	public void calcCrispInternalSourrounding()
 	{	
 		ArrayList<double[]> dataPoints = new ArrayList<double[]>(this.dataObjects.size());
-		for(IndexedDataObject<double[]> d:this.dataObjects)
-			dataPoints.add(d.element);
+		
+
+		if(this.dataSubsetPresentation)
+		{
+			for(int l=0; l<this.dataSubsetList.length; l++)
+			{
+				dataPoints.add(this.dataObjects.get(this.dataSubsetList[l]).x);
+			}
+		}
+		else
+		{
+
+			for(IndexedDataObject<double[]> d:this.dataObjects)
+				dataPoints.add(d.x);
+		}
+		
+		
 		
 		this.convexHull = DataManipulator.convexHull2D(dataPoints);
 	}
@@ -255,5 +290,38 @@ public class GDataSet extends DrawableObject implements Serializable
 	public void setConvexHullStrokeIndex(int convexHullStrokeIndex)
 	{
 		this.convexHullStrokeIndex = convexHullStrokeIndex;
+	}
+
+	/**
+	 * @return the dataSubsetPresentation
+	 */
+	public boolean isDataSubsetPresentation()
+	{
+		return this.dataSubsetPresentation;
+	}
+
+	/**
+	 * @param dataSubsetPresentation the dataSubsetPresentation to set
+	 */
+	public void setDataSubsetPresentation(boolean dataSubsetPresentation)
+	{
+		this.dataSubsetPresentation = dataSubsetPresentation;
+	}
+
+	/**
+	 * @return the dataSubsetList
+	 */
+	public int[] getDataSubsetList()
+	{
+		return this.dataSubsetList;
+	}
+
+	/**
+	 * @param dataSubsetList the dataSubsetList to set
+	 */
+	public void setDataSubsetList(int[] dataSubsetList)
+	{
+		this.dataSubsetPresentation = dataSubsetList != null;
+		this.dataSubsetList = dataSubsetList;
 	}
 }

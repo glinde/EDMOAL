@@ -37,67 +37,42 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 package datamining;
 
+import data.set.AbstractStaticDataSetContainer;
 import data.set.DataSetNotSealedException;
 import data.set.IndexedDataSet;
 
 /**
- * TODO Class Description
+ * This an abstract class realizes the {@link DataMiningAlgorithm} interface. It provedes almost no
+ * functionality but it stores the data set as final which should be done for all static data mining algorithms.
+ * Therefore, it is recommended that all data mining algorithms that require a static data set extend this class. 
  *
  * @author Roland Winkler
  */
-public abstract class AbstractStaticDataMiningAlgorithm<T> implements DataMiningAlgorithm<T>
-{
+public abstract class AbstractStaticDataMiningAlgorithm<T> extends AbstractStaticDataSetContainer<T> implements DataMiningAlgorithm<T>
+{	
 	/**  */
-	private static final long	serialVersionUID	= 1928116441776186541L;
-	/** The data the clustering shell be applied upon */
-	protected final IndexedDataSet<T> data;
-		
+	private static final long	serialVersionUID	= 3546778582879302179L;
+
 	/**
-	 *	The initial constructor for clustering. The number of clusters can be changed after initialization, but it
-	 * is not recommended because some algorithms have to be reinitialized.
+	 * The standard constructor, taking the data set that is supposed to be analysed. Because
+	 * this is a static data mining algorithm, it requires the data set to be sealed.
+	 * 
+	 * @param data The data set that is to be analysed.
+	 * 
+	 * @throws DataSetNotSealedException if the data set is not sealed.
 	 */
-	public AbstractStaticDataMiningAlgorithm(IndexedDataSet<T> data)
+	public AbstractStaticDataMiningAlgorithm(IndexedDataSet<T> data) throws DataSetNotSealedException
 	{
-		if(!data.isSealed()) throw new DataSetNotSealedException("The data set is not sealed.");
-		
-		this.data = data;
+		super(data);
 	}
 	
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to scip some clusters
-	 * if they are not needed any more.
+	 * The copy constructor. 
 	 * 
-	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
+	 * @param c The <code>AbstractStaticDataMiningAlgorithm</code> to be copied.
 	 */
 	public AbstractStaticDataMiningAlgorithm(AbstractStaticDataMiningAlgorithm<T> c)
 	{
-		this.data					= c.data;
-	}
-		
-	/* (non-Javadoc)
-	 * @see datamining.DataMiningAlgorithm#getDataCount()
-	 */
-	@Override
-	public int getDataCount()
-	{
-		return this.data.size();
-	}
-
-	/**
-	 * @param clone
-	 */
-	public void clone(AbstractStaticDataMiningAlgorithm<T> clone)
-	{}
-	
-	/* (non-Javadoc)
-	 * @see datamining.DataMiningAlgorithm#getDataSet()
-	 */
-	@Override
-	public IndexedDataSet<T> getDataSet()
-	{
-		return this.data;
+		super(c);
 	}
 }

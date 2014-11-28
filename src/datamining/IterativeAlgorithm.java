@@ -38,21 +38,28 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining;
 
 /**
- * TODO Class Description
+ * States that the class implementing this interface is an iterative algorithm.
+ * That is, it starts with a certain configuration and alters it iteratively over time.
+ * The nature of this implies, that the number of iterations can be counted and
+ * restricted to a certain maximum.
  *
  * @author Roland Winkler
  */
 public interface IterativeAlgorithm
 {
 	/**
-	 * applies the algorithm for maximal <code>iterations</code> iterations.
+	 * Applies the algorithm for maximal <code>iterations</code> iterations. The value is supposed to be a relative number.
+	 * That means, if the algorithm is applied with 5 iterations and than again with 3 iterations, the total number
+	 * of iterations goes up to 8.
 	 * 
-	 * @param the number of iterations the algorithm is supposed to run before it stops.
+	 * @param iterations the number of iterations the algorithm is supposed to run before it stops.
 	 */
 	public void apply(int iterations);
 	
 	/**
-	 * @return
+	 * Returns the number of iterations the algorithm has been running so far.
+	 * 
+	 * @return the number of iterations the algorithm has been running so far.
 	 */
 	public int getIterationCount();
 }

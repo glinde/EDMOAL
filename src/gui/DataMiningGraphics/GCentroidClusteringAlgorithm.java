@@ -45,8 +45,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import datamining.clustering.protoype.Centroid;
-import datamining.clustering.protoype.PrototypeClusteringAlgorithm;
+import datamining.clustering.protoype.Prototype;
+import datamining.resultProviders.PrototypeProvider;
+import datamining.resultProviders.ResultProvider;
 
 /**
  * TODO Class Description
@@ -60,7 +61,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 
 	protected ArrayList<GCentroid> gCentroids;
 		
-	protected PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> clusteringAlgorithm;
+	protected PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider;
 
 	public GCentroidClusteringAlgorithm(Collection<Scheme> clusterSchemes)
 	{
@@ -68,7 +69,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 		
 		GCentroid gCentroid;
 		
-		this.clusteringAlgorithm = null;
+		this.prototypeProvider = null;
 		this.gCentroids = new ArrayList<GCentroid>(clusterSchemes.size());
 		
 		for(int i=0; i<clusterSchemes.size(); i++)
@@ -90,7 +91,7 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 			sc = new Scheme();
 			sc.addColor(ColorList.clusterColors[i%ColorList.clusterColors.length]);
 			sc.addColor(ColorList.BLACK);
-			sc.addStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			sc.addStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			sc.addStroke(new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			schemes.add(sc);
 		}
@@ -103,19 +104,24 @@ public class GCentroidClusteringAlgorithm extends GClusteredDataSet implements S
 		this(GCentroidClusteringAlgorithm.makePrototypeScemes(clusterCount));
 	}
 	
-	public GCentroidClusteringAlgorithm(PrototypeClusteringAlgorithm<double[], ? extends Centroid<double[]>> ca)
+
+	public  GCentroidClusteringAlgorithm(PrototypeProvider<double[], ? extends Prototype<double[]>> prototypeProvider, ResultProvider<double[]> resultProvider, int[] dataSubsetList)
 	{
-		this(ca.getClusterCount());		
-		
-		this.clusteringAlgorithm = ca;
-		
-		this.dataSet.addAll(ca.getDataSet());	
+		this(prototypeProvider.getPrototypeCount());
+
+		this.dataSubsetPresentation = dataSubsetList != null;
+		this.dataSubsetList = dataSubsetList;
+
+		this.prototypeProvider = prototypeProvider;
+
+		this.dataSet.addAll(this.prototypeProvider.getDataSet());	
 
 		for(int i=0; i<this.clusterCount; i++)
 		{
-			this.gCentroids.get(i).setPrototype(this.clusteringAlgorithm.getPrototypes().get(i));
+			this.gCentroids.get(i).setPrototype(this.prototypeProvider.getPrototypes().get(i));
 		}
 		
-		this.updateClusterAssignments(ca);
+		
+		this.updateClusterAssignments(resultProvider);
 	}
 }

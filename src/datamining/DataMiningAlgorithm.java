@@ -42,24 +42,31 @@ import java.io.Serializable;
 import data.set.IndexedDataSet;
 
 /**
- * TODO Class Description
+ * This interface specifies that a class is a data mining algorithm.
+ * It requires some basic functionality, like the availability of a {@link IndexedDataSet}
+ * and that it can perform an action by being applied to this data set.
+ * Also the name of the algorithm must be known.
  *
  * @author Roland Winkler
  */
 public interface DataMiningAlgorithm<T> extends Serializable
 {
 	/**
-	 * Applies the algorithm
+	 * Applies the algorithm on the data set.
 	 */
 	public void apply();
 	
 	/**
-	 * @return the name of the algorithm
+	 * Returns the name of the algorithm.
+	 * 
+	 * @return the name of the algorithm.
 	 */
 	public String algorithmName();
 
 	/** 
-	 * @return the data set the algorithm is applied on
+	 * Returns the data set the algorithm is applied on.
+	 * 
+	 * @return the data set the algorithm is applied on.
 	 */
 	public IndexedDataSet<T> getDataSet();
 	

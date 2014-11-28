@@ -40,19 +40,40 @@ package datamining.clustering;
 import java.io.Serializable;
 
 /**
- * TODO Class Description
+ * This interface provides basic functionality for all clusters, namely the activation state and the
+ * access to he cluster index.
  *
  * @author Roland Winkler
  */
 public interface Cluster extends Serializable
 {
 	
+	/**
+	 * Returns the activation status of the Cluster.
+	 * 
+	 * @return true, if the cluster is active, false otherwise.
+	 */
 	public boolean isActivated();
 
+	/**
+	 * Sets the activation status 
+	 * 
+	 * @param activated State true for an active cluster, false for an inactive cluster.
+	 */
 	public void setActivated(boolean activated);
 	
+	/**
+	 * Returns the cluster index.
+	 * 
+	 * @return the cluster index.
+	 */
 	public int getClusterIndex();
 	
+	/**
+	 * Sets the cluster index.
+	 * 
+	 * @param index The new cluster index.
+	 */
 	public void setClusterIndex(int index);
 	
 }

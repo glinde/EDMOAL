@@ -38,40 +38,91 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering.protoype.altopt;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyClusteringAlgorithm;
-import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
+import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyNoiseClassificationProvider;
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+import datamining.resultProviders.NoiseDistanceProvider;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * This is an implementation of the rewarding crisp memberships fuzzy c-means clustering algorithm with additional noise cluster.
+ * The objective function is added an penalty term, that is strong if the membership values are close to 0.5 and that is
+ * small for membership values are close to 0 or 1. That way, crisp membership values are regarded more optimal in the
+ * objective function, hence the tendency to produce membership values, that give a clear tendency to which cluster a
+ * data object belongs. See the paper for more information.<br> 
+ * 
+ * Paper: Hï¿½ppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102<br>
+ * 
+ * The additional term in the objective function leads to a value that is removed from all distances
+ * when calculating the membership values w.r.t. one data object. Other than in the paper, in this implementation
+ * that value is chosen to be <code>distanceMultiplierConstant</code>times the smallest distance to all prototypes.
+ * So <code>distanceMultiplierConstant</code> should be chosen between 0 and 1. When chosen 0, this algorithm is identical
+ * to {@link FuzzyCMeansClusteringAlgorithm} and when chosen 1, it turns into {@link HardCMeansClusteringAlgorithm}.  
+ * 
+ * The noise cluster has, similar to {@link FuzzyCMeansNoiseClusteringAlgorithm}, a constant distance to all data objects.
+ * Due to the more crisp membership values, data objects that are far away from all prototypes have a membership value
+ * of almost 1 to the noise cluster. Therefore, if all prototypes are initialized far away from a cluster that is present
+ * in the data, it is likely that this cluster is never found. Therefore, similar to {@link PolynomFCMNoiseClusteringAlgorithm},
+ * it is advisable to make several runs with this clustering algorithm. The first run with a large noise distance
+ * and than iteratively reducing the noise distance for each run.<br>   
+ * 
+ * In this particular implementation, the membership matrix is not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes. Also the additional
+ * term in the objective function has no influence on the runtime complexity of the algorithm.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
  *
- * Paper: Höppner, F. & Klawonn, F. Improved fuzzy partitions for fuzzy regression models Int. J. Approx. Reasoning, 2003, 32, 85-102
  * 
  * @author Roland Winkler
  */
-public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrispFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringAlgorithm<T>, FuzzyClusteringAlgorithm<T>
+public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrispFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>, NoiseDistanceProvider
 {	
 	/**  */
 	private static final long	serialVersionUID	= 6531335434133789423L;
-	/**  */
+	
+	/** The noise distance. The noise cluster is equally distant to all data objects and that distance is
+	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
+
+
+	/** It is often advantageous to start with a large noise distance in order to allow the prototypes to find all clouds of data objects.
+	 * this distance defines how high the noise distance shall be at the beginning of the iteration process.
+	 * The function of degration is dist = <code>noiseDistance</code> + (<code>degradingNoiseDistance</code>-<code>noiseDistance</code>)*e^(-<code>noiseDegrationFactor</code>*t)
+	 */
+	protected double degradingNoiseDistance;
+	
+	/** 
+	 * Controlls the speed at which the noise distance is degrading from its initial value. 
+	 *  */
+	protected double noiseDegrationFactor;
 	
 	/**
 	 * @param data
 	 * @param evs
 	 */
-	public RewardingCrispFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public RewardingCrispFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
 		
-		this.noiseDistance = 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
+		this.noiseDegrationFactor		= 1.0d;
 	}
 
 
@@ -79,13 +130,14 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	 * @param c
 	 * @param useOnlyActivePrototypes
 	 */
-	public RewardingCrispFCMNoiseClusteringAlgorithm(RewardingCrispFCMNoiseClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public RewardingCrispFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
-		
-		this.noiseDistance = c.noiseDistance;
+
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
+		this.noiseDegrationFactor		= 1.0d;
 	}
-	
 	
 	@Override
 	public void apply(int steps)
@@ -109,12 +161,25 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		double[] membershipSum				= new double[this.getClusterCount()];
 		T tmpX								= this.vs.getNewAddNeutralElement();
 		double minDistValue					= 0.0d;
+		double membershipHalfSum			= 0.0d;
+		int minDistIndex					= 0;
+		double noiseMembershipValue			= 0.0d;
+		double tNoiseDistSq					= 0.0d;
+		
 		
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
+
+//		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
+//			System.out.print(".");
+
+			doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-this.noiseDegrationFactor*t);
+			tNoiseDistSq = doubleTMP*doubleTMP;
+			
 			// reset values
 			maxPrototypeMovement = 0.0d;
 			
@@ -131,14 +196,19 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				zeroDistanceCount = 0;
 				distanceSum = 0.0d;
 				minDistValue = Double.MAX_VALUE;
+				minDistIndex = 0;
 
 				for(i=0; i<this.getClusterCount(); i++)
 				{
-					doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					fuzzDistances[i] = doubleTMP;
-					if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+					if(minDistValue > doubleTMP)
+					{
+						minDistValue = doubleTMP;
+						minDistIndex = i;
+					}
 				}
-				if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+				if(minDistValue > tNoiseDistSq) minDistValue = tNoiseDistSq;
 				minDistValue *= this.distanceMultiplierConstant;
 				
 				for(i = 0; i < this.getClusterCount(); i++)
@@ -153,15 +223,24 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 					else
 					{
 						doubleTMP = 1.0d/doubleTMP;
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
 				}				
-				distanceSum += 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+				distanceSum += 1.0d/(tNoiseDistSq - minDistValue);
 
 				// special case handling: if one (or more) prototype sits on top of a data object
 				if(zeroDistanceCount>0)
 				{
+					noiseMembershipValue = 0.0d;
 					for(i = 0; i < this.getClusterCount(); i++)
 					{
 						membershipValues[i] = 0.0d;
@@ -179,18 +258,32 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 						doubleTMP = fuzzDistances[i] / distanceSum;
 						membershipValues[i] = doubleTMP;
 					}
+					noiseMembershipValue = (tNoiseDistSq - minDistValue)/distanceSum;
 				}
 				
+				membershipHalfSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 
-					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
+					doubleTMP = membershipValues[i]*membershipValues[i];
+					if(this.useHalfSumOptimization) membershipHalfSum += (membershipValues[i] - 0.5d)*(membershipValues[i] - 0.5d);
 					membershipSum[i] += doubleTMP;
 
-					this.vs.copy(tmpX, this.data.get(j).element);
+					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}				
+				if(this.useHalfSumOptimization) membershipHalfSum += (noiseMembershipValue - 0.5d)*(noiseMembershipValue - 0.5d);
+				
+				// The additional term for prototype location calculation.
+				if(this.useHalfSumOptimization) 
+				{
+					membershipHalfSum *= this.distanceMultiplierConstant;
+					membershipSum[minDistIndex] -= membershipHalfSum;
+					this.vs.copy(tmpX, this.data.get(j).x);
+					this.vs.mul(tmpX, -membershipHalfSum);
+					this.vs.add(newPrototypePosition.get(minDistIndex), tmpX);
+				}
 			}
 
 			// update prototype positions
@@ -210,7 +303,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = ((this.convergenceMetric!=null)?this.convergenceMetric:this.metric).distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -218,9 +311,12 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			}
 
 			this.iterationComplete();
-			
-			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
+
+			this.convergenceHistory.add(Math.sqrt(maxPrototypeMovement));
+			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 	
 	
@@ -254,10 +350,11 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				distancesSq[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
+			if(minDistValue <= 0.0d) continue;
 			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
 			minDistValue *= this.distanceMultiplierConstant;
 			
@@ -284,11 +381,11 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			{
 				doubleTMP = fuzzDistances[i] / distanceSum;
 								
-				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (distancesSq[i] - minDistValue);
+				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * distancesSq[i]  - minDistValue*(doubleTMP - 0.5d)*(doubleTMP - 0.5d);
 			}
 			doubleTMP = fuzzyNoiseDist / distanceSum;
 			
-			objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (this.noiseDistance*this.noiseDistance - minDistValue);
+			objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * (this.noiseDistance*this.noiseDistance) - minDistValue*(doubleTMP - 0.5d)*(doubleTMP - 0.5d);
 		}
 		
 		return objectiveFunctionValue;
@@ -323,7 +420,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				fuzzDistances[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
@@ -401,7 +498,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				fuzzDistances[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
@@ -420,6 +517,14 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 				else
 				{
 					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -460,6 +565,119 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
 	{
+		return this.classify(obj.x);
+	}
+		
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 */
+	@Override
+	public String algorithmName()
+	{
+		return "Rewarding Crisp Memberships Noise FcM";
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 */
+	@Override
+	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
+	{
+		return this.initialized && this.getFuzzyNoiseAssignmentOf(obj) < 1.0d;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignments()
+	 */
+	@Override
+	public double[] getFuzzyNoiseAssignments()
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+
+		int i;
+				
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		int zeroDistanceCount;
+		double minDistValue = 0.0d;
+		double noiseDistance = 0.0d;
+		double[] noiseMemberships = new double[this.getDataCount()];
+		
+		zeroDistanceCount = 0;
+		distanceSum = 0.0d;
+		minDistValue = Double.MAX_VALUE;
+
+		for(IndexedDataObject<T> obj:this.data)
+		{
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			minDistValue = Double.MAX_VALUE;
+			
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = this.metric.distanceSq(obj.x, this.prototypes.get(i).getPosition());
+				fuzzDistances[i] = doubleTMP;
+				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+			}
+			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+			minDistValue *= this.distanceMultiplierConstant;
+			
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = fuzzDistances[i] - minDistValue;
+				if(doubleTMP <= 0.0d)
+				{
+					zeroDistanceCount++;
+				}
+				else
+				{
+					doubleTMP = 1.0d/doubleTMP;
+					
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceCount++;
+					}
+					
+					distanceSum += doubleTMP;
+				}
+			}
+			noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+			distanceSum += noiseDistance; 
+	
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
+			{
+				noiseMemberships[obj.getID()] = 0.0d;
+			}
+			else
+			{
+				noiseMemberships[obj.getID()] = noiseDistance/distanceSum;
+			}
+		}
+		return noiseMemberships;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
+	 */
+	@Override
+	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
+	{
+		return this.classifyNoise(obj.x);
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(T x)
+	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 
 		int i, k;
@@ -479,7 +697,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			fuzzDistances[i] = doubleTMP;
 			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 		}
@@ -498,6 +716,14 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			else
 			{
 				doubleTMP = 1.0/doubleTMP;
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				fuzzDistances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}
@@ -528,97 +754,105 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		
 		return membershipValues;
 	}
-		
+
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.altopt.RewardingCrispFCMClusteringAlgorithm#classifyAll(java.util.Collection)
 	 */
 	@Override
-	public String algorithmName()
-	{
-		return "Rewarding Crisp Memberships FcM";
-	}
-
-	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
-	 */
-	@Override
-	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
-	{
-		return this.initialized && this.getFuzzyNoiseAssignmentOf(obj) < 1.0d;
-	}
-
-	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignments()
-	 */
-	@Override
-	public double[] getFuzzyNoiseAssignments()
+	public ArrayList<double[]> classifyAll(Collection<T> list)
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
-
-		int i;
+				
+		ArrayList<double[]> assignmentList = new ArrayList<double[]>(this.getDataCount());
+				
+		int i, j, k;
 				
 		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
 		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
 		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
 		double minDistValue = 0.0d;
-		double noiseDistance = 0.0d;
-		double[] noiseMemberships = new double[this.getDataCount()];
-		
-		zeroDistanceCount = 0;
-		distanceSum = 0.0d;
-		minDistValue = Double.MAX_VALUE;
-
-		for(IndexedDataObject<T> obj:this.data)
-		{
+			
+						
+		for(T x:list)
+		{				
+			for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
 			zeroDistanceCount = 0;
 			distanceSum = 0.0d;
 			minDistValue = Double.MAX_VALUE;
-			
+
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 				fuzzDistances[i] = doubleTMP;
 				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 			}
 			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
 			minDistValue *= this.distanceMultiplierConstant;
 			
-			for(i=0; i<this.getClusterCount(); i++)
+			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				doubleTMP = fuzzDistances[i] - minDistValue;
 				if(doubleTMP <= 0.0d)
 				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
 					zeroDistanceCount++;
 				}
 				else
 				{
-					distanceSum += 1.0d/doubleTMP;
+					doubleTMP = 1.0d/doubleTMP;
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
+					fuzzDistances[i] = doubleTMP;
+					distanceSum += doubleTMP;
 				}
 			}
-			noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
-			distanceSum += noiseDistance; 
+			distanceSum += 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
 	
 			// special case handling: if one (or more) prototype sits on top of a data object
 			if(zeroDistanceCount>0)
 			{
-				noiseMemberships[obj.getID()] = 0.0d;
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					membershipValues[i] = 0.0d;
+				}
+				doubleTMP = 1.0d / ((double)zeroDistanceCount);
+				for(k=0; k<zeroDistanceCount; k++)
+				{
+					membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
+				}
 			}
 			else
 			{
-				noiseMemberships[obj.getID()] = noiseDistance/distanceSum;
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					doubleTMP = fuzzDistances[i] / distanceSum;
+					membershipValues[i] = doubleTMP;
+				}
 			}
+			
+			assignmentList.add(membershipValues.clone());
 		}
-		return noiseMemberships;
+		
+		return assignmentList;
 	}
-
+	
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoise(java.lang.Object)
 	 */
 	@Override
-	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
+	public double classifyNoise(T x) 
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 
@@ -638,7 +872,7 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			fuzzDistances[i] = doubleTMP;
 			if(minDistValue > doubleTMP) minDistValue = doubleTMP;
 		}
@@ -654,7 +888,15 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 			}
 			else
 			{
-				distanceSum += 1.0d/doubleTMP;
+				doubleTMP = 1.0d/doubleTMP;
+				
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceCount++;
+				}
+				
+				distanceSum += doubleTMP;
 			}
 		}
 		noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
@@ -673,20 +915,142 @@ public class RewardingCrispFCMNoiseClusteringAlgorithm<T> extends RewardingCrisp
 		return noiseMembership;
 	}
 
-	/**
-	 * @return the noiseDistance
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoiseAll(java.util.Collection)
+	 */
+	@Override
+	public double[] classifyNoiseAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+
+		int i;
+				
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		int zeroDistanceCount;
+		double minDistValue = 0.0d;
+		double noiseDistance = 0.0d;
+		double[] noiseMemberships = new double[list.size()];
+		
+		zeroDistanceCount = 0;
+		distanceSum = 0.0d;
+		minDistValue = Double.MAX_VALUE;
+
+		int j=0;
+		for(T x:list)
+		{
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			minDistValue = Double.MAX_VALUE;
+			
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+				fuzzDistances[i] = doubleTMP;
+				if(minDistValue > doubleTMP) minDistValue = doubleTMP;
+			}
+			if(minDistValue > this.noiseDistance*this.noiseDistance) minDistValue = this.noiseDistance*this.noiseDistance;
+			minDistValue *= this.distanceMultiplierConstant;
+			
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = fuzzDistances[i] - minDistValue;
+				if(doubleTMP <= 0.0d)
+				{
+					zeroDistanceCount++;
+				}
+				else
+				{
+					doubleTMP = 1.0d/doubleTMP;
+					
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceCount++;
+					}
+					
+					distanceSum += doubleTMP;
+				}
+			}
+			noiseDistance = 1.0d/(this.noiseDistance*this.noiseDistance - minDistValue);
+			distanceSum += noiseDistance; 
+	
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
+			{
+				noiseMemberships[j] = 0.0d;
+			}
+			else
+			{
+				noiseMemberships[j] = noiseDistance/distanceSum;
+			}
+			
+			j++;
+		}
+		return noiseMemberships;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.NoiseDistanceProvider#getNoiseDistance()
 	 */
 	public double getNoiseDistance()
 	{
 		return this.noiseDistance;
 	}
 
-
 	/**
+	 * Sets the noise distance.  The range of the parameter is <code>noiseDistance > 0</code>.
+	 * 
 	 * @param noiseDistance the noiseDistance to set
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
+		if(noiseDistance <= 0.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		
 		this.noiseDistance = noiseDistance;
+		
+		if(this.degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
 	}
+
+
+	/**
+	 * @return the degradingNoiseDistance
+	 */
+	public double getDegradingNoiseDistance()
+	{
+		return this.degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @param degradingNoiseDistance the degradingNoiseDistance to set
+	 */
+	public void setDegradingNoiseDistance(double degradingNoiseDistance)
+	{
+		if(degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+		else this.degradingNoiseDistance = degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @return the noiseDegrationFactor
+	 */
+	public double getNoiseDegrationFactor()
+	{
+		return this.noiseDegrationFactor;
+	}
+
+
+	/**
+	 * @param noiseDegrationFactor the noiseDegrationFactor to set
+	 */
+	public void setNoiseDegrationFactor(double noiseDegrationFactor)
+	{
+		this.noiseDegrationFactor = (noiseDegrationFactor>=0.0d)? noiseDegrationFactor:0.0d;
+	}
+	
+	
 }

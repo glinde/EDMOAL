@@ -41,7 +41,10 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * TODO Class Description
+ * Similar to the {@link ArrayIndexComparator}, but this comparator class
+ * specifies a list of indices. If the compared double arrays are equal at the first index,
+ * the second index of the index list is compared. If these are equal too, the third is
+ * compared etc. until no more indeces are left in the list.
  *
  * @author Roland Winkler
  */
@@ -49,11 +52,40 @@ public class ArrayIndexListComparator implements Comparator<double[]>, Serializa
 {
 	/**  */
 	private static final long	serialVersionUID	= 5822489769788186713L;
+	
+	/**
+	 * The list of indices that are used for comparing double arrays.
+	 */
 	private int[] indexList;
 	
+	/**
+	 * A list of boolean values describing whether or not to sort increasing or decreasing.
+	 */
+	private boolean[] decreasingList;
+	
+	/**
+	 * Creates a new Comparator for the cpecified list of indices.
+	 * 
+	 * @param indexList The list of indices that are used for comparing double arrays.
+	 */
 	public ArrayIndexListComparator(int[] indexList)
 	{
 		this.indexList = indexList.clone();
+		
+		this.decreasingList = new boolean[indexList.length];
+	}
+	
+	/**
+	 * Creates a new Comparator for the cpecified list of indices.
+	 * 
+	 * @param indexList The list of indices that are used for comparing double arrays.
+	 * @param decreasingList A list of boolean values, specifying for each index if it is sorted decreasingly (true entry) or increasingly (false entry)
+	 */
+	public ArrayIndexListComparator(int[] indexList, boolean[] decreasingList)
+	{
+		this.indexList = indexList.clone();
+		
+		this.decreasingList = decreasingList.clone();
 	}
 
 	/* (non-Javadoc)
@@ -62,15 +94,28 @@ public class ArrayIndexListComparator implements Comparator<double[]>, Serializa
 	@Override
 	public int compare(double[] a, double[] b)
 	{
-		int i, j=0;
+		int i=0, j=0;
 		
-		for(i=0, j=this.indexList[i]; i<this.indexList.length && a[j]==b[j]; j=this.indexList[++i]) ;
+//		for(i=0, j=this.indexList[i]; i<this.indexList.length && a[j]==b[j]; j=this.indexList[i], i++) ;
+
+		for(i=0; i<this.indexList.length; i++)
+		{
+			j = this.indexList[i];
+			if(a[j]!=b[j]) break;
+		}
 		
-		return (a[j]==b[j])?0:((a[j]<b[j])?-1:1);
+		if(i >= this.indexList.length) return 0;
+		
+		if(this.decreasingList[i])
+			return (a[j]==b[j])?0:((a[j]>b[j])?-1:1);
+		else
+			return (a[j]==b[j])?0:((a[j]<b[j])?-1:1);
 	}
 
 	/**
-	 * @return the indexList
+	 * Returns the index list.
+	 * 
+	 * @return the index list.
 	 */
 	public int[] getIndexList()
 	{
@@ -78,11 +123,29 @@ public class ArrayIndexListComparator implements Comparator<double[]>, Serializa
 	}
 
 	/**
-	 * @param indexList the indexList to set
+	 * Sets the index list.
+	 * 
+	 * @param indexList The indexList to set.
 	 */
 	public void setIndexList(int[] indexList)
 	{
 		this.indexList = indexList.clone();
+	}
+
+	/**
+	 * @return the decreasingList
+	 */
+	public boolean[] getDecreasingList()
+	{
+		return decreasingList;
+	}
+
+	/**
+	 * @param decreasingList the decreasingList to set
+	 */
+	public void setDecreasingList(boolean[] decreasingList)
+	{
+		this.decreasingList = decreasingList;
 	}
 
 	

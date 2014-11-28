@@ -39,11 +39,14 @@ package datamining.clustering.protoype;
 
 import java.util.Collection;
 
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataSet;
 
 /**
- * TODO Class Description
+ * An abstract class for {@link Centroid} based clustering algorithms. It extends {@link AbstractPrototypeClusteringAlgorithm}
+ * and adds the missing functionality of initializing prototypes, using their positions. to do that, it fixes the {@link Prototype}
+ * class to being a {@link Centroid}.
  *
  * @author Roland Winkler
  */
@@ -54,8 +57,16 @@ public abstract class AbstractCentroidClusteringAlgorithm<T> extends AbstractPro
 	private static final long	serialVersionUID	= 6508613595872091359L;
 
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a prototype new clustering algorithm, taking an existing one.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
 	public AbstractCentroidClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
@@ -63,12 +74,16 @@ public abstract class AbstractCentroidClusteringAlgorithm<T> extends AbstractPro
 	}
 
 	/**
-	 * @param data
-	 * @param vs
+	 * The initial constructor for clustering. The number of clusters can be changed after initialisation, but it
+	 * is not recommended because some algorithms have to be reinitialised.
+	 * 
+	 * @param data The data set for clustering.
+	 * @param vs The vector space of which the data objects are elements.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
-	public AbstractCentroidClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs)
+	public AbstractCentroidClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 	}
 
 	/* (non-Javadoc)

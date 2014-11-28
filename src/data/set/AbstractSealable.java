@@ -40,7 +40,9 @@ package data.set;
 import java.io.Serializable;
 
 /**
- * TODO Class Description
+ * An abstract implementation for <code>Sealable</code> objects. It provides all functionalities
+ * connected to the <code>Sealable</code> interface. All functions, modifying any field of the
+ * subclass just need to call {@link Sealable#registerModification()}.
  *
  * @author Roland Winkler
  */
@@ -50,43 +52,42 @@ public abstract class AbstractSealable implements Sealable, Serializable
 	/**  */
 	private static final long	serialVersionUID	= -4169070675125392714L;
 
-	/**  */
-	private transient long changeCounter;
+	/** A counter for the number of modifications to this object */
+	private transient long modificationCounter;
 	
-	/**  */
+	/** Indicates whether or not this object is sealed. */
 	private boolean sealed; 
 
-	/**
-	 * 
-	 */
+	/** Returns a new AbstractSealable object with 0 modifications. */
 	public AbstractSealable()
 	{
-		this.changeCounter = 0L;
+		this.modificationCounter = 0L;
 		this.sealed = false;
 	}
 	
 
 	/* (non-Javadoc)
-	 * @see data.set.Sealable#registerChange()
+	 * @see data.set.Sealable#registerModification()
 	 */
-	public void registerChange() throws ChangeNotAllowedException
+	@Override
+	public final void registerModification() throws ModificationNotAllowedException
 	{
-		if(this.sealed) throw new ChangeNotAllowedException("The instance is sealed and can not be changed any more.");
+		if(this.sealed) throw new ModificationNotAllowedException("The instance is sealed and can not be modified any more.");
 		
-		this.changeCounter++;
+		this.modificationCounter++;
 	}
 	
 	/* (non-Javadoc)
 	 * @see data.Sealable#getChangeCounter()
 	 */
 	@Override
-	public final long getChangeCounter()
+	public final long getModificationCounter()
 	{
-		return this.changeCounter;
+		return this.modificationCounter;
 	}
 
 	/* (non-Javadoc)
-	 * @see data.Sealable#isSealed()
+	 * @see data.set.Sealable#isSealed()
 	 */
 	@Override
 	public final boolean isSealed()

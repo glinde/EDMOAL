@@ -47,18 +47,18 @@ import gui.templates.GeomTemplate;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
-import org.apache.batik.ext.awt.geom.Polygon2D;
-
 import data.set.IndexedDataObject;
+import data.set.IndexedDataSet;
 import datamining.clustering.ClusteringAlgorithm;
-import datamining.clustering.CrispClusteringAlgorithm;
-import datamining.clustering.FuzzyClusteringAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
+import datamining.resultProviders.ResultProvider;
 import etc.DataManipulator;
 import etc.MyMath;
 
@@ -91,6 +91,9 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	
 	protected boolean crispAssignmentsAvailable;
 	protected int[] crispClusterAssignments;
+	
+	protected boolean dataSubsetPresentation;
+	protected int[] dataSubsetList;
 
 
 	public GClusteredDataSet(Collection<Scheme> clusterSchemes)
@@ -123,6 +126,9 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 		
 		this.fuzzyMemberships = new ArrayList<double[]>();
 		this.crispClusterAssignments = new int[this.clusterSchemes.size()];
+		
+		this.dataSubsetPresentation = false;
+		this.dataSubsetList = null;
 
 	}
 	
@@ -147,19 +153,21 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	}
 	
 	
-	public GClusteredDataSet(ClusteringAlgorithm<double[]> ca)
+	public GClusteredDataSet(ResultProvider<double[]> rp, int[] dataSubsetList, int clusterCount)
 	{
-		this(ca.getClusterCount());
+		this(GClusteredDataSet.makeClusterScemes(clusterCount));
 
-		this.dataSet.addAll(ca.getDataSet());
+		this.dataSet.addAll(rp.getDataSet());
 		
-		this.updateClusterAssignments(ca);
+		this.dataSubsetPresentation = dataSubsetList != null;
+		this.dataSubsetList = dataSubsetList;
+		
+		this.updateClusterAssignments(rp);
 	}
-	
-	
+		
 	protected void recalculateConvexHulls()
 	{
-		int i, j, k;
+		int i, j, k, l;
 		
 		ArrayList<double[]> points = new ArrayList<double[]>();
 		ArrayList<ArrayList<double[]>> crispClusteredPoints = new ArrayList<ArrayList<double[]>>(this.clusterCount);
@@ -180,11 +188,26 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 					{
 						points.clear();
 						
-						for(j=0; j<this.dataSet.size(); j++)
+						if(this.dataSubsetPresentation)
 						{
-							if(this.fuzzyMemberships.get(j)[i] >= this.membershipLevels[k])
+							for(l=0; l<dataSubsetList.length; l++)
 							{
-								points.add(this.dataSet.get(j).element);
+								j = this.dataSubsetList[l];
+								
+								if(this.fuzzyMemberships.get(l)[i] >= this.membershipLevels[k])
+								{
+									points.add(this.dataSet.get(j).x);
+								}
+							}
+						}
+						else
+						{
+							for(j=0; j<this.dataSet.size(); j++)
+							{
+								if(this.fuzzyMemberships.get(j)[i] >= this.membershipLevels[k])
+								{
+									points.add(this.dataSet.get(j).x);
+								}
 							}
 						}
 						
@@ -200,10 +223,22 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 				{
 					crispClusteredPoints.add(new ArrayList<double[]>(1000));
 				}
-				
-				for(j=0; j<this.dataSet.size(); j++)
+
+				if(this.dataSubsetPresentation)
 				{
-					if(this.crispClusterAssignments[j] >= 0) crispClusteredPoints.get(this.crispClusterAssignments[j]).add(this.dataSet.get(j).element);
+					for(l=0; l<dataSubsetList.length; l++)
+					{
+						j = this.dataSubsetList[l];
+						
+						if(this.crispClusterAssignments[l] >= 0) crispClusteredPoints.get(this.crispClusterAssignments[l]).add(this.dataSet.get(j).x);
+					}
+				}
+				else
+				{
+					for(j=0; j<this.dataSet.size(); j++)
+					{
+						if(this.crispClusterAssignments[j] >= 0) crispClusteredPoints.get(this.crispClusterAssignments[j]).add(this.dataSet.get(j).x);
+					}
 				}
 				
 				for(i=0; i<this.clusterCount; i++)
@@ -220,13 +255,13 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	@Override
 	public void draw(Graphics2D g2, Translation translator)
 	{
-		int j, i, k;
+		int j, i, k, l;
 		
 		double r, g, b, y, u, v;
 		double yS, uS, vS;
 		double[] colorSum = new double[6];
 		Color color, internalAreaColor;
-		Polygon2D surroundingPoly;
+		Polygon surroundingPoly;
 		double[] point;
 		
 		double maxMSV;
@@ -241,141 +276,288 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 		sc.addStroke(this.scheme.getStroke(0));
 		
 //		this.resetClusterColors();
-		for(j=0; j<this.dataSet.size(); j++)
+		if(this.dataSubsetPresentation)
 		{
-			for(i=0; i<colorSum.length; i++) colorSum[i] = 0.0d;
-			
-			if(this.fuzzyAssignmentsAvailable)
+			for(l=0; l<this.dataSubsetList.length; l++)
 			{
-				if(this.fuzzyColoring)
+				j = this.dataSubsetList[l];
+				
+				for(i=0; i<colorSum.length; i++) colorSum[i] = 0.0d;
+				
+				if(this.fuzzyAssignmentsAvailable)
 				{
-					switch(this.mixingColorModel)
+					if(this.fuzzyColoring)
 					{
-						case ColorList.RGB_COLOR_MODEL:
+						switch(this.mixingColorModel)
 						{
-							for(i=0; i<this.clusterCount; i++)
+							case ColorList.RGB_COLOR_MODEL:
 							{
-								r = this.clusterSchemes.get(i).getColor(0).getRed();
-								g = this.clusterSchemes.get(i).getColor(0).getGreen();
-								b = this.clusterSchemes.get(i).getColor(0).getBlue();
+								for(i=0; i<this.clusterCount; i++)
+								{
+									r = this.clusterSchemes.get(i).getColor(0).getRed();
+									g = this.clusterSchemes.get(i).getColor(0).getGreen();
+									b = this.clusterSchemes.get(i).getColor(0).getBlue();
+									
+									colorSum[0]+=this.fuzzyMemberships.get(l)[i]*r;
+									colorSum[1]+=this.fuzzyMemberships.get(l)[i]*g;
+									colorSum[2]+=this.fuzzyMemberships.get(l)[i]*b;
+								}
 								
-								colorSum[0]+=this.fuzzyMemberships.get(j)[i]*r;
-								colorSum[1]+=this.fuzzyMemberships.get(j)[i]*g;
-								colorSum[2]+=this.fuzzyMemberships.get(j)[i]*b;
-							}
+							}	break;
 							
-						}	break;
-						
-						case ColorList.YUV_COLOR_MODEL:
-						{
-							yS = 0.0d; uS = 0.0d; vS = 0.0d;
-		
-							for(i=0; i<this.clusterCount; i++)
+							case ColorList.YUV_COLOR_MODEL:
 							{
-								r = this.clusterSchemes.get(i).getColor(0).getRed();
-								g = this.clusterSchemes.get(i).getColor(0).getGreen();
-								b = this.clusterSchemes.get(i).getColor(0).getBlue();
+								yS = 0.0d; uS = 0.0d; vS = 0.0d;
+			
+								for(i=0; i<this.clusterCount; i++)
+								{
+									r = this.clusterSchemes.get(i).getColor(0).getRed();
+									g = this.clusterSchemes.get(i).getColor(0).getGreen();
+									b = this.clusterSchemes.get(i).getColor(0).getBlue();
+									
+									y = 0.299d*r + 0.587d*g + 0.114d*b;
+									u = 0.493d*(b-y);
+									v = 0.877d*(r-y);
+									
+									yS+=MyMath.pow(this.fuzzyMemberships.get(l)[i], 0.75)*y;
+									uS+=this.fuzzyMemberships.get(l)[i]*u;
+									vS+=this.fuzzyMemberships.get(l)[i]*v;
+								}
 								
-								y = 0.299d*r + 0.587d*g + 0.114d*b;
-								u = 0.493d*(b-y);
-								v = 0.877d*(r-y);
-								
-								yS+=MyMath.pow(this.fuzzyMemberships.get(j)[i], 0.75)*y;
-								uS+=this.fuzzyMemberships.get(j)[i]*u;
-								vS+=this.fuzzyMemberships.get(j)[i]*v;
-							}
+								colorSum[0] = yS + vS/0.877d;
+								colorSum[2] = yS + uS/0.493d;
+								colorSum[1] = 1.7d*yS - 0.509*colorSum[0] - 0.194d*colorSum[2];
+													
+							}	break;
 							
-							colorSum[0] = yS + vS/0.877d;
-							colorSum[2] = yS + uS/0.493d;
-							colorSum[1] = 1.7d*yS - 0.509*colorSum[0] - 0.194d*colorSum[2];
-												
-						}	break;
-						
-						case ColorList.HSB_COLOR_MODEL:
-						{
-							for(i=0; i<this.clusterCount; i++)
+							case ColorList.HSB_COLOR_MODEL:
 							{
-								r = this.clusterSchemes.get(i).getColor(0).getRed();
-								g = this.clusterSchemes.get(i).getColor(0).getGreen();
-								b = this.clusterSchemes.get(i).getColor(0).getBlue();
+								for(i=0; i<this.clusterCount; i++)
+								{
+									r = this.clusterSchemes.get(i).getColor(0).getRed();
+									g = this.clusterSchemes.get(i).getColor(0).getGreen();
+									b = this.clusterSchemes.get(i).getColor(0).getBlue();
+									
+									colorSum[0]+=this.fuzzyMemberships.get(l)[i]*r;
+									colorSum[1]+=this.fuzzyMemberships.get(l)[i]*g;
+									colorSum[2]+=this.fuzzyMemberships.get(l)[i]*b;
+								}
 								
-								colorSum[0]+=this.fuzzyMemberships.get(j)[i]*r;
-								colorSum[1]+=this.fuzzyMemberships.get(j)[i]*g;
-								colorSum[2]+=this.fuzzyMemberships.get(j)[i]*b;
-							}
-							
-							hsb = Color.RGBtoHSB((int)colorSum[0], (int)colorSum[1], (int)colorSum[2], hsb);
-							color = new Color(Color.HSBtoRGB(hsb[0], (float)MyMath.pow(hsb[1], 0.7), (float)MyMath.pow(hsb[2], 0.75)));
-							
-							colorSum[0] = color.getRed();
-							colorSum[1] = color.getGreen();
-							colorSum[2] = color.getBlue();
-							
-						}	break;
-					}
-					
-		
-					if(colorSum[0] > 255.0d) colorSum[0] = 255.0d;
-					if(colorSum[1] > 255.0d) colorSum[1] = 255.0d;
-					if(colorSum[2] > 255.0d) colorSum[2] = 255.0d;
-					if(colorSum[0] < 0.0d) colorSum[0] = 0.0d;
-					if(colorSum[1] < 0.0d) colorSum[1] = 0.0d;
-					if(colorSum[2] < 0.0d) colorSum[2] = 0.0d;
-					
-					sc.setColor(0, new Color((int)(colorSum[0]), (int)(colorSum[1]), (int)(colorSum[2])));
-				}
-				else
-				{
-					maxMSV = 0.0d;
-					maxMSVI = 0;
-					for(i=0; i<this.clusterCount; i++)
-					{
-						if(this.fuzzyMemberships.get(j)[i] > maxMSV)
-						{
-							maxMSV = this.fuzzyMemberships.get(j)[i];
-							maxMSVI = i;
+								hsb = Color.RGBtoHSB((int)colorSum[0], (int)colorSum[1], (int)colorSum[2], hsb);
+								color = new Color(Color.HSBtoRGB(hsb[0], (float)MyMath.pow(hsb[1], 0.7), (float)MyMath.pow(hsb[2], 0.75)));
+								
+								colorSum[0] = color.getRed();
+								colorSum[1] = color.getGreen();
+								colorSum[2] = color.getBlue();
+								
+							}	break;
 						}
+						
+			
+						if(colorSum[0] > 255.0d) colorSum[0] = 255.0d;
+						if(colorSum[1] > 255.0d) colorSum[1] = 255.0d;
+						if(colorSum[2] > 255.0d) colorSum[2] = 255.0d;
+						if(colorSum[0] < 0.0d) colorSum[0] = 0.0d;
+						if(colorSum[1] < 0.0d) colorSum[1] = 0.0d;
+						if(colorSum[2] < 0.0d) colorSum[2] = 0.0d;
+						
+						sc.setColor(0, new Color((int)(colorSum[0]), (int)(colorSum[1]), (int)(colorSum[2])));
 					}
-		
-					sc.setColor(0, this.clusterSchemes.get(maxMSVI).getColor(0));
+					else
+					{
+						maxMSV = 0.0d;
+						maxMSVI = 0;
+						for(i=0; i<this.clusterCount; i++)
+						{
+							if(this.fuzzyMemberships.get(l)[i] > maxMSV)
+							{
+								maxMSV = this.fuzzyMemberships.get(l)[i];
+								maxMSVI = i;
+							}
+						}
+			
+						sc.setColor(0, this.clusterSchemes.get(maxMSVI).getColor(0));
+					}
 				}
+				else if(this.crispAssignmentsAvailable)
+				{
+					if(this.crispClusterAssignments[l] >= 0) sc.setColor(0, this.clusterSchemes.get(this.crispClusterAssignments[l]).getColor(0));
+					else sc.setColor(0, ColorList.BLACK);
+				}
+				
+				
+				this.dataObjectsTemplate.drawAt(g2, sc, translator.translate(this.projection.project(this.dataSet.get(j).x, null)));
 			}
-			else if(this.crispAssignmentsAvailable)
-			{
-				if(this.crispClusterAssignments[j] >= 0) sc.setColor(0, this.clusterSchemes.get(this.crispClusterAssignments[j]).getColor(0));
-				else sc.setColor(0, ColorList.BLACK);
-			}
-			
-			
-			this.dataObjectsTemplate.drawAt(g2, sc, translator.translate(this.projection.project(this.dataSet.get(j).element, null)));
-		}
 		
 
-		if(this.drawMembershipLevels)
-		{
-			for(i=0; i<this.clusterCount; i++)
+			if(this.drawMembershipLevels)
 			{
-				internalAreaColor = new Color(this.clusterSchemes.get(i).getColor(0).getRed(), this.clusterSchemes.get(i).getColor(0).getGreen(), this.clusterSchemes.get(i).getColor(0).getBlue(), this.convexHullAreaAlpha);
-				tmp = new double[2];
-				
-				if(this.convexHulls.get(i).size() > 0)
+				for(i=0; i<this.clusterCount; i++)
 				{
-					for(k=0; k<this.convexHulls.get(i).size(); k++)
+					internalAreaColor = new Color(this.clusterSchemes.get(i).getColor(0).getRed(), this.clusterSchemes.get(i).getColor(0).getGreen(), this.clusterSchemes.get(i).getColor(0).getBlue(), this.convexHullAreaAlpha);
+					tmp = new double[2];
+					
+					if(this.convexHulls.get(i).size() > 0)
 					{
-//						if(this.convexHulls.get(i).get(k).size() < 2) continue;
-						surroundingPoly = new Polygon2D();
-						
-						for(double[] p:this.convexHulls.get(i).get(k))
+						for(k=0; k<this.convexHulls.get(i).size(); k++)
 						{
-							point = translator.translate(this.projection.project(p, tmp));
-							surroundingPoly.addPoint((float)point[0], (float)point[1]);
+	//						if(this.convexHulls.get(i).get(k).size() < 2) continue;
+							surroundingPoly = new Polygon();
+							
+							for(double[] p:this.convexHulls.get(i).get(k))
+							{
+								point = translator.translate(this.projection.project(p, tmp));
+								surroundingPoly.addPoint((int)point[0], (int)point[1]);
+							}
+							
+							g2.setStroke(this.clusterSchemes.get(i).getStroke(0));			
+							g2.setColor(internalAreaColor);
+							g2.fill(surroundingPoly);
+							g2.setColor(this.clusterSchemes.get(i).getColor(0));
+							g2.draw(surroundingPoly);
+						}
+					}
+				}
+			}
+		}
+		else //#########################################################################################################################
+		{
+			for(j=0; j<this.dataSet.size(); j++)
+			{
+				for(i=0; i<colorSum.length; i++) colorSum[i] = 0.0d;
+				
+				if(this.fuzzyAssignmentsAvailable)
+				{
+					if(this.fuzzyColoring)
+					{
+						switch(this.mixingColorModel)
+						{
+							case ColorList.RGB_COLOR_MODEL:
+							{
+								for(i=0; i<this.clusterCount; i++)
+								{
+									r = this.clusterSchemes.get(i).getColor(0).getRed();
+									g = this.clusterSchemes.get(i).getColor(0).getGreen();
+									b = this.clusterSchemes.get(i).getColor(0).getBlue();
+									
+									colorSum[0]+=this.fuzzyMemberships.get(j)[i]*r;
+									colorSum[1]+=this.fuzzyMemberships.get(j)[i]*g;
+									colorSum[2]+=this.fuzzyMemberships.get(j)[i]*b;
+								}
+								
+							}	break;
+							
+							case ColorList.YUV_COLOR_MODEL:
+							{
+								yS = 0.0d; uS = 0.0d; vS = 0.0d;
+			
+								for(i=0; i<this.clusterCount; i++)
+								{
+									r = this.clusterSchemes.get(i).getColor(0).getRed();
+									g = this.clusterSchemes.get(i).getColor(0).getGreen();
+									b = this.clusterSchemes.get(i).getColor(0).getBlue();
+									
+									y = 0.299d*r + 0.587d*g + 0.114d*b;
+									u = 0.493d*(b-y);
+									v = 0.877d*(r-y);
+									
+									yS+=MyMath.pow(this.fuzzyMemberships.get(j)[i], 0.75)*y;
+									uS+=this.fuzzyMemberships.get(j)[i]*u;
+									vS+=this.fuzzyMemberships.get(j)[i]*v;
+								}
+								
+								colorSum[0] = yS + vS/0.877d;
+								colorSum[2] = yS + uS/0.493d;
+								colorSum[1] = 1.7d*yS - 0.509*colorSum[0] - 0.194d*colorSum[2];
+													
+							}	break;
+							
+							case ColorList.HSB_COLOR_MODEL:
+							{
+								for(i=0; i<this.clusterCount; i++)
+								{
+									r = this.clusterSchemes.get(i).getColor(0).getRed();
+									g = this.clusterSchemes.get(i).getColor(0).getGreen();
+									b = this.clusterSchemes.get(i).getColor(0).getBlue();
+									
+									colorSum[0]+=this.fuzzyMemberships.get(j)[i]*r;
+									colorSum[1]+=this.fuzzyMemberships.get(j)[i]*g;
+									colorSum[2]+=this.fuzzyMemberships.get(j)[i]*b;
+								}
+								
+								hsb = Color.RGBtoHSB((int)colorSum[0], (int)colorSum[1], (int)colorSum[2], hsb);
+								color = new Color(Color.HSBtoRGB(hsb[0], (float)MyMath.pow(hsb[1], 0.7), (float)MyMath.pow(hsb[2], 0.75)));
+								
+								colorSum[0] = color.getRed();
+								colorSum[1] = color.getGreen();
+								colorSum[2] = color.getBlue();
+								
+							}	break;
 						}
 						
-						g2.setStroke(this.clusterSchemes.get(i).getStroke(0));			
-						g2.setColor(internalAreaColor);
-						g2.fill(surroundingPoly);
-						g2.setColor(this.clusterSchemes.get(i).getColor(0));
-						g2.draw(surroundingPoly);
+			
+						if(colorSum[0] > 255.0d) colorSum[0] = 255.0d;
+						if(colorSum[1] > 255.0d) colorSum[1] = 255.0d;
+						if(colorSum[2] > 255.0d) colorSum[2] = 255.0d;
+						if(colorSum[0] < 0.0d) colorSum[0] = 0.0d;
+						if(colorSum[1] < 0.0d) colorSum[1] = 0.0d;
+						if(colorSum[2] < 0.0d) colorSum[2] = 0.0d;
+						
+						sc.setColor(0, new Color((int)(colorSum[0]), (int)(colorSum[1]), (int)(colorSum[2])));
+					}
+					else
+					{
+						maxMSV = 0.0d;
+						maxMSVI = 0;
+						for(i=0; i<this.clusterCount; i++)
+						{
+							if(this.fuzzyMemberships.get(j)[i] > maxMSV)
+							{
+								maxMSV = this.fuzzyMemberships.get(j)[i];
+								maxMSVI = i;
+							}
+						}
+			
+						sc.setColor(0, this.clusterSchemes.get(maxMSVI).getColor(0));
+					}
+				}
+				else if(this.crispAssignmentsAvailable)
+				{
+					if(this.crispClusterAssignments[j] >= 0) sc.setColor(0, this.clusterSchemes.get(this.crispClusterAssignments[j]).getColor(0));
+					else sc.setColor(0, ColorList.BLACK);
+				}
+				
+				
+				this.dataObjectsTemplate.drawAt(g2, sc, translator.translate(this.projection.project(this.dataSet.get(j).x, null)));
+			}
+		
+
+			if(this.drawMembershipLevels)
+			{
+				for(i=0; i<this.clusterCount; i++)
+				{
+					internalAreaColor = new Color(this.clusterSchemes.get(i).getColor(0).getRed(), this.clusterSchemes.get(i).getColor(0).getGreen(), this.clusterSchemes.get(i).getColor(0).getBlue(), this.convexHullAreaAlpha);
+					tmp = new double[2];
+					
+					if(this.convexHulls.get(i).size() > 0)
+					{
+						for(k=0; k<this.convexHulls.get(i).size(); k++)
+						{
+	//						if(this.convexHulls.get(i).get(k).size() < 2) continue;
+							surroundingPoly = new Polygon();
+							
+							for(double[] p:this.convexHulls.get(i).get(k))
+							{
+								point = translator.translate(this.projection.project(p, tmp));
+								surroundingPoly.addPoint((int)point[0], (int)point[1]);
+							}
+							
+							g2.setStroke(this.clusterSchemes.get(i).getStroke(0));			
+							g2.setColor(internalAreaColor);
+							g2.fill(surroundingPoly);
+							g2.setColor(this.clusterSchemes.get(i).getColor(0));
+							g2.draw(surroundingPoly);
+						}
 					}
 				}
 			}
@@ -383,26 +565,54 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	}
 	
 	/**
-	 * @param ca
+	 * @param rp
 	 */
-	public void updateClusterAssignments(ClusteringAlgorithm<?> ca)
+	public void updateClusterAssignments(ResultProvider<double[]> rp)
 	{
-
+		int j, l;
 		this.fuzzyAssignmentsAvailable = false;
 		this.crispAssignmentsAvailable = false;
 		this.fuzzyMemberships = new ArrayList<double[]>();
-		this.crispClusterAssignments = new int[this.dataSet.size()];
-		
-		if(ca instanceof FuzzyClusteringAlgorithm)
+	
+		if(this.dataSubsetPresentation)
 		{
-			this.fuzzyAssignmentsAvailable = true;
-			((FuzzyClusteringAlgorithm<?>)ca).getAllFuzzyClusterAssignments(this.fuzzyMemberships);
+			this.crispClusterAssignments = new int[this.dataSubsetList.length];
+			
+			if(rp instanceof FuzzyClusteringProvider)
+			{
+				this.fuzzyAssignmentsAvailable = true;
+				for(l=0; l<this.dataSubsetList.length; l++)
+				{
+					j = this.dataSubsetList[l];
+					this.fuzzyMemberships.add(((FuzzyClusteringProvider<double[]>)rp).getFuzzyAssignmentsOf(this.dataSet.get(j)));
+				}
+			}
+			
+			if(rp instanceof CrispClusteringProvider)
+			{
+				this.crispAssignmentsAvailable = true;
+				for(l=0; l<this.dataSubsetList.length; l++)
+				{
+					j = this.dataSubsetList[l];
+					this.crispClusterAssignments[l] = ((CrispClusteringProvider<double[]>)rp).getCrispClusterAssignmentOf(this.dataSet.get(j));
+				}
+			}
 		}
-		
-		if(ca instanceof CrispClusteringAlgorithm)
+		else
 		{
-			this.crispAssignmentsAvailable = true;
-			this.crispClusterAssignments = ((CrispClusteringAlgorithm<?>)ca).getAllCrispClusterAssignments();
+			this.crispClusterAssignments = new int[this.dataSet.size()];
+			
+			if(rp instanceof FuzzyClusteringProvider)
+			{
+				this.fuzzyAssignmentsAvailable = true;
+				((FuzzyClusteringProvider<?>)rp).getAllFuzzyClusterAssignments(this.fuzzyMemberships);
+			}
+			
+			if(rp instanceof CrispClusteringProvider)
+			{
+				this.crispAssignmentsAvailable = true;
+				this.crispClusterAssignments = ((CrispClusteringProvider<?>)rp).getAllCrispClusterAssignments();
+			}
 		}
 
 		this.recalculateConvexHulls();
@@ -514,6 +724,8 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	public void setFuzzyMemberships(Collection<double[]> fuzzyMemberships)
 	{
 		this.fuzzyMemberships = new ArrayList<double[]>(fuzzyMemberships);
+		this.fuzzyAssignmentsAvailable = this.fuzzyMemberships != null;
+		this.recalculateConvexHulls();
 	}
 
 	/**
@@ -562,7 +774,7 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 	public void setCrispClusterAssignments(int[] crispClusterAssignments)
 	{
 		this.crispClusterAssignments = crispClusterAssignments;
-		this.crispAssignmentsAvailable = crispClusterAssignments != null;
+		this.crispAssignmentsAvailable = this.crispClusterAssignments != null;
 		this.recalculateConvexHulls();
 	}
 
@@ -591,7 +803,38 @@ public class GClusteredDataSet extends DrawableObject implements Serializable
 		this.fuzzyAssignmentsAvailable = fuzzyMemberships != null;
 		this.recalculateConvexHulls();
 	}
-	
-	
-	
+
+	/**
+	 * @return the dataSubsetPresentation
+	 */
+	public boolean isDataSubsetPresentation()
+	{
+		return this.dataSubsetPresentation;
+	}
+
+	/**
+	 * @param dataSubsetPresentation the dataSubsetPresentation to set
+	 */
+	public void setDataSubsetPresentation(boolean dataSubsetPresentation)
+	{
+		this.dataSubsetPresentation = dataSubsetPresentation;
+	}
+
+	/**
+	 * @return the dataSubsetList
+	 */
+	public int[] getDataSubsetList()
+	{
+		return this.dataSubsetList;
+	}
+
+	/**
+	 * @param dataSubsetList the dataSubsetList to set
+	 */
+	public void setDataSubsetList(int[] dataSubsetList)
+	{
+		this.dataSubsetPresentation = dataSubsetList != null;
+		this.dataSubsetList = dataSubsetList;
+		this.recalculateConvexHulls();
+	}
 }

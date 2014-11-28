@@ -38,70 +38,99 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering.protoype.altopt;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import data.algebra.Distance;
 import data.algebra.EuclideanVectorSpace;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyClusteringAlgorithm;
 import datamining.clustering.protoype.AbstractCentroidClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
+import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.MembershipFunctionProvider;
+import datamining.resultProviders.FuzzyClassificationProvider;
+import datamining.resultProviders.FuzzyClusteringProvider;
 import etc.MyMath;
 
 /**
- * TODO Class Description
+ * The fuzzy c-means clustering algorithm is the first fuzzy type clustering algorithm, invented by Dunn and 
+ * later further generalized (adding a variable fuzzifier) by Bezdek. This class contains this extended version of the algorithm.
+ * See the papers for more information on the algorithm and the theory connected to it. <br> 
  *
- * Paper: Dunn, J. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters Cybernetics and Systems: An International Journal, 1973, 3, 32-57
- * Paper: Bezdek, J. C. Pattern Recognition with Fuzzy Objective Function Algorithms Plenum Press, 1981
+ * Paper: Dunn, J. A Fuzzy Relative of the ISODATA Process and Its Use in Detecting Compact Well-Separated Clusters Cybernetics and Systems: An International Journal, 1973, 3, 32-57<br>
+ * Paper: Bezdek, J. C. Pattern Recognition with Fuzzy Objective Function Algorithms Plenum Press, 1981<br>
+ * 
+ * In this particular implementation, the membership matrix is not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
  *
  * @author Roland Winkler
  */
-public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringAlgorithm<T>
+public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusteringAlgorithm<T> implements FuzzyClusteringProvider<T>, FuzzyClassificationProvider<T>, MembershipFunctionProvider
 {
 	/**  */
 	private static final long	serialVersionUID	= -1260886261257302868L;
 
 	/**
-	 *	The fuzzifier from the fuzzy c-means algorithm. The larger the fuzzifier is, the less it is possible to
-	 *	decide how much a data object belongs to a cluster. In other words, it the membership values become more soft.<br>
-	 *	<br>
+	 * The fuzzifier. It specifies how soft the membershiop values are going to be calculated. if the
+	 * value is 1, the algorithm is identical to crisp clustering and for values going to infinity, it is complete soft clustering.
+	 * A useful value is around 2.<br>
+	 *
 	 *	Range of values: <code>fuzzifier</code> > 1
 	 */
 	protected double fuzzifier;
 	
-	/**  */
-	protected final Distance<T> dist;
-		
 	/**
-	 * @param data the data set
-	 * @param vs the vector space of the data set
-	 * @param dist The distance must be differenciable w.r.t. y in dist(x, y)^2, and the directed differencial in direction of
-	 * 				y must yield d/dy dist(x, y)^2 = 2(y - x) 
+	 * Creates a new FuzzyCMeansClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param metric The metric that is used to calculate the distance between data objects and prototypes.
 	 */
-	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	public FuzzyCMeansClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> metric)
 	{
-		super(data, vs);
+		super(data, vs, metric);
 		
 		this.fuzzifier					= 2.0d;
-		this.dist						= dist;
 	}
-	
+
+
 	/**
-	 * @param c
-	 * @param useCluster
+	 * This constructor creates a new FuzzyCMeansClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
-	public FuzzyCMeansClusteringAlgorithm(FuzzyCMeansClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public FuzzyCMeansClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
-
-		this.fuzzifier					= c.fuzzifier;
-		this.dist						= c.dist;
+		
+		this.fuzzifier					= 2.0d;
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.AbstractDoubleArrayClusteringAlgorithm#algorithmName()
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#algorithmName()
 	 */
 	@Override
 	public String algorithmName()
@@ -110,7 +139,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 	
 	/* (non-Javadoc)
-	 * @see datamining.ClusteringAlgorithm#performClustering(int)
+	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#apply(int)
 	 */
 	@Override
 	public void apply(int steps)
@@ -138,8 +167,13 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
 		int zeroDistanceCount;
 
+//		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
+		
 		for(t = 0; t < steps; t++)
 		{
+//			System.out.print(".");
+			
 			// reset values
 			maxPrototypeMovement = 0.0d;
 			
@@ -157,7 +191,8 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				distanceSum = 0.0d;
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
-					doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+					doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+					
 					if(doubleTMP <= 0.0d)
 					{
 						doubleTMP = 0.0d;
@@ -167,11 +202,19 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 					else
 					{
 						doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+						if(Double.isInfinite(doubleTMP))
+						{
+							doubleTMP = 0.0d;
+							zeroDistanceIndexList[zeroDistanceCount] = i;
+							zeroDistanceCount++;
+						}
+						
 						fuzzDistances[i] = doubleTMP;
 						distanceSum += doubleTMP;
 					}
 				}
-
+				
 				// special case handling: if one (or more) prototype sits on top of a data object
 				if(zeroDistanceCount>0)
 				{
@@ -198,8 +241,8 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				{
 					doubleTMP = MyMath.pow(membershipValues[i], this.fuzzifier);
 					membershipSum[i] += doubleTMP;
-
-					this.vs.copy(tmpX, this.data.get(j).element);
+					
+					this.vs.copy(tmpX, this.data.get(j).x);
 					this.vs.mul(tmpX, doubleTMP);
 					this.vs.add(newPrototypePosition.get(i), tmpX);
 				}
@@ -222,7 +265,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = ((this.convergenceMetric!=null)?this.convergenceMetric:this.metric).distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -230,11 +273,13 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			}
 			
 			this.iterationComplete();
-			
-			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
+
+			this.convergenceHistory.add(Math.sqrt(maxPrototypeMovement));
+			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
-	
 	
 	
 	/* (non-Javadoc)
@@ -245,7 +290,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 		
-		int i, j; 
+		int i, j, k; 
 		// i: index for clusters
 		// j: index for data objects
 		// k: index for dimensions, others
@@ -257,31 +302,38 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
 		double[] fuzzDistances					= new double[this.getClusterCount()];
 		double[] distancesSq					= new double[this.getClusterCount()];
+		boolean zeroDistance = false;
 		
 						
 		for(j=0; j < this.getDataCount(); j++)
 		{				
+			zeroDistance = false;
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
-					doubleTMP = 0.0d;
-					distancesSq[i] = doubleTMP;
-					fuzzDistances[i] = 1.0d;
+					zeroDistance = true;
 				}
 				else
-				{
+				{ 
 					distancesSq[i] = doubleTMP;
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistance = true;
+					}
+				
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
 			}
+			if(zeroDistance) continue;
 
-			// don't check for distance sum to be zero.. that would just be rediculus!!
-
+			// don't check for distance sum to be zero.. that would just be ridiculous!!
 			for(i=0; i<this.getClusterCount(); i++)
 			{
 				doubleTMP = fuzzDistances[i] / distanceSum;
@@ -289,13 +341,17 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * distancesSq[i];
 			}
 		}
+		
+		if(objectiveFunctionValue==0)
+			System.out.println("!!");
 	
 		return objectiveFunctionValue;
 	}
 	
-	/**
-	 * @return
+	/* (non-Javadoc)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentSums()
 	 */
+	@Override
 	public double[] getFuzzyAssignmentSums()
 	{	
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
@@ -317,7 +373,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -327,6 +383,14 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -355,7 +419,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.FuzzyClusterResultAlgorithm#getFuzzyResult()
+	 * @see datamining.clustering.FuzzyClusteringProvider#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]>  assignmentList)
@@ -383,7 +447,8 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			distanceSum = 0.0d;
 			for(i=0; i<this.getClusterCount(); i++)
 			{
-				doubleTMP = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				doubleTMP = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
+
 				if(doubleTMP <= 0.0d)
 				{
 					doubleTMP = 0.0d;
@@ -393,6 +458,14 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				else
 				{
 					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
 					fuzzDistances[i] = doubleTMP;
 					distanceSum += doubleTMP;
 				}
@@ -427,10 +500,19 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignments(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
+	{
+		return this.classify(obj.x);
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClassificationProvider#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(T x)
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 
@@ -450,7 +532,7 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		distanceSum = 0.0d;
 		for(i=0; i<this.getClusterCount(); i++)
 		{
-			doubleTMP = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			if(doubleTMP <= 0.0d)
 			{
 				doubleTMP = 0.0d;
@@ -460,6 +542,14 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 			else
 			{
 				doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+				if(Double.isInfinite(doubleTMP))
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				
 				distances[i] = doubleTMP;
 				distanceSum += doubleTMP;
 			}
@@ -490,9 +580,88 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 		return membershipValues;
 	}
 
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyClassificationProvider#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public ArrayList<double[]> classifyAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");		
+		ArrayList<double[]> assignmentList = new ArrayList<double[]>(this.getDataCount());
+				
+		int i, k;
+				
+		double distanceExponent = 1.0d / (1.0d - this.fuzzifier);	// to reduce the usage of divisions
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;									// a temporarly variable for multiple perpuses
+		double[] fuzzDistances				= new double[this.getClusterCount()];
+		double[] membershipValues			= new double[this.getClusterCount()];
+		int[] zeroDistanceIndexList			= new int[this.getClusterCount()];
+		int zeroDistanceCount;
+			
+						
+		for(T x:list)
+		{				
+			for(i=0; i<this.getClusterCount(); i++) zeroDistanceIndexList[i] = -1;
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			for(i=0; i<this.getClusterCount(); i++)
+			{
+				doubleTMP = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+
+				if(doubleTMP <= 0.0d)
+				{
+					doubleTMP = 0.0d;
+					zeroDistanceIndexList[zeroDistanceCount] = i;
+					zeroDistanceCount++;
+				}
+				else
+				{
+					doubleTMP = MyMath.pow(doubleTMP, distanceExponent);
+
+					if(Double.isInfinite(doubleTMP))
+					{
+						doubleTMP = 0.0d;
+						zeroDistanceIndexList[zeroDistanceCount] = i;
+						zeroDistanceCount++;
+					}
+					
+					fuzzDistances[i] = doubleTMP;
+					distanceSum += doubleTMP;
+				}
+			}
+	
+			// special case handling: if one (or more) prototype sits on top of a data object
+			if(zeroDistanceCount>0)
+			{
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					membershipValues[i] = 0.0d;
+				}
+				doubleTMP = 1.0d / ((double)zeroDistanceCount);
+				for(k=0; k<zeroDistanceCount; k++)
+				{
+					membershipValues[zeroDistanceIndexList[k]] = doubleTMP;
+				}
+			}
+			else
+			{
+				for(i=0; i<this.getClusterCount(); i++)
+				{
+					doubleTMP = fuzzDistances[i] / distanceSum;
+					membershipValues[i] = doubleTMP;
+				}
+			}
+			
+			assignmentList.add(membershipValues.clone());
+		}
+		
+		return assignmentList;
+	}
+
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyClusteringProvider#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
@@ -501,7 +670,9 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 	
 	/**
-	 * @return the fuzzifier
+	 * Returns the fuzzifier.
+	 * 
+	 * @return The fuzzifier.
 	 */
 	public double getFuzzifier()
 	{
@@ -509,26 +680,21 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	}
 
 	/**
-	 * @param fuzzifier the fuzzifier to set
+	 * Sets the fuzzifier. The range of the parameter is <code>fuzzifier > 1</code>.
+	 *  
+	 * @param fuzzifier the fuzzifier to set.
 	 */
 	public void setFuzzifier(double fuzzifier)
 	{
+		if(fuzzifier <= 1.0d) throw new IllegalArgumentException("The fuzzifier must be larger than 1. Specified fuzzifier: " + fuzzifier);
+		
 		this.fuzzifier = fuzzifier;
 	}
 
 	/**
-	 * @return the dist
+	 * @TODO: remove.  
 	 */
-	public Distance<T> getDist()
-	{
-		return this.dist;
-	}
-
-
-	/**
-	 * @param clone
-	 */
-	public void clone(FuzzyCMeansNoiseClusteringAlgorithm<T> clone)
+	public void clone(FuzzyCMeansClusteringAlgorithm<T> clone)
 	{
 		super.clone(clone);
 		
@@ -538,11 +704,23 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 	/* (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
+	@Override
 	public FuzzyCMeansClusteringAlgorithm<T> clone()
 	{
-		FuzzyCMeansClusteringAlgorithm<T> clone = new FuzzyCMeansClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.dist);
+		FuzzyCMeansClusteringAlgorithm<T> clone = new FuzzyCMeansClusteringAlgorithm<T>(this.data, (EuclideanVectorSpace<T>)this.vs, this.metric);
 		this.clone(clone);
 		return clone;
 	}
+
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.MembershipFunctionProvider#applyMembershipFunction(double)
+	 */
+	@Override
+	public double applyMembershipFunction(double membershipValue)
+	{
+		return MyMath.pow(membershipValue, this.fuzzifier);
+	}
+
 
 }

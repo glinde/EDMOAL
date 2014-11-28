@@ -261,6 +261,7 @@ public class BatikExport implements Serializable
 			// write svgFile
 			svgfos = new FileOutputStream(svgOutputFile);
 			svgfos.write(buffer);
+			svgfos.close();
 			
 			// write pdf file
 			// Create the transcoder input.

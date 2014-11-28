@@ -40,59 +40,81 @@ package datamining.clustering.density;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import data.set.structures.BallTree;
-import data.set.structures.queries.SphereQueryProvider;
+import data.structures.balltree.BallTree;
+import data.structures.queries.SphereQueryProvider;
 import datamining.clustering.AbstractClusteringAlgorithm;
-import datamining.clustering.CrispClusteringAlgorithm;
-import datamining.clustering.CrispNoiseClusteringAlgorithm;
+import datamining.resultProviders.CrispClusteringProvider;
+import datamining.resultProviders.CrispNoiseClusteringProvider;
 
 /**
- * TODO Class Description
+ * The DBScan algorithm, implemented using a ball tree. This is one of the best and fastest clustering algorithms
+ * that have been invented. It finds any kind of cluster shape, provided the data objects are fairly dense inside
+ * the cluster and sparse in between the clusters. The algorithm is able to detect noise data objects, based
+ * on two parameters: A core distance and a minimal number of core data objects.<br>
+ * 
+ * <ul>The Algorithm in short goes as follows: Start at one random data object.
+ * <li> 1. case: If in the _radius_ around the data object are at least
+ * 		a _min_ number of data objects, this data object forms a new cluster.
+ * 		Note that all data objects belong to this cluster.
+ * 		Then perform the test recursively for all untested or noise data objects in range of the _radius_.</li>
+ * <li> 2. case: If there are not enough data objects around and this data object is not noted to belong to
+ * 		a cluster already, note it as being noise and contionue with the next untested, random data object.</li>
+ * </ul>
+ * 
+ * Using a ball tree to perform a sphere query makes this algorithm be for well defined parameters be in O(n * log(n)).
+ * For a large data set with many clusters, this is significantly faster most prototype based algorithm. <br>
  * 
  * Paper: Ester, M.; Kriegel, H.-P.; Jörg, S. & Xu, X. A density-based algorithm for discovering clusters in large spatial databases with noise 2nd International Conference on Knowledge Discovery and Data Mining, AAAI Press, 1996, 226-231
  * 
+ * @see data.structures.balltree.BallTree
+ * 
  * @author Roland Winkler
  */
-public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispClusteringAlgorithm<T>, CrispNoiseClusteringAlgorithm<T>
+public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispNoiseClusteringProvider<T>
 {
 	/**  */
 	private static final long	serialVersionUID	= 8539759213273998996L;
 
+	/** For the DBScan clustering algorithm, the constants for noise and unassigned are changed. This is masked to the outside to fit the crisp noise clustering interface.  */
 	private static final int DBSCAN_UNASSIGNED_ID = -2;
 	
+	/** For the DBScan clustering algorithm, the constants for noise and unassigned are changed. This is masked to the outside to fit the crisp noise clustering interface.  */
 	private static final int DBSCAN_NOISE_ID = -1;	
 	
-	/**  */
+	/** The core distance */
 	protected double coreDist;
 	
-	/**  */
+	/** The minimal number of core data objects. */
 	protected int coreNum;
 	
-	/**  */
+	/** The number of clustered found so far. */
 	protected int clusterCount;
-	
-	/**  */
-	protected Distance<T> distanceFunction;
-		
-	/**  */
+			
+	/** The sphere query provider, for example a ball tree. */
 	protected SphereQueryProvider<T> sphereQueryProvider;
 	
-	/**  */
+	/** A list to hold the cluster ID's for all data objects. */
 	protected int[] clusterIDs;
 		
-	/** */
-	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Distance<T> dist)
+	/**
+	 *  The standard constructor.
+	 * 
+	 * @param dataSet The data set that is to be clustered.
+	 * @param coreDist The core distance
+	 * @param coreNum The minimal number of data object to become a core point
+	 * @param metric The metric for calculating distances amoung data objects.
+	 */
+	public DBScan(IndexedDataSet<T> dataSet, double coreDist, int coreNum, Metric<T> metric)
 	{
-		super(dataSet);
+		super(dataSet, metric);
 		
 		this.coreDist = coreDist;
 		this.coreNum = coreNum;
 		
 		this.clusterCount = 1;
-		this.distanceFunction = dist;
 
 		this.sphereQueryProvider = null;
 		
@@ -102,41 +124,41 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	
 	
 	/**
-	 *	The initial constructor for clustering.
+	 *	A constructor assuming <code>coreDist</code> = 1 and <code>coreNum</code> = 4.
+	 *
+	 * @TODO: make an algorithm to estimate the parameter.
+	 * 
+	 * @param dataSet The data set that is to be clustered.
+	 * @param metric The metric for calculating distances amoung data objects.
 	 */
-	public DBScan(IndexedDataSet<T> dataSet, Distance<T> dist)
+	public DBScan(IndexedDataSet<T> dataSet, Metric<T> metric)
 	{
-		this(dataSet, 1.0d, 4, dist);
+		this(dataSet, 1.0d, 4, metric);
 	}
 		
 	/**
-	 * This constructor is meant to be used if the clustering algorithm should be changed. All data references
-	 * stay the same, still the data containers are reinitialized. So it is possible to scip some clusters
-	 * if they are not needed any more.
+	 * The copy constructor.
 	 * 
-	 * @param c the elders clustering algorithm object
-	 * @param useCluster An array of length of the original number of clusters that contains the information if the cluster
-	 * according to its index shell be used.
+	 * @param c The elder clustering algorithm object.
 	 */
 	public DBScan(DBScan<T> c)
 	{
-		super(c.data);
+		super(c);
 		
 		this.coreDist				= c.coreDist;
 		this.coreNum				= c.coreNum;
 		
-		this.distanceFunction		= c.distanceFunction;
 		this.sphereQueryProvider	= c.sphereQueryProvider;
 		
 		this.clusterIDs				= c.clusterIDs.clone();
 	}
 	
 	/**
-	 * Sets the given sphereQueryProvider. If the data set of the provider is identical to this data set,
-	 * it is not used as is. If it contains a different data set, it is cleared and the data set of this
+	 * Sets the specified {@link SphereQueryProvider}. If the data set of the provider is identical to this data set,
+	 * it is used as is. If it contains a different data set, it is cleared and the data set of this
 	 * algorithm is added to the SphereQueryProvider.
 	 * 
-	 * @param provider
+	 * @param provider The SphereQueryProvider to be used for this clustering algorithm.
 	 */
 	public void registerSphereQueryProvider(SphereQueryProvider<T> provider)
 	{
@@ -150,11 +172,12 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	}
 	
 	/**
-	 * 
+	 * If the {@link SphereQueryProvider} is not specified in ths instance, a new {@link BallTree} is created to perform the
+	 * clustering. 
 	 */
 	private void autoBuildTree()
 	{
-		this.sphereQueryProvider = new BallTree<T>(this.data, this.distanceFunction);
+		this.sphereQueryProvider = new BallTree<T>(this.data, this.metric);
 		this.sphereQueryProvider.build();
 	}
 	
@@ -187,7 +210,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 			
 			// get all nearby data objects 
 			cluster.clear();
-			this.sphereQueryProvider.sphereQuery(cluster, d.element, this.coreDist);
+			this.sphereQueryProvider.sphereQuery(cluster, d.x, this.coreDist);
 			
 			// if the nearby data objects are not enough to form a cluster, d is noise and the algorithm continues with the next data object
 			if(cluster.size() < this.coreNum)
@@ -207,7 +230,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 			{
 				current = cluster.pollFirst(); 
 				query.clear();
-				this.sphereQueryProvider.sphereQuery(query, current.element, this.coreDist);
+				this.sphereQueryProvider.sphereQuery(query, current.x, this.coreDist);
 				if(query.size() >= this.coreNum)
 				{
 					for(IndexedDataObject<T> q:query)
@@ -278,7 +301,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.CrispClusterResultAlgorithm#getCrispIndicesResult()
+	 * @see datamining.CrispNoiseClusteringProvider#getCrispIndicesResult()
 	 */
 	@Override
 	public int[] getAllCrispClusterAssignments()
@@ -288,7 +311,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 		for(int j=0; j<this.getDataCount(); j++)
 		{
 			crispResult[j] = this.clusterIDs[this.data.get(j).getID()];
-			crispResult[j] = (crispResult[j] == DBScan.DBSCAN_NOISE_ID || crispResult[j] == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringAlgorithm.UNASSIGNED_INDEX : crispResult[j];
+			crispResult[j] = (crispResult[j] == DBScan.DBSCAN_NOISE_ID || crispResult[j] == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringProvider.UNASSIGNED_INDEX : crispResult[j];
 		}
 		
 		return crispResult;
@@ -296,7 +319,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#getCrispAssignment(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#getCrispAssignment(data.set.IndexedDataObject)
 	 */
 	@Override
 	public int getCrispClusterAssignmentOf(IndexedDataObject<T> obj)
@@ -304,14 +327,14 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 		int assignment = this.clusterIDs[obj.getID()];
 		
 		// either the obj is unassigned or it is noise, in both cases, the assignment index is -1
-		assignment = (assignment == DBScan.DBSCAN_NOISE_ID || assignment == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringAlgorithm.UNASSIGNED_INDEX : assignment;
+		assignment = (assignment == DBScan.DBSCAN_NOISE_ID || assignment == DBScan.DBSCAN_UNASSIGNED_ID)? CrispClusteringProvider.UNASSIGNED_INDEX : assignment;
 		
 		return assignment;
 	}
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispClusterResultAlgorithm#isCrispClusterAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#isCrispClusterAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isCrispAssigned(IndexedDataObject<T> obj)
@@ -321,7 +344,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispNoiseClusteringAlgorithm#getCrispNoiseAssignments()
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#getCrispNoiseAssignments()
 	 */
 	@Override
 	public boolean[] getCrispNoiseAssignments()
@@ -338,7 +361,7 @@ public class DBScan<T> extends AbstractClusteringAlgorithm<T> implements CrispCl
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.CrispNoiseClusteringAlgorithm#isCrispNoiseAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.CrispNoiseClusteringProvider#isCrispNoiseAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isCrispNoiseAssigned(IndexedDataObject<T> obj)

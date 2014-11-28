@@ -42,11 +42,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import etc.MyMath;
+import data.algebra.Metric;
 
 
 /**
- * TODO Class Description
+ * As the name states, the class implements a double array sequence. This data type is useful for
+ * comparing multidimensional time series or similar data.<br>
+ * 
+ * When using this class, take care that all elements of the sequence hold arrays of the same length as this is not checked by this class
+ * due to performance savings. This class is just a wrapper class for a list of double arrays, it does not mask any information.
+ * It is only providing additional functionality w.r.t. the data stored as double array sequence.
  *
  * @author Roland Winkler
  */
@@ -54,11 +59,13 @@ public class DoubleArraySequence implements Serializable
 {
 	/**  */
 	private static final long	serialVersionUID	= -2873026221012051790L;
-	/**  */
+	
+	/** The sequence of double arrays, it is public because there is no need to hide the data. */
 	public ArrayList<double[]> sq;
 	
+	
 	/**
-	 * 
+	 * The standard constructor, creating an empty sequence and using the Euclidean metric.
 	 */
 	public DoubleArraySequence()
 	{
@@ -66,16 +73,20 @@ public class DoubleArraySequence implements Serializable
 	}
 
 	/**
-	 * @param c
+	 * A constructor that fills the sequence with the elements in the collection. Only the references
+	 * are copied, not the arrays them selfs.
+	 * 
+	 * @param col The collection of double arrays that are used for the sequence
 	 */
 	public DoubleArraySequence(Collection<double[]> col)
 	{
-		this.sq = new ArrayList<double[]>(col.size());
-		this.sq.addAll(col);
+		this.sq = new ArrayList<double[]>(col);
 	}
 	
 	/**
-	 * @param c
+	 * The copy constructor. Again, only the references of double arrays are copied, not the arrays them selfs.
+	 * 
+	 * @param seq The sequence to be copied.
 	 */
 	public DoubleArraySequence(DoubleArraySequence seq)
 	{
@@ -83,21 +94,36 @@ public class DoubleArraySequence implements Serializable
 	}
 	
 	
-	public double length()
+	/**
+	 * Calculates the length of the sequence, using the Euclidean distance.
+	 * The length is calculated by calculating the sum of all segments of the sequence.
+	 * So the length of the sequence is the length of the way in n dimensions that is defined by the sequence:
+	 * length = sum_{i=1}^{n-1} eucl.dist(s_{i-1}, s_{i}) with s_i being the arrays of the sequence and n being
+	 * the number of stored arrays.<br>
+	 * 
+	 * If the sequence contains less then 2 double arrays, the result is 0.
+	 * 
+	 * @return The length of the double array sequence
+	 */
+	public double length(Metric<double[]> metric)
 	{
 		double length = 0.0d;
 		int i;
 		
 		for(i=1; i<this.sq.size(); i++)
 		{
-			length += MyMath.euclideanDist(this.sq.get(i-1), this.sq.get(i));
+			length += metric.distance(this.sq.get(i-1), this.sq.get(i));
 		}
 		
 		return length;
 	}
 	
 	/**
-	 * @return
+	 * The dimension of the sequence, defined by the first array. If the sequence has no
+	 * arrays stored, the result is 0. Note that the result is determined by the length of the first
+	 * array of the sequence. If the dimensionality differs for different elements, the sequence is invalid.
+	 * 
+	 * @return the dimension of the sequence
 	 */
 	public int getDimension()
 	{
@@ -106,8 +132,26 @@ public class DoubleArraySequence implements Serializable
 		return 0;
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
+	/** 
+	 * Checks whether the sequence is valid or not. It is valid if all stored double arrays have
+	 * the same number of elements.
+	 * 
+	 * @return True if all arrays of the sequence have the same length, false otherwise.
+	 */
+	public boolean checkSequenceValidity()
+	{
+		boolean result = true;
+		
+		for(int i=1; i<this.sq.size() && result; i++)
+		{
+			result &= this.sq.get(i-1) == this.sq.get(i);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * A deep copy of the sequence. Here, the arrays are cloned.
 	 */
 	@Override
 	public DoubleArraySequence clone()

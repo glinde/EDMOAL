@@ -38,47 +38,63 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.set;
 
 /**
- * TODO Class Description
+ * If an iterator is not allowed to make changes of the underlying data structure,
+ * this exception is thrown to indicate that fact.
  *
  * @author Roland Winkler
+ * 
+ * @see Sealable
  */
-public class IteratorModificationsNotSupportedException extends RuntimeException
+public class IteratorModificationsNotSupportedException extends UnsupportedOperationException
 {
 
 	/**  */
 	private static final long	serialVersionUID	= -3842384362501041930L;
 
 	/**
-	 * 
+     * Constructs an IteratorModificationsNotSupportedException with no details.
+     * 
+     * @see UnsupportedOperationException
 	 */
 	public IteratorModificationsNotSupportedException()
 	{
 		super();
 	}
 
-	/**
-	 * @param message
-	 * @param cause
+    /**
+     * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param  message the detail message
+     * @param  cause the cause 
+     * 
+     * @see UnsupportedOperationException
 	 */
 	public IteratorModificationsNotSupportedException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
-
-	/**
-	 * @param message
-	 */
+	
+	
+    /**
+     * Constructs an IteratorModificationsNotSupportedException with the specified detail message.
+     *
+     * @param message the detail message
+     * 
+     * @see UnsupportedOperationException
+     */
 	public IteratorModificationsNotSupportedException(String message)
 	{
 		super(message);
 	}
 
-	/**
-	 * @param cause
-	 */
+
+    /**
+     * Constructs a new exception with the specified cause.
+     *
+     * @param  cause the cause
+     */
 	public IteratorModificationsNotSupportedException(Throwable cause)
 	{
 		super(cause);
 	}
-
 }

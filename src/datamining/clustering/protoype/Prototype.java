@@ -43,33 +43,104 @@ import data.algebra.VectorSpace;
 import datamining.clustering.Cluster;
 
 /**
- * TODO Class Description
+ * This interface specifies the functionality a prototype need to provide.
+ * A prototype represents a cluster, or in other words, is an approximation of all data objects of a cluster.
+ * Since the prototype represents a cluster, it is often associated with the cluster it self, which is
+ * why this interface extends the {@link Cluster} interface.<br>
+ * 
+ * The functions, provided in this cluster are mostly related to the iterative nature of typical
+ * prototype based clustering algorithms. Starting from an initialisation location, the
+ * prototype is moved around until it settles in its final location. Therefore, the way of the 
+ * prototype represents the sequence of locations the prototype inherits during the clustering process.  
  *
  * @author Roland Winkler
  */
 public interface Prototype<T> extends Cluster, Cloneable
 {
+	/**
+	 * Moves the prototype to the specified position. If activated, the new position is recorded in the way of the prototype.
+	 * 
+	 * @param pos The new position of the prototype.
+	 */
 	public void moveTo(T pos);
 	
+	/**
+	 * Moves the prototype by the specified difference. The new position is then according to the
+	 * vector space: <code>x<sub>new</sub> = x<sub>old</sub> + x<sub>dif</sub></code>.  If
+	 * activated, the new position is recorded in the way of the prototype.
+	 * 
+	 * @param dif The difference of the current prototype location to its new location.
+	 */
 	public void moveBy(T dif);
 	
+	/**
+	 * Resets the prototype to its initial position. All history of the prototypes movements will be removed.
+	 */
 	public void resetToInitialPosition();
 	
+	/**
+	 * Initialises the prototype with the specified position. If it was moved before,
+	 * all history of the prototypes movements will be removed.
+	 * 
+	 * @param pos The position the prototype should be initialised with.
+	 */
 	public void initializeWithPosition(T pos);
 
+	/**
+	 * Returns the initial position.
+	 * 
+	 * @return The initial position.
+	 */
 	public T getInitialPosition();
 
+	/**
+	 * Returns the recorded way of the prototype. That is, the recorded locations the prototype
+	 * moved to during the clustering process.
+	 * 
+	 * @return The recorded way of the prototype.
+	 */
 	public ArrayList<T> getWay();
 		
+	/**
+	 * Returns true, if the way is recorded, false otherwise.
+	 * 
+	 * @return True, if the way is recorded, false otherwise.
+	 */
 	public boolean isRecordWay();
 
+	/**
+	 * If it is set to true, the way is recorded when calling the functins {@link #moveTo(Object)} or {@link #moveBy(Object)}. 
+	 * 
+	 * @param recordWay Whether or not to record the way of the prototype.
+	 */
 	public void setRecordWay(boolean recordWay);
 	
+	/**
+	 * Returns the current position of the prototype.
+	 * 
+	 * @return The current position of the prototype.
+	 */
 	public T getPosition();
 
+	/**
+	 * Sets the current position of the prototype. This function does not record the way
+	 * of the prototype.
+	 * 
+	 * @param pos The new position of the prototype.
+	 */
 	public void setPosition(T pos);
 	
+	/**
+	 * Returns the vector space, associated with the prototype. 
+	 * 
+	 * @return The vector space, associated with the prototype.
+	 */
 	public VectorSpace<T> getVectorSpace();
 
+	/**
+	 * Clones the prototype.
+	 * 
+	 * @return A new prototype Object that is identical to this one.
+	 */
 	public Prototype<T> clone();
 }

@@ -51,6 +51,8 @@ public class CSVFileReader extends FileLineReader implements Serializable
 	/**  */
 	private static final long	serialVersionUID	= -7730060117448141601L;
 
+	protected boolean ignoreFirstAttribute;
+	
 	protected boolean firstLineAsAtributeNames;
 	
 	protected ArrayList<String> lastAttributeList;
@@ -58,6 +60,7 @@ public class CSVFileReader extends FileLineReader implements Serializable
 	public CSVFileReader()
 	{
 		this.firstLineAsAtributeNames = true;
+		this.ignoreFirstAttribute = false;
 		this.lastAttributeList = new ArrayList<String>();
 	}
 	
@@ -90,12 +93,11 @@ public class CSVFileReader extends FileLineReader implements Serializable
 			{
 				throw new IOException("File Format wrong: number of attributes are not constant. (line " + linecounter +")");
 			}
+			doubleLine = new double[attributeCount-(this.ignoreFirstAttribute?1:0)];
 			
-			doubleLine = new double[attributeCount];
-			
-			for(int i=0; i<attributeCount; i++)
+			for(int i=(this.ignoreFirstAttribute?1:0); i<attributeCount; i++)
 			{
-				doubleLine[i] = Double.parseDouble(line.get(i));
+				doubleLine[i-(this.ignoreFirstAttribute?1:0)] = Double.parseDouble(line.get(i));
 			}
 			table.add(doubleLine);
 		}
@@ -129,7 +131,26 @@ public class CSVFileReader extends FileLineReader implements Serializable
 	{
 		return this.lastAttributeList;
 	}
-	
+
+
+	/**
+	 * @return the ignoreFirstAttribute
+	 */
+	public boolean isIgnoreFirstAttribute()
+	{
+		return this.ignoreFirstAttribute;
+	}
+
+
+	/**
+	 * @param ignoreFirstAttribute the ignoreFirstAttribute to set
+	 */
+	public void setIgnoreFirstAttribute(boolean ignoreFirstAttribute)
+	{
+		this.ignoreFirstAttribute = ignoreFirstAttribute;
+	}
+
+
 	
 	
 }

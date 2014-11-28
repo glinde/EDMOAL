@@ -38,51 +38,120 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package datamining.clustering.protoype.altopt;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import data.algebra.Distance;
+import data.algebra.Metric;
 import data.algebra.VectorSpace;
 import data.set.IndexedDataObject;
 import data.set.IndexedDataSet;
-import datamining.clustering.FuzzyNoiseClusteringAlgorithm;
+import datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm;
 import datamining.clustering.protoype.AlgorithmNotInitializedException;
 import datamining.clustering.protoype.Centroid;
+import datamining.resultProviders.FuzzyNoiseClassificationProvider;
+import datamining.resultProviders.FuzzyNoiseClusteringProvider;
+import datamining.resultProviders.NoiseDistanceProvider;
+
 /**
- * TODO Class Description
- *
- * Paper: Klawonn, F. & Höppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264
+ * This is an implementation of the fuzzy c-means clustering algorithm with additional noise cluster and with a polynomial fuzzifier function.
+ * It replaces the fuzzifier function <code>u<sup>w</sup></code> with <code>(1-beta)/(1+beta)u<sup>2</sup> + (2*beta)/(1+beta)*u</code>.
+ * The linear component in the fuzzifier function leads to a crisp area of clustering around each prototype. The
+ * clustering becomes crisp (in the two-cluster case), if the relative distances to the prototypes is equal to <code>beta</code>.
+ * See the papers for more information on the algorithm and the theory connected to it. <br> 
+ * 
+ * Paper: Klawonn, F. & Hï¿½ppner, F. R. Berthold, M.; Lenz, H.-J.; Bradley, E.; Kruse, R. & Borgelt, C. (Eds.) What Is Fuzzy about Fuzzy Clustering? Understanding and Improving the Concept of the Fuzzifier Advances in Intelligent Data Analysis V, Springer Berlin / Heidelberg, 2003, 2810, 254-264<br>
+ * 
+ * In this particular implementation, the membership matrix is  not stored when the algorithm is applied. That is possible because the membership
+ * values of one data object are independent of all other objects, given the position of the prototypes. However,
+ * the linear component in the fuzzifier function leads to a crisp assignment of data objects, near prototypes.
+ * To calculate it correctly, the prototypes must be sorted w.r.t. their distance to the data object.
+ * This sorting increases the complexity of the algorithm, especially if many prototypes are present.<br>
+ * 
+ * Due to the niose cluster and for a finite noise distance, data objects that are fare away from the prototypes are
+ * clustered crisply as noise. This effect is a direct result of fact that the noise cluster has a constant distance to
+ * all data objects and the concept of the polynomial fuzzifier function. The runtime complexity of the algorithm
+ * is not effected by the additional noise cluster.<br>
+ * 
+ * However, due to the finite range of the 'good' clusters, it is advisable to either initialize the prototypes
+ * close to the clusters, or to set the noise distance not too far at the beginning. It might be better to
+ * reduce the noise distance and apply the algorithm in 2 or 3 steps in order to minimize the chance that a prototype
+ * does not find any data objects due to an unlucky initialization and the limited distance a prototype can be effected
+ * by data objects.<br> 
+ * 
+ * The runtime complexity of this algorithm is in O(t*n*c*log(c)),
+ * with t being the number of iterations, n being the number of data objects and c being the number of clusters.
+ * This is, neglecting the runtime complexity of distance calculations and algebraic operations in the vector space.
+ * The full complexity would be in O(t*n*c*log(c)*(O(dist)+O(add)+O(mul))) where O(dist) is the complexity of
+ * calculating the distance between a data object and a prototype, O(add) is the complexity of calculating the
+ * vector addition of two types <code>T</code> and O(mul) is the complexity of scalar multiplication of type <code>T</code>. <br>
+ *  
+ * The memory consumption of this algorithm is in O(t+n+c).
+ * 
  * 
  * @author Roland Winkler
  */
-public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringAlgorithm<T>
+public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringAlgorithm<T> implements FuzzyNoiseClusteringProvider<T>, FuzzyNoiseClassificationProvider<T>, NoiseDistanceProvider
 {	
 	/**  */
 	private static final long	serialVersionUID	= -4173377426715965448L;
-	/** the distance ratio at which data objects are clustered in hard clustering */
+	
+	
+	/** The noise distance. The noise cluster is equally distant to all data objects and that distance is
+	 * specified as the noise distance. The value must be larger than 0. */
 	protected double noiseDistance;
-		
-	/**
-	 * @param data
-	 * @param vs
-	 * @param dist
+
+
+	/** It is often advantageous to start with a large noise distance in order to allow the prototypes to find all clouds of data objects.
+	 * this distance defines how high the noise distance shall be at the beginning of the iteration process.
+	 * The function of degration is dist = <code>noiseDistance</code> + (<code>degradingNoiseDistance</code>-<code>noiseDistance</code>)*e^(-<code>noiseDegrationFactor</code>*t)
 	 */
-	public PolynomFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Distance<T> dist)
+	protected double degradingNoiseDistance;
+	
+	/** 
+	 * Controlls the speed at which the noise distance is degrading from its initial value. 
+	 *  */
+	protected double noiseDegrationFactor;
+	
+	/**
+	 * Creates a new PolynomFCMNoiseClusteringAlgorithm with the specified data set, vector space and metric.
+	 * The prototypes are not initialized by this method, it has to be done separately.
+	 * The metric must be differentiable w.r.t. <code>y</code> in <code>dist(x, y)<sup>2</sup></code>, and
+	 * the directed differential in direction of <code>y</code> must yield <code>d/dy dist(x, y)^2 = 2(y - x)</code>
+	 * for the algorithm to be correct.
+	 * 
+	 * @param data The data set that should be clustered.
+	 * @param vs The vector space that is used to calculate the prototype positions.
+	 * @param parameterMetric The metric that is used to calculate the distance between data objects and prototypes.
+	 */
+	public PolynomFCMNoiseClusteringAlgorithm(IndexedDataSet<T> data, VectorSpace<T> vs, Metric<T> dist)
 	{
 		super(data, vs, dist);
 
-		this.noiseDistance = 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
+		this.noiseDegrationFactor		= 1.0d;
 	}
 
 	/**
-	 * @param c
-	 * @param useOnlyActivePrototypes
+	 * This constructor creates a new PolynomFCMNoiseClusteringAlgorithm, taking an existing prototype clustering algorithm.
+	 * It has the option to use only active prototypes from the old clustering algorithm. This constructor is especially
+	 * useful if the clustering is done in multiple steps. The first clustering algorithm can for example calculate the
+	 * initial positions of the prototypes for the second clustering algorithm. An other option is, that the first clustering
+	 * algorithm creates a set of deactivated prototypes and the second clustering algorithm is initialized with less
+	 * clusters than the first.
+	 * 
+	 * @param c the elders clustering algorithm.
+	 * @param useOnlyActivePrototypes States, that only prototypes that are active in the old clustering
+	 * algorithm are used for the new clustering algorithm.
 	 */
-	public PolynomFCMNoiseClusteringAlgorithm(PolynomFCMNoiseClusteringAlgorithm<T> c, boolean useOnlyActivePrototypes)
+	public PolynomFCMNoiseClusteringAlgorithm(AbstractPrototypeClusteringAlgorithm<T, Centroid<T>> c, boolean useOnlyActivePrototypes)
 	{
 		super(c, useOnlyActivePrototypes);
 
-		this.noiseDistance = c.noiseDistance;
+		this.noiseDistance				= 0.1d*Math.sqrt(Double.MAX_VALUE);
+		this.degradingNoiseDistance		= this.noiseDistance;
+		this.noiseDegrationFactor		= 1.0d;
 	}
 
 	/* (non-Javadoc)
@@ -95,6 +164,9 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#apply(int)
+	 */
 	@Override
 	public void apply(int steps)
 	{
@@ -125,11 +197,17 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
 		
 		SortablePrototype sortedNoise = new SortablePrototype(null);
-		sortedNoise.squareDistance = this.noiseDistance*this.noiseDistance;
 		
+
+//		System.out.print(this.algorithmName());
+		long timeStart = System.currentTimeMillis();
 		
 		for(t = 0; t < steps; t++)
 		{
+//			System.out.print(".");
+			doubleTMP = this.noiseDistance + (this.degradingNoiseDistance - this.noiseDistance) * Math.exp(-this.noiseDegrationFactor*t);
+			sortedNoise.squareDistance = doubleTMP*doubleTMP;
+			
 			maxPrototypeMovement = 0.0d;			
 			for(i=0; i<this.getClusterCount(); i++)
 			{
@@ -146,7 +224,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 				for(i = 0; i < this.getClusterCount(); i++)
 				{
 					unsortedPrototypes.get(i).included = false;
-					unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+					unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 				}
 				sortedNoise.included = false;
@@ -207,7 +285,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 						doubleTMP = (hFunctionBetaA*membershipValues[i] + hFunctionBetaB)*membershipValues[i]; 
 						membershipSum[i] += doubleTMP;
 
-						this.vs.copy(tmpX, this.data.get(j).element);
+						this.vs.copy(tmpX, this.data.get(j).x);
 						this.vs.mul(tmpX, doubleTMP);
 						this.vs.add(newPrototypePosition.get(i), tmpX);
 					}
@@ -238,7 +316,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 					this.vs.add(newPrototypePosition.get(i), this.prototypes.get(i).getPosition());	
 				}
 				
-				doubleTMP = this.dist.distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
+				doubleTMP = ((this.convergenceMetric!=null)?this.convergenceMetric:this.metric).distanceSq(this.prototypes.get(i).getPosition(), newPrototypePosition.get(i));
 				
 				maxPrototypeMovement = (doubleTMP > maxPrototypeMovement)? doubleTMP : maxPrototypeMovement;
 				
@@ -246,13 +324,16 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			}
 
 			this.iterationComplete();
-			
-			if(maxPrototypeMovement < this.epsilon*this.epsilon) break;
+
+			this.convergenceHistory.add(Math.sqrt(maxPrototypeMovement));
+			if(this.iterationCount >= this.minIterations && maxPrototypeMovement < this.epsilon*this.epsilon) break;
 		}
+
+//		System.out.println(" done. [" + (System.currentTimeMillis() - timeStart) + "]");
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.protoype.AbstractPrototypeClusteringAlgorithm#getObjectiveFunctionValue()
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getObjectiveFunctionValue()
 	 */
 	@Override
 	public double getObjectiveFunctionValue()
@@ -290,9 +371,10 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{}
@@ -343,103 +425,17 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getFuzzyAssignmentsOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double[] getFuzzyAssignmentsOf(IndexedDataObject<T> obj)
 	{
-		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
-		
-		int i; 
-
-		double testDouble= 1.0d/this.beta - 1.0d;
-		
-		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
-		double doubleTMP = 0.0d;								 	// a temporarly variable for multiple perpuses
-		int hatC = 0;
-		
-		double[] membershipValues			= new double[this.getClusterCount()];		
-		int zeroDistanceCount				= 0;
-		SortablePrototype sp;
-
-		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
-		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
-		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
-
-		SortablePrototype sortedNoise = new SortablePrototype(null);
-		sortedNoise.squareDistance = this.noiseDistance*this.noiseDistance;
-		
-		zeroDistanceCount = 0;
-		distanceSum = 0.0d;
-		
-		
-		for(i = 0; i < this.getClusterCount(); i++)
-		{
-			unsortedPrototypes.get(i).included = false;
-			unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
-			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
-		}
-		
-		if(zeroDistanceCount > 0)
-		{
-			doubleTMP = 1.0d/zeroDistanceCount;
-			for(i = 0; i < this.getClusterCount(); i++)
-			{
-				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
-				{
-					membershipValues[i] = doubleTMP;
-				}
-				else
-				{
-					membershipValues[i] = 0.0d;
-				}
-			}
-		}
-		else
-		{
-			sortedPrototypes.clear();
-			sortedPrototypes.addAll(unsortedPrototypes);
-			sortedPrototypes.add(sortedNoise);
-
-			// calculate \hat c by iteratively test if an other prototype can be added to the calculation.					
-			hatC = 0;
-			doubleTMP = 0.0d;
-			while(!sortedPrototypes.isEmpty())
-			{
-				sp = sortedPrototypes.poll();	
-				doubleTMP += 1.0d/sp.squareDistance;
-				if(sp.squareDistance * doubleTMP - (hatC + 1) > testDouble) break;
-				hatC++;
-				distanceSum = doubleTMP;
-				sp.included=true;
-			}
-
-			
-			for(SortablePrototype usp:unsortedPrototypes)
-			{
-				if(usp.included)
-				{
-					doubleTMP = 1.0d + (hatC - 1.0d)*this.beta;
-					doubleTMP /= usp.squareDistance * distanceSum;
-					doubleTMP -= this.beta;
-					doubleTMP *= 1.0d/(1.0d - this.beta);
-					
-					membershipValues[usp.prototype.getClusterIndex()] = doubleTMP;
-				}
-				else
-				{
-					membershipValues[usp.prototype.getClusterIndex()] = 0.0d;
-				}
-			}
-		}
-			
-		
-		return membershipValues;
+		return this.classify(obj.x);
 	}
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getAllFuzzyClusterAssignments(java.util.List)
 	 */
 	@Override
 	public List<double[]> getAllFuzzyClusterAssignments(List<double[]> assignmentList)
@@ -475,9 +471,10 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -540,7 +537,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#getFuzzyAssignmentSums()
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#getFuzzyAssignmentSums()
 	 */
 	@Override
 	public double[] getFuzzyAssignmentSums()
@@ -577,9 +574,10 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -643,7 +641,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#isFuzzyAssigned(data.set.IndexedDataObject)
 	 */
 	@Override
 	public boolean isFuzzyAssigned(IndexedDataObject<T> obj)
@@ -652,7 +650,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignments()
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignments()
 	 */
 	@Override
 	public double[] getFuzzyNoiseAssignments()
@@ -687,9 +685,10 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 			for(i = 0; i < this.getClusterCount(); i++)
 			{
 				unsortedPrototypes.get(i).included = false;
-				unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(this.data.get(j).element, this.prototypes.get(i).getPosition());
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(this.data.get(j).x, this.prototypes.get(i).getPosition());
 				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 			}
+			sortedNoise.included = false;
 			
 			if(zeroDistanceCount > 0)
 			{
@@ -721,7 +720,7 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 					doubleTMP /= sortedNoise.squareDistance * distanceSum;
 					doubleTMP -= this.beta;
 					doubleTMP *= 1.0d/(1.0d - this.beta);
-					
+										
 					noiseMembershipValues[j] = doubleTMP;
 				}
 				else
@@ -735,10 +734,218 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/* (non-Javadoc)
-	 * @see datamining.clustering.FuzzyNoiseClusteringAlgorithm#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
+	 * @see datamining.clustering.FuzzyNoiseClusteringProvider#getFuzzyNoiseAssignmentOf(data.set.IndexedDataObject)
 	 */
 	@Override
 	public double getFuzzyNoiseAssignmentOf(IndexedDataObject<T> obj)
+	{
+		return this.classifyNoise(obj.x);
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#classify(java.lang.Object)
+	 */
+	@Override
+	public double[] classify(T x)
+	{
+if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+		
+		int i; 
+
+		double testDouble= 1.0d/this.beta - 1.0d;
+		
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;								 	// a temporarly variable for multiple perpuses
+		int hatC = 0;
+		
+		double[] membershipValues			= new double[this.getClusterCount()];		
+		int zeroDistanceCount				= 0;
+		SortablePrototype sp;
+
+		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
+		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
+
+		SortablePrototype sortedNoise = new SortablePrototype(null);
+		sortedNoise.squareDistance = this.noiseDistance*this.noiseDistance;
+		
+		zeroDistanceCount = 0;
+		distanceSum = 0.0d;
+		
+		
+		for(i = 0; i < this.getClusterCount(); i++)
+		{
+			unsortedPrototypes.get(i).included = false;
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
+		}
+		sortedNoise.included = false;
+		
+		if(zeroDistanceCount > 0)
+		{
+			doubleTMP = 1.0d/zeroDistanceCount;
+			for(i = 0; i < this.getClusterCount(); i++)
+			{
+				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
+				{
+					membershipValues[i] = doubleTMP;
+				}
+				else
+				{
+					membershipValues[i] = 0.0d;
+				}
+			}
+		}
+		else
+		{
+			sortedPrototypes.clear();
+			sortedPrototypes.addAll(unsortedPrototypes);
+			sortedPrototypes.add(sortedNoise);
+
+			// calculate \hat c by iteratively test if an other prototype can be added to the calculation.					
+			hatC = 0;
+			doubleTMP = 0.0d;
+			while(!sortedPrototypes.isEmpty())
+			{
+				sp = sortedPrototypes.poll();	
+				doubleTMP += 1.0d/sp.squareDistance;
+				if(sp.squareDistance * doubleTMP - (hatC + 1) > testDouble) break;
+				hatC++;
+				distanceSum = doubleTMP;
+				sp.included=true;
+			}
+
+			
+			for(SortablePrototype usp:unsortedPrototypes)
+			{
+				if(usp.included)
+				{
+					doubleTMP = 1.0d + (hatC - 1.0d)*this.beta;
+					doubleTMP /= usp.squareDistance * distanceSum;
+					doubleTMP -= this.beta;
+					doubleTMP *= 1.0d/(1.0d - this.beta);
+					
+					membershipValues[usp.prototype.getClusterIndex()] = doubleTMP;
+				}
+				else
+				{
+					membershipValues[usp.prototype.getClusterIndex()] = 0.0d;
+				}
+			}
+		}
+			
+		
+		return membershipValues;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.clustering.protoype.altopt.PolynomFCMClusteringAlgorithm#classifyAll(java.util.Collection)
+	 */
+	@Override
+	public ArrayList<double[]> classifyAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+		ArrayList<double[]> assignmentList = new ArrayList<double[]>(this.getDataCount());
+		
+		int i, j; 
+
+		double testDouble= 1.0d/this.beta - 1.0d;
+		
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;								 	// a temporarly variable for multiple perpuses
+		int hatC = 0;
+		
+		double[] membershipValues			= new double[this.getClusterCount()];		
+		int zeroDistanceCount				= 0;
+		SortablePrototype sp;
+
+		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
+		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
+
+		SortablePrototype sortedNoise = new SortablePrototype(null);
+		sortedNoise.squareDistance = this.noiseDistance*this.noiseDistance;
+		
+		for(T x:list)
+		{
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			
+			
+			for(i = 0; i < this.getClusterCount(); i++)
+			{
+				unsortedPrototypes.get(i).included = false;
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
+			}
+			sortedNoise.included = false;
+			
+			if(zeroDistanceCount > 0)
+			{
+				doubleTMP = 1.0d/zeroDistanceCount;
+				for(i = 0; i < this.getClusterCount(); i++)
+				{
+					if(unsortedPrototypes.get(i).squareDistance <= 0.0d)
+					{
+						membershipValues[i] = doubleTMP;
+					}
+					else
+					{
+						membershipValues[i] = 0.0d;
+					}
+				}
+			}
+			else
+			{
+				sortedPrototypes.clear();
+				sortedPrototypes.addAll(unsortedPrototypes);
+				sortedPrototypes.add(sortedNoise);
+
+				// calculate \hat c by iteratively test if an other prototype can be added to the calculation.					
+				hatC = 0;
+				doubleTMP = 0.0d;
+				while(!sortedPrototypes.isEmpty())
+				{
+					sp = sortedPrototypes.poll();	
+					doubleTMP += 1.0d/sp.squareDistance;
+					if(sp.squareDistance * doubleTMP - (hatC + 1) > testDouble) break;
+					hatC++;
+					distanceSum = doubleTMP;
+					sp.included=true;
+				}
+
+				
+				for(SortablePrototype usp:unsortedPrototypes)
+				{
+					if(usp.included)
+					{
+						doubleTMP = 1.0d + (hatC - 1.0d)*this.beta;
+						doubleTMP /= usp.squareDistance * distanceSum;
+						doubleTMP -= this.beta;
+						doubleTMP *= 1.0d/(1.0d - this.beta);
+						
+						membershipValues[usp.prototype.getClusterIndex()] = doubleTMP;
+					}
+					else
+					{
+						membershipValues[usp.prototype.getClusterIndex()] = 0.0d;
+					}
+				}
+			}
+			
+			assignmentList.add(membershipValues.clone());
+		}
+		
+		return assignmentList;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoise(java.lang.Object)
+	 */
+	@Override
+	public double classifyNoise(T x)
 	{
 		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
 		
@@ -768,9 +975,10 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		for(i = 0; i < this.getClusterCount(); i++)
 		{
 			unsortedPrototypes.get(i).included = false;
-			unsortedPrototypes.get(i).squareDistance = this.dist.distanceSq(obj.element, this.prototypes.get(i).getPosition());
+			unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
 			if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
 		}
+		sortedNoise.included = false;
 		
 		if(zeroDistanceCount > 0)
 		{
@@ -814,8 +1022,95 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 		return noiseMembershipValue;
 	}
 
-	/**
-	 * @return the noiseDistance
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.FuzzyNoiseClassificationProvider#classifyNoiseAll(java.util.Collection)
+	 */
+	@Override
+	public double[] classifyNoiseAll(Collection<T> list)
+	{
+		if(!this.initialized) throw new AlgorithmNotInitializedException("Prototypes not initialized.");
+		
+		int i, j; 
+
+		double testDouble= 1.0d/this.beta - 1.0d;
+		
+		double distanceSum = 0.0d;									// the sum_i dist[i][l]^{2/(1-fuzzifier)}: the sum of all parametrised distances for one cluster l 
+		double doubleTMP = 0.0d;								 	// a temporarly variable for multiple perpuses
+		int hatC = 0;
+		
+		double[] noiseMembershipValues = new double[list.size()];		
+		int zeroDistanceCount				= 0;
+		SortablePrototype sp;
+
+		PriorityQueue<SortablePrototype> sortedPrototypes = new PriorityQueue<SortablePrototype>(this.getClusterCount());		
+		ArrayList<SortablePrototype> unsortedPrototypes = new ArrayList<SortablePrototype>(this.getClusterCount());
+		for(Centroid<T> p:this.prototypes) unsortedPrototypes.add(new SortablePrototype(p));
+
+		SortablePrototype sortedNoise = new SortablePrototype(null);
+		sortedNoise.squareDistance = this.noiseDistance*this.noiseDistance;
+		
+		j=0;
+		for(T x:list)
+		{
+			zeroDistanceCount = 0;
+			distanceSum = 0.0d;
+			
+			
+			for(i = 0; i < this.getClusterCount(); i++)
+			{
+				unsortedPrototypes.get(i).included = false;
+				unsortedPrototypes.get(i).squareDistance = this.metric.distanceSq(x, this.prototypes.get(i).getPosition());
+				if(unsortedPrototypes.get(i).squareDistance <= 0.0d)	zeroDistanceCount++;
+			}
+			sortedNoise.included = false;
+			
+			if(zeroDistanceCount > 0)
+			{
+				noiseMembershipValues[j] = 0.0d;
+			}
+			else
+			{
+				sortedPrototypes.clear();
+				sortedPrototypes.addAll(unsortedPrototypes);
+				sortedPrototypes.add(sortedNoise);
+
+				// calculate \hat c by iteratively test if an other prototype can be added to the calculation.					
+				hatC = 0;
+				doubleTMP = 0.0d;
+				while(!sortedPrototypes.isEmpty())
+				{
+					sp = sortedPrototypes.poll();	
+					doubleTMP += 1.0d/sp.squareDistance;
+					if(sp.squareDistance * doubleTMP - (hatC + 1) > testDouble) break;
+					hatC++;
+					distanceSum = doubleTMP;
+					sp.included=true;
+				}
+
+				
+				if(sortedNoise.included)
+				{
+					doubleTMP = 1.0d + (hatC - 1.0d)*this.beta;
+					doubleTMP /= sortedNoise.squareDistance * distanceSum;
+					doubleTMP -= this.beta;
+					doubleTMP *= 1.0d/(1.0d - this.beta);
+					
+					noiseMembershipValues[j] = doubleTMP;
+				}
+				else
+				{
+					noiseMembershipValues[j] = 0.0d;
+				}
+			}
+			
+			j++;
+		}
+		
+		return noiseMembershipValues;
+	}
+
+	/* (non-Javadoc)
+	 * @see datamining.resultProviders.NoiseDistanceProvider#getNoiseDistance()
 	 */
 	public double getNoiseDistance()
 	{
@@ -823,12 +1118,55 @@ public class PolynomFCMNoiseClusteringAlgorithm<T> extends PolynomFCMClusteringA
 	}
 
 	/**
+	 * Sets the noise distance.  The range of the parameter is <code>noiseDistance > 0</code>.
+	 * 
 	 * @param noiseDistance the noiseDistance to set
 	 */
 	public void setNoiseDistance(double noiseDistance)
 	{
+		if(noiseDistance <= 0.0d) throw new IllegalArgumentException("The noise distance must be larger than 0. Specified noise distance: " + noiseDistance);
+		
 		this.noiseDistance = noiseDistance;
+		
+		if(this.degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
 	}
-	
+
+
+	/**
+	 * @return the degradingNoiseDistance
+	 */
+	public double getDegradingNoiseDistance()
+	{
+		return this.degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @param degradingNoiseDistance the degradingNoiseDistance to set
+	 */
+	public void setDegradingNoiseDistance(double degradingNoiseDistance)
+	{
+		if(degradingNoiseDistance < this.noiseDistance) this.degradingNoiseDistance = this.noiseDistance;
+		else this.degradingNoiseDistance = degradingNoiseDistance;
+	}
+
+
+	/**
+	 * @return the noiseDegrationFactor
+	 */
+	public double getNoiseDegrationFactor()
+	{
+		return this.noiseDegrationFactor;
+	}
+
+
+	/**
+	 * @param noiseDegrationFactor the noiseDegrationFactor to set
+	 */
+	public void setNoiseDegrationFactor(double noiseDegrationFactor)
+	{
+		this.noiseDegrationFactor = (noiseDegrationFactor>=0.0d)? noiseDegrationFactor:0.0d;
+	}
+
 	
 }

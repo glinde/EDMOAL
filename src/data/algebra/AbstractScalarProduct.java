@@ -37,12 +37,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package data.algebra;
 
 
-/**
- * TODO Class Description
+/** 
+ * This abstract class masks the implementation of the length with the strait forwards approach of using the scalar product. 
  *
  * @author Roland Winkler
  */
-public abstract class AbstractScalarProduct<T> implements ScalarProduct<T>
+public abstract class AbstractScalarProduct<T> implements ScalarProduct<T>, Norm<T>, AlgebraicStructure<T>
 {
 
 	/**  */

@@ -48,7 +48,7 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.io.Serializable;
 
-import datamining.clustering.protoype.Centroid;
+import datamining.clustering.protoype.Prototype;
 
 /**
  * TODO Class Description
@@ -65,7 +65,7 @@ public class GCentroid extends DrawableObject implements Serializable
 	public final static int STD_BODY_STROKE_INDEX = 0;
 	public final static int STD_TAIL_STROKE_INDEX = 1;
 	
-	protected Centroid<double[]> prototype;
+	protected Prototype<double[]> prototype;
 		
 	protected BasicTemplate body;
 	protected GPath tail;
@@ -145,12 +145,12 @@ public class GCentroid extends DrawableObject implements Serializable
 		this.bodyStrokeIndex = GCentroid.STD_BODY_STROKE_INDEX;
 	}
 
-	public Centroid<double[]> getPrototype()
+	public Prototype<double[]> getPrototype()
 	{
 		return this.prototype;
 	}
 
-	public void setPrototype(Centroid<double[]> prototype)
+	public void setPrototype(Prototype<double[]> prototype)
 	{
 		this.prototype = prototype;
 	}
@@ -236,5 +236,15 @@ public class GCentroid extends DrawableObject implements Serializable
 	public void setBodyStrokeIndex(int bodyStrokeIndex)
 	{
 		this.bodyStrokeIndex = bodyStrokeIndex;
+	}
+	
+	public void setTailShadow(boolean shadow)
+	{
+		this.tail.setDrawTailBackgroundGray(shadow);
+	}
+	
+	public boolean isTailShadow()
+	{
+		return this.tail.isDrawTailBackgroundGray();
 	}
 }
