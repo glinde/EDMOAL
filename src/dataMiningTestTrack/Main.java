@@ -73,9 +73,9 @@ public class Main
 //		Main.dataStructureVisualTest();
 //		Main.dataStructureSpeedTest();
 //		Main.clusterAlgorithmVisualTest();
-		Main.clusterAlgorithm2DTest();
+//		Main.clusterAlgorithm2DTest();
 //		Main.clusterAlgorithmVisualSpeedTest();
-//		Main.gradientAlgorithmVisualTest();
+		Main.gradientAlgorithmVisualTest();
 //		Main.symmetricalGgradientAlgorithmVisualTest();
 //		Main.dataGenerationAlgorithmTest();
 //		Main.distortionTest();
@@ -238,11 +238,11 @@ public class Main
 
 		gradientTest.showDataSet(true);
 		gradientTest.leastSquaresTest();
-		gradientTest.fcmGradientTest();
-		gradientTest.snfcmGradientTest();
-		gradientTest.testRewardingCrispFCM();		
-		gradientTest.testRewardingCrispFCMNoise();
-		gradientTest.snfcmGradientTest(1.2d, 0.5d);
+//		gradientTest.fcmGradientTest();
+//		gradientTest.snfcmGradientTest();
+//		gradientTest.testRewardingCrispFCM();		
+//		gradientTest.testRewardingCrispFCMNoise();
+//		gradientTest.snfcmGradientTest(1.2d, 0.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.0d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 2.0d);
@@ -275,11 +275,11 @@ public class Main
 
 		gradientTest.showDataSet(true);
 		gradientTest.leastSquaresTest();
-		gradientTest.fcmGradientTest();
-		gradientTest.snfcmGradientTest();
-		gradientTest.testRewardingCrispFCM();		
-		gradientTest.testRewardingCrispFCMNoise();
-		gradientTest.snfcmGradientTest(1.2d, 0.5d);
+//		gradientTest.fcmGradientTest();
+//		gradientTest.snfcmGradientTest();
+//		gradientTest.testRewardingCrispFCM();		
+//		gradientTest.testRewardingCrispFCMNoise();
+//		gradientTest.snfcmGradientTest(1.2d, 0.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.0d);
 //		gradientTest.snfcmGradientTest(1.2d, 1.5d);
 //		gradientTest.snfcmGradientTest(1.2d, 2.0d);
@@ -291,7 +291,7 @@ public class Main
 //		gradientTest.snfcmGradientTest(1.3d, 1.0d);
 //		gradientTest.snfcmGradientTest(1.3d, 1.5d);
 //		gradientTest.snfcmGradientTest(1.3d, 2.0d);
-		gradientTest.relativeVarianceGradientTest();
+//		gradientTest.relativeVarianceGradientTest();
 		
 //		MyMath.pow(1.25d, 14);
 	}

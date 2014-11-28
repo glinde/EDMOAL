@@ -341,6 +341,9 @@ public class FuzzyCMeansClusteringAlgorithm<T> extends AbstractCentroidClusterin
 				objectiveFunctionValue += MyMath.pow(doubleTMP, this.fuzzifier) * distancesSq[i];
 			}
 		}
+		
+		if(objectiveFunctionValue==0)
+			System.out.println("!!");
 	
 		return objectiveFunctionValue;
 	}
